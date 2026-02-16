@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+
+tools:
+  press_button:
+    name:  # name variations
+      - toggle_button
+      - button_press
+      - button_toggle
+      - push_button
+    description:  # description variations
+      - Toggle a button.
+      - Press a specific button by his name.
+      - Change the state of a button.
+      - Interact with a button by his name.
+
+    parameters:
+      id:
+        name:  # parameter name variations
+          - obj_name
+          - item_name
+          - object_id
+          - target_name
+        description:  # parameter description variations
+          - Name of the object to interact with. It will automatically move the gripper to the object and press it.
+          - Identifier of the object to push with the gripper.
+          - The specific item the robot should press.
+          - Name of the target object for the robot to push.
+
+attributes: 
+  objects:
+    - ["sw0","sw1","sw2","sw3","sw4"]
+    - ["0","1","2","3","4"]
+    - ["btn_0","btn_1","btn_2","btn_3","btn_4"]
+    - ["btn0","btn1","btn2","btn3","btn4"]
+    - ["button_0","button_1","button_2","button_3","button_4"]
+    - ["b0","b1","b2","b3","b4"]

@@ -1,0 +1,50 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "Keep in memory that ref_obj_1 and ref_obj_2 are metallic",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 are metallic."
+            }
+        },
+        {
+            "instruction": "Ha, and area2 must not be used.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must understand that area2 must not be used."
+            }
+        },
+        {
+            "instruction": "Okay so launch a cycle with all metallic object to area3 non-metallic object to another area.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

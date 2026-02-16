@@ -1,0 +1,41 @@
+{
+    "criteria" : ["c-reasoning"],
+    "stages": [
+        {
+            "instruction": "ref_obj_1 is a category 1 object.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 is a category 1 object."
+            }
+        },
+        {
+            "instruction": "Send all category 1 object to area3, and ref_obj_2 to area2.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

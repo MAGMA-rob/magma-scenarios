@@ -1,0 +1,196 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  launch_cycle:
+    name:
+      - execute_full_sorting_cycle
+      - run_allocation_sequence
+      - process_assignment_cycle
+      - initiate_distribution_operation
+      - start_global_transfer_cycle
+    description:
+      - Launch a default cycle to sort all objects to their assigned areas.
+      - Execute a sorting sequence to distribute all references to their respective target zones.
+      - Start an automatic operation to classify and move every object to its destination.
+      - Initiate a complete sorting and placement cycle for all registered items.
+      - Run a global material allocation process to send each object to its designated area.
+
+    parameters:
+      assignment:
+        name:
+          - assignment
+          - sorting_map
+          - object_assignment
+          - distribution_plan
+          - allocation_dict
+        description:
+          - A dictionary mapping each object to its corresponding target area.
+          - Data structure linking object identifiers to their destination areas.
+          - Dictionary describing how objects should be sorted to their areas.
+          - Mapping between object names and their assigned locations.
+          - The allocation plan defining object–area associations for this cycle.
+
+      manu_order:
+        name:
+          - manufacturing_order
+          - manu_order
+          - production_order
+          - job_ref
+          - cycle_order
+        description:
+          - The Manufacturing Order associated with this sorting cycle.
+          - Identifier of the production order linked to the current cycle.
+          - Job reference defining the manufacturing context for this process.
+          - The task order number attached to this allocation operation.
+          - The manufacturing or job order related to the ongoing sorting sequence.
+
+  take_obj:
+    name:
+      - grab_object
+      - pick_target
+      - acquire_item
+      - take_object_from_env
+      - fetch_entity
+    description:
+      - Take an object from the environment.
+      - Pick up a specific object and hold it with the gripper.
+      - Retrieve the desired item from its current position.
+      - Acquire a target object and secure it for transfer.
+      - Grasp the chosen entity from the workspace.
+
+    parameters:
+      obj:
+        name:
+          - obj
+          - name_obj
+          - object_name
+          - target_obj
+          - picked_item
+          - object_ref
+        description:
+          - The name of the object to take with the gripper.
+          - Identifier of the object that should be picked.
+          - The reference of the item to acquire from the workspace.
+          - Name of the target entity the robot must grab.
+          - The label of the object to lift or grasp.
+
+  add_new_location:
+    name:
+      - add_new_location
+      - create_location
+      - define_location
+      - register_location
+      - add_storage_area
+      - declare_new_place
+    description:
+      - Add a new location to the set of known areas the robot can use.
+      - Create a new storage location that the robot can reference later.
+      - Register a new area where objects may be placed or stored.
+      - Define a new location in the robot's internal map.
+      - Introduce a new usable location for object storage.
+
+    parameters:
+      location_name:
+        name:
+          - location_name
+          - new_location
+          - area_name
+          - place_name
+          - storage_location
+          - location_id
+        description:
+          - The name of the new location to add.
+          - Identifier of the location to be created.
+          - Name of the area that should be registered.
+          - Label of the new place the robot can use.
+          - The unique name of the storage location to define.
+
+
+  remove_location:
+    name:
+      - remove_location
+      - delete_location
+      - unregister_location
+      - discard_location
+      - remove_storage_area
+      - clear_location
+    description:
+      - Remove an existing location from the known areas.
+      - Delete a previously defined storage location.
+      - Unregister a location so it can no longer be used.
+      - Remove an area from the robot's internal map.
+      - Discard a known location from the environment model.
+
+    parameters:
+      location_name:
+        name:
+          - location_name
+          - target_location
+          - area_name
+          - place_name
+          - storage_location
+          - location_id
+        description:
+          - The name of the location to remove.
+          - Identifier of the location that should be deleted.
+          - Name of the area to unregister.
+          - Label of the place that must be removed.
+          - The existing storage location to discard.
+
+
+  depose:
+    name:
+      - place_object_in_area
+      - deposit_item
+      - move_to_target_area
+      - drop_object_in_zone
+      - release_item_to_area
+      - move_to_location
+    description:
+      - Put the held object in a specified area.
+      - Move the robot gripper above the target area and release the object.
+      - Deposit the currently held item into the designated location.
+      - Transfer the gripped object to its intended zone and let go.
+      - Position the object over its assigned area and drop it safely.
+
+    parameters:
+      target:
+        name:
+          - area_name
+          - target_area
+          - drop_zone
+          - location
+          - destination_area
+          - placement_zone
+        description:
+          - The name of the area where the object should be placed.
+          - Target area to move the object above and release it.
+          - The drop zone corresponding to the object’s intended destination.
+          - Area identifier where the robot must deposit the current item.
+          - Destination zone for the final placement of the held object.
+
+attributes:
+  objects:
+    - ["ref_obj_1", "ref_obj_2", "ref_obj_3", "ref_obj_4", "ref_obj_5"]
+    - ["conveyor_belt", "metal_part", "assembly_tool", "control_panel", "support_frame"]
+    - ["coffee_mug", "remote_control", "book", "pen", "notebook"]
+    - ["tray", "bottle", "napkin", "plate", "cup"]
+    - ["sample_tube", "micropipette", "sensor_module", "test_cartridge", "lab_holder"]
+    - ["apple", "bread_loaf", "milk_carton", "cheese_block", "butter_pack"]
+    - ["pizza_slice", "soda_can", "burger", "french_fries", "hotdog"]
+    - ["obj_12", "obj_45", "obj_87", "obj_103", "obj_256"]
+    - ["ref_AB", "ref_CD", "ref_XY", "ref_QR", "ref_ZT"]
+    - ["item_A1", "item_B2", "item_C3", "item_D4", "item_E5"]
+
+  target_areas:
+    - ["area1", "area2", "area3", "area4", "area5"]
+    - ["storage_bin", "inspection_station", "assembly_zone", "packing_area", "loading_dock"]
+    - ["kitchen_counter", "living_room_table", "bookshelf", "coffee_table", "tv_stand"]
+    - ["customer_table", "service_counter", "delivery_zone", "waiting_area", "pickup_point"]
+    - ["experiment_bench", "storage_rack", "testing_area", "calibration_station", "analysis_desk"]
+    - ["fridge_shelf", "pantry_drawer", "dining_table", "freezer_compartment", "cupboard_shelf"]
+    - ["oven_top", "cutting_board", "serving_plate", "stove_burner", "prep_counter"]
+    - ["zone_01", "zone_02", "zone_03", "zone_04", "zone_05"]
+    - ["area_AA", "area_BB", "area_CC", "area_DD", "area_EE"]
+    - ["sector_X1", "sector_X2", "sector_X3", "sector_X4", "sector_X5"]

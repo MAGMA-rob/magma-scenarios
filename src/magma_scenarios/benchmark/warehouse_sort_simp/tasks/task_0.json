@@ -1,0 +1,27 @@
+{
+    "criteria" : ["c-reasoning"],
+    "stages": [
+        {
+            "instruction": "Today, all objects must go to area1!",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that all object must go to area1"
+            }
+        },
+        {
+            "instruction": "Launch a cycle!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

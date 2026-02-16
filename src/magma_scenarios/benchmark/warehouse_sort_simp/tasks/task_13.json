@@ -1,0 +1,51 @@
+{
+    "criteria" : ["c-reasoning"],
+    "stages": [
+        {
+            "instruction": "If any user ask to put object in area2. Inform him that it's depreciated, and ask for a confirmation before executing the cycle.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that is area2 is depreciated and if an user ask for it, it must ask a confirmation before starting a possible cycle."
+            }
+        },
+        {
+            "instruction": "Launch a cycle associating ref_obj_1 to area2 and ref_obj_3 to area1.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model informs the user that area2 is depreciated and ask for a confirmation to use area2."
+            },
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Oh okay. Use area3 instead.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"]
+        }
+    ]
+}

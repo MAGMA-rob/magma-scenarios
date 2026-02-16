@@ -1,0 +1,134 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "I want you to know that a maintenance cycle means a cycle where we sort only object marked as maintenance. And a cleaning cycle means that we sort only object non-marked. Understand?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that maintenance cycle -> sort only objects marked as maintenance. cleaning cycle -> sort object not marked as maintenance."
+            }
+        },
+        {
+            "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
+            }
+        },
+        {
+            "instruction": "Launch a maintenance cycle in area3.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Launch a cleaning cycle in area1.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_3"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "ref_obj_1 is not marked as maintenance anymore",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 is not marked anymore for maintenance (only ref_obj_3 is)."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "I need a cleaning cycle immediately in area1.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_2","ref_obj_1"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "To end the day, let's do a maintenance cycle to area2.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["lg-memorization"]
+        }
+    ]
+}

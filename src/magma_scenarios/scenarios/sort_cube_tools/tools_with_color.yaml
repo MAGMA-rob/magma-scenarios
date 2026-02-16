@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  launch_cycle:
+    name:  # name variations
+      - start_cycle
+      - begin_sorting
+      - launch_sequence
+      - initiate_cycle
+      - run_sorting_cycle
+    description:  # description variations
+      - "Launch a default cycle to sort all cubes corresponding to a certain color."
+      - "Start a sorting cycle that organizes cubes by color."
+      - "Initiate the process to group cubes sharing the same color."
+      - "Begin a new automated color-sorting routine."
+      - "Trigger the robot to start sorting cubes according to color."
+    parameters:
+      color:
+        name:  # parameter name variations
+          - color_name
+          - target_color
+          - cube_color
+          - sorting_color
+          - color_label
+        description:  # parameter description variations
+          - "The color of the cubes to sort."
+          - "Specifies which color of cubes should be sorted during the cycle."
+          - "The color category that defines which cubes to organize."
+          - "Color identifier used to select cubes for sorting."
+          - "Indicates the target cube color for the sorting routine."
+
+  take_cube:
+    name:
+      - grab_cube
+      - pick_cube
+      - grasp_cube
+      - collect_cube
+    description:
+      - "Take a cube from the environment."
+      - "Pick up a cube currently available in the workspace."
+      - "Grab one cube from the environment for manipulation."
+      - "Select and lift a cube from the area."
+      - "Collect a cube to prepare it for further actions."
+    parameters:
+      color:
+        name:
+          - color
+          - cube_color
+          - target_color
+          - selected_color
+          - color_name
+        description:
+          - "The color of the cube to take."
+          - "Defines the color of the cube that should be picked up."
+          - "Specifies which cube color the robot must grasp."
+          - "The color category of the cube to retrieve."
+          - "Indicates the color filter for the cube selection."
+
+  put_to_box:
+    name:
+      - place_in_box
+      - deposit_to_box
+      - store_in_box
+      - insert_into_box
+      - drop_in_box
+    description:
+      - "Put the held object in a box."
+      - "Deposit the currently held cube into the box."
+      - "Place the object currently grasped by the robot inside a box."
+      - "Store the held cube securely within the box."
+      - "Drop the object into the designated box."
+    parameters: {}
+
+attributes: 
+  objects:
+    - ["red_cube_1", "red_cube_2", "blue_cube_1", "box"]
+    - ["red_cube_A", "red_cube_B", "blue_cube_A", "white_box"]
+    - ["cube_red_1_pos", "cube_red_2_pos", "cube_blue_pos", "box_pos"]

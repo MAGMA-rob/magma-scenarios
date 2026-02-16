@@ -1,0 +1,83 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 3,
+    "stages": [
+        {
+            "instruction": "I want you to know that a maintenance cycle means a cycle where we sort only object marked as maintenance. And a cleaning cycle means that we sort only object non-marked. Understand?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that maintenance cycle -> sort only objects marked as maintenance. cleaning cycle -> sort object not marked as maintenance."
+            }
+        },
+        {
+            "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
+            }
+        },
+        {
+            "instruction": "The default cycle rule is to send all object to area3.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that the default rule is to send all objects to area3."
+            }
+        },
+        {
+            "instruction": "Launch a maintenance cycle.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Launch a cleaning cycle but to area1.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_3","ref_obj_1"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"]
+        }
+    ]
+}

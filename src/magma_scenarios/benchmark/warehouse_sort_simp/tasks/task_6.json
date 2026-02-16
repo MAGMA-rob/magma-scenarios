@@ -1,0 +1,41 @@
+{
+    "criteria" : ["c-reasoning"],
+    "stages": [
+        {
+            "instruction": "Keep in memory that ref_obj_1 and ref_obj_2 are metallic",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 are metallic."
+            }
+        },
+        {
+            "instruction": "Now launch a cycle sending all metallic object to area3, others to area2.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

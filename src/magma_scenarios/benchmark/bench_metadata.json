@@ -1,0 +1,11 @@
+[
+  {
+    "scenario_name": "Warehouse_Sorting_Simp",
+    "folder_name": "warehouse_sort_simp",
+    "criteria": [
+      "c-reasoning",
+      "multi-steps",
+      "lg-memorization"
+    ]
+  }
+]

@@ -1,0 +1,105 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "The default cycle rule is to send all object to area1.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that the default rule is to send all objects to area1."
+            }
+        },
+        {
+            "instruction": "Due to power failure, area1 must not be used. Use area2 instead.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that area1 can not be used anymore, and that area2 must be used instead."
+            }
+        },
+        {
+            "instruction": "Launch a cycle according to your default assignment.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "area1 is back, you can reuse it normally!",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that it can reuse area1"
+            }
+        },
+        {
+            "instruction": "Launch a cycle!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true
+        },
+        {
+            "instruction": "By the way, area3 must be used now for ref_obj_2!",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_2 goes to area3."
+            }
+        },
+        {
+            "instruction": "Launch a cycle now!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_3","ref_obj_1"],
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "force_recovery": "A planning error occurs while trying to compute a trajectory.",
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "What are your current sorting rules?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model answer that ref_obj_1 and ref_obj_3 goes to area1 and ref_obj_2 goes to area3."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        }
+    ]
+}

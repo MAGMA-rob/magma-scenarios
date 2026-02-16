@@ -1,0 +1,51 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "Hey, launch a cycle sending ref_obj_1 to area3 and ref_obj_2 to area2",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "force_failure": "Communication system with the robot is not responding",
+            "should_env_reset": true,
+            "complementary_verif": {},
+            "keys_evaluator": ["c-reasoning"]
+        },
+        {
+            "instruction": "Hello robot, can you launch a cycle for all objects to area3",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area3"
+                    ]
+                }
+            ],
+            "force_failure": "Communication system with the robot is not responding"
+        }
+    ]
+}

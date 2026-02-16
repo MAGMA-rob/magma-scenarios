@@ -1,0 +1,80 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "I have multiple elements to give you. First, here is the object-area assignement to respect: ref_obj_1 and ref_obj_2 must go to area1, and ref_obj_3 to area3. Understood?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1, and the ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "And, all cycle for this morning concern only objects which are going to area1.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must acknowledge that all future cycle are only for objects associated with area1."
+            }
+        },
+        {
+            "instruction": "Hello, Can you launch a cycle?",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Hey, Can you launch a cycle?",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"]
+        }
+    ]
+}

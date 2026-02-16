@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  take_object_per_id:
+    name:
+      - take_object_per_id
+      - pick_object_by_name
+      - grab_item_by_id
+
+    description:
+      - Take an object by its name.
+      - Pick an item using its identifier.
+      - Grab the referenced item using its given name.
+
+    parameters:
+      name:
+        name:
+          - name
+          - object_name
+          - item_id
+          - target
+          - object_label
+
+        description:
+          - The name of the object to take.
+          - Identifier of the item to pick.
+          - Label associated with the object to retrieve.
+          - The target object's name used for selection.
+          - The ID used to locate the object to be taken.
+
+  put_to_box:
+    name:
+      - send_object_to_box
+      - place_to_box
+      - drop_in_colored_box
+      - store_object_by_color
+      - send_to_box
+
+    description:
+      - Put the held object in a box corresponding to the given color.
+      - Drop the currently held item into the box with the specified color.
+      - Store the object in the container labeled with the given color.
+      - Send the held object to its designated color box.
+      - Allocate the item into the matching color compartment.
+
+    parameters:
+      color:
+        name:
+          - color
+          - box_color
+          - target_color
+          - container_color
+          - destination_color
+
+        description:
+          - The color of the target box.
+          - The color used to determine which box receives the object.
+          - The destination color where the object should be placed.
+          - Color identifier of the container for object delivery.
+          - The colored box corresponding to the object's destination.
+
+  get_object_state:
+    name:
+      - get_objects_state
+      - fetch_objects_state
+      - list_detected_objects
+      - read_object_positions
+      - query_objects_info
+
+    description:
+      - Return the description and position of all detected objects on the table.
+      - Retrieve the list, properties, and positions of all visible objects.
+      - Provide the current state of every detected object.
+      - Get the descriptors and coordinates of all objects present.
+      - Return detailed information about each object, including pose and attributes.
+
+    parameters: {}

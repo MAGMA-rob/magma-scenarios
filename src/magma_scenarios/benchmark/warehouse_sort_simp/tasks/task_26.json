@@ -1,0 +1,78 @@
+{
+    "criteria" : ["c-reasoning", "multi-steps"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "Here is the object-area assignement to respect: ref_obj_1 and ref_obj_2 must go to area1, and ref_obj_3 to area3. Understood?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1, and the ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "Launch a cycle for all objects according their default area",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "force_recovery" : "Failed to detect objects. Please retry.",
+            "keys_evaluator": ["c-reasoning"]
+        },
+        {
+            "instruction": "Here is a novel area called area4, it must store ref_obj_2.",
+            "max_step": 2,
+            "complementary_verif": {
+                "judge": "The model adds area4 and have understand the default assignment for ref_obj_2 to area4.",
+                "logs" : [{"action":"ADD","content":["target_areas","area4"]}]
+            },
+            "keys_evaluator" : ["multi-steps"]
+        },
+        {
+            "instruction": "Please launch a cycle for all objects.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area4"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "force_recovery" : "A planning error occurs. Please re-try.",
+            "keys_evaluator": ["c-reasoning"]
+        }
+    ]
+}

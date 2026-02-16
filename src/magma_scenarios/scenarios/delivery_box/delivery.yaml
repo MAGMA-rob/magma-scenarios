@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  launch_cycle:
+    name:
+      - start_delivery_cycle
+      - initiate_production_run
+      - execute_delivery_sequence
+      - run_dispatch_cycle
+      - trigger_manufacturing_cycle
+    description:
+      - Launch a delivery cycle under a specific manufacturing order. The cycle can produce a fixed number of deliveries or run indefinitely if delivery_number is not set. Each delivery follows the given recipe.
+      - Start a manufacturing delivery cycle for a given order, repeating according to the recipe and delivery count.
+      - Execute a delivery sequence associated with a production order, optionally running infinitely if configured.
+      - Initiate a manufacturing run where each delivery is generated following the specified recipe.
+      - Trigger a continuous or limited delivery process under the defined manufacturing order.
+
+    parameters:
+      manufacturing_order:
+        name:
+          - manufacturing_order
+          - order_id
+          - production_order
+          - batch_code
+          - job_reference
+        description:
+          - The manufacturing order associated with the cycle.
+          - Identifier of the production or batch order linked to this delivery cycle.
+          - The job or manufacturing reference corresponding to this process.
+          - Order code used to associate this delivery sequence with a production batch.
+          - The ID of the active manufacturing order for this cycle.
+
+      delivery_number:
+        name:
+          - delivery_number
+          - delivery_count
+          - num_deliveries
+          - batch_limit
+          - repetition_number
+        description:
+          - The number of deliveries to make. Set to -1 for an infinite cycle. Defaults to -1 if not provided.
+          - Number of deliveries to produce before stopping (-1 for infinite loop).
+          - Total count of deliveries in the cycle; use -1 for continuous operation.
+          - Specifies how many deliveries should be executed. -1 means no limit.
+          - Quantity of deliveries planned in this run, or -1 for indefinite repetition.
+
+      recipe:
+        name:
+          - recipe
+          - product_list
+          - delivery_contents
+          - item_recipe
+          - box_composition
+        description:
+          - A list of product names to include in each delivery box. Repeat items in the list to include multiple instances of the same product.
+          - The sequence of product names defining the contents of each delivery.
+          - List of items that make up each delivery package (duplicates allowed).
+          - The recipe specifying which products to include per delivery cycle.
+          - Array of product identifiers to pack into every delivery box, with repeats for multiples.
+
+attributes:
+  product_type:
+    - ["coca", "icetea", "brets", "donut"]
+    - ["apple", "banana", "orange", "grape"]
+    - ["bolt", "screw", "washer", "nut"]
+    - ["sensor_module", "circuit_board", "servo_motor", "battery_pack"]
+    - ["soap", "shampoo", "toothpaste", "towel"]
+    - ["box_A", "box_B", "box_C", "box_D"]
+    - ["piston", "valve", "bearing", "gasket"]
+    - ["cup", "plate", "bottle", "fork"]
+    - ["widget_alpha", "widget_beta", "widget_gamma", "widget_delta"]
+    - ["mask", "glove", "syringe", "bandage"]
+    - ["iron_rod", "steel_plate", "copper_pipe", "plastic_tube"]
+    - ["keyboard", "mouse", "monitor", "processor"]
+    - ["book", "pen", "notebook", "eraser"]
+    - ["gear", "axle", "frame", "panel"]
+    - ["container_small", "container_medium", "container_large", "pallet"]
+    - ["can_of_soda", "bag_of_chips", "energy_bar", "water_bottle"]
+    - ["paint_bucket", "brush", "roller", "palette"]
+    - ["spring", "clip", "hinge", "pin"]
+    - ["package_A1", "package_B2", "package_C3", "package_D4"]
+    - ["filter", "pump", "tube", "valve_connector"]

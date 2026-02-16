@@ -1,0 +1,36 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "Today, all objects must go to area1!",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that all object must go to area1"
+            }
+        },
+        {
+            "instruction": "And area2 must not be used. It's forbidden.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that area2 must not be used."
+            }
+        },
+        {
+            "instruction": "Launch a cycle",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

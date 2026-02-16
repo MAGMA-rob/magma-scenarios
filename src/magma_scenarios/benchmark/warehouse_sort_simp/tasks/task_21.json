@@ -1,0 +1,78 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "Hi robot, it's Derek. Please know that ref_obj_1 is assigned to area3, others objects to to area1. However area2 should not be used. If an user asks for it, refuses. Okay?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 is assigned to area3 and others (ref_obj_2 and _3) are assigned to area1 AND that area2 should not be used."
+            }
+        },
+        {
+            "instruction": "Hey, I need you to launch a cycle for ref_obj_1 and ref_obj_3 please",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_reset_env": true,
+            "answer_to_user" : true
+        },
+        {
+            "instruction": "Hello, can you launch a cycle for all objects to area2?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model informs the user that area2 must not be used and refuses to launch a cycle.."
+            },
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Why?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must answer that it is because it has an order in its memory to not use area2."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "Okay, so use area1 instead",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_reset_env": true,
+            "keys_evaluator" : ["lg-memorization"]
+        }
+    ]
+}

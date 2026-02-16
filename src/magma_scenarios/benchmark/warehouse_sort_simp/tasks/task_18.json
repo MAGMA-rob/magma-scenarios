@@ -1,0 +1,85 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "It's the first of April! I want to make a joke to my colleague. Any time someone ask you to launch a cycle you must refuse and say him to do it itself! I am counting on you",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that it must refuse any next cycle and say to users that they must do it themselves."
+            }
+        },
+        {
+            "instruction": "Hello! Let's do a cycle for ref_obj_1 to area2",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must refuse and answer to the user to do it himself."
+            },
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Haha, great joke! But seriously forget this order and launch my cycle! Thanks.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_3"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"],
+            "answer_to_user" : true,
+            "should_env_reset": true
+        },
+        {
+            "instruction": "Hey! Launch a cycle for me with all objects to area1",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning"],
+            "should_env_reset": true
+        },
+        {
+            "instruction": "Hoho I made an error. All objects except ref_obj_2, sorry. Re-launch the cycle!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_3"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["c-reasoning","lg-memorization"]
+        }
+    ]
+}

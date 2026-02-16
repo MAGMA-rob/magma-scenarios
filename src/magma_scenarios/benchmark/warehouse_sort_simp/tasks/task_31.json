@@ -1,0 +1,139 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization","multi-steps"],
+    "stages": [
+        {
+            "instruction": "ref_obj_1 and ref_obj_2 are classified as Category A, ref_obj_3 is category B. Right?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 are Category A and ref_obj_3 is Category B."
+            }
+        },
+        {
+            "instruction": "And, area1 is for Category A and area2 is for Category B.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that area1 is for Category A and area2 is for Category B."
+            }
+        },
+        {
+            "instruction": "Let's start a cycle for Category A then right after Category B",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning","multi-steps"]
+        },
+        {
+            "instruction": null,
+            "default_instruction": {"author":"status","content":"ref_obj_1 and ref_obj_2 sended to area1 with success"},
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_2","ref_obj_1"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning","multi-steps"]
+        },
+        {
+            "instruction": "From now, Category A objects are going to area3",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that area3 is for Category A"
+            }
+        },
+        {
+            "instruction": "Let's start a cycle for all categories.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "force_recovery": true,
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "Hello, where category B object must be sorted?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model answer that objects Category B are going to area2"
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "Ok launch a cycle only for category B",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_2","ref_obj_1"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

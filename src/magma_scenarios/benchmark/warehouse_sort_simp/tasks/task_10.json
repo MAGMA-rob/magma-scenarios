@@ -1,0 +1,92 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "Hey, default assignmments are ref_obj_1 and ref_obj_2 to area2 and ref_obj_3 to area3, okay?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area2 and ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "Let's try this. Run a cycle now.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset" : true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Ok good, wait for future instructions.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must answer that he is waiting for future instruction without calling any action"
+            }
+        },
+        {
+            "instruction": "Hello robot, some changment about assignment. You can add this novel area area4 to your system and it will be used to store ref_obj_1. With witch area was it assigned before?",
+            "max_step": 2,
+            "complementary_verif": {
+                "logs": [{"action":"ADD","content":"area4"}],
+                "judge": "The model add area4 and answer that ref_obj_1 was previously associated with area2"
+            },
+            "keys_evaluator" : ["lg-memorization","c-reasoning"]
+        },
+        {
+            "instruction": "Ok can I remove area2 or it is still associated with some objects?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model must answer that area2 is associated with ref_obj_2 (can include other information or propositon)."
+            }
+        },
+        {
+            "instruction": "Okay so let's run a cycle in this new configuration.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area4"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator" : ["lg-memorization","c-reasoning"]
+        }
+    ]
+}

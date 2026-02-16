@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+[project]
+name = "magma_scenarios"
+version = "0.1.0"
+description = "This package contains scenarios for use in MAGMA-GEN and MAGMA-BENCH"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["magma_core>=0.1.0"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

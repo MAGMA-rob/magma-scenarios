@@ -1,0 +1,193 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "stages": [
+        {
+            "instruction": "ref_obj_1 is a category 1 object.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 is a category 1 object."
+            }
+        },
+        {
+            "instruction": "Send all category 1 object to area3, and ref_obj_2 to area2.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "ref_obj_2 is now also a category 1 object.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_2 is a category 1 object."
+            }
+        },
+        {
+            "instruction": "Send all category 1 object to area3.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "What are the category 1 objects?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model answer that ref_obj_1 and ref_obj_2 are category 1 objects."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "I want all category 1 object to area2",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "force_recovery": "System encounter an error while communicating with the robotic arm.",
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "ref_obj_2 is not anymore a category 1 object, okay?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_2 is not anymore a category 1 object."
+            }
+        },
+        {
+            "instruction": "I want all object that are not from the category 1 to area1",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_1",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Is ref_obj_3 a category 1 object ?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model answer no."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "Okay then send ref_obj_3 to area2 now.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

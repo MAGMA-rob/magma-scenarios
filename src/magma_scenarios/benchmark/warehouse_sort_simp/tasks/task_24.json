@@ -1,0 +1,86 @@
+{
+    "criteria" : ["c-reasoning","multi-steps","lg-memorization"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "I want you to know that a maintenance cycle means a cycle where we sort only object marked as maintenance. And a cleaning cycle means that we sort only object non-marked. Understand?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that maintenance cycle -> sort only objects marked as maintenance. cleaning cycle -> sort object not marked as maintenance."
+            }
+        },
+        {
+            "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
+            }
+        },
+        {
+            "instruction": "I need to Launch a maintenance cycle in area3 followed by a cleaning cycle in area1.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_2",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator" : ["c-reasoning","multi-steps"]
+        },
+        {
+            "instruction": null,
+            "default_instruction": {"author":"status","content":"You have successfully sorted ref_obj_1 and ref_obj_3 to area3"},
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_3","ref_obj_1"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["lg-memorization","multi-steps"]
+        },
+        {
+            "instruction": "Which objects are not marked as maintenance?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model answer that ref_obj_2 is not marked for maintenance."
+            },
+            "keys_evaluator" : ["lg-memorization"]
+        }
+    ]
+}

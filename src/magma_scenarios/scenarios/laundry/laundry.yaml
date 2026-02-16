@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  pick:
+    name:
+      - pick
+      - grab
+      - take
+    description:
+      - Pick a clothe by its name.
+      - Catch the specified clothe.
+      - Grab an object.
+      - Pick up the named item.
+    parameters:
+      name:
+        name:
+          - name
+          - id
+          - target
+          - clothe
+        description:
+          - Name of the object.
+          - Name of the target.
+          - Identifier of an object.
+          - Reference of the clothe.
+
+  drop_to_washing_machine:
+    name:
+      - drop_to_washing_machine
+      - put_into_washing_machine
+      - send_to_wash
+    description:
+      - Drop the held object into the washing_machine.
+      - Put the item in the washing machine.
+      - Put the item inside the washing machine.
+    parameters: {}
+
+  wash:
+    name:
+      - wash
+      - start_cycle
+      - washing_cycle
+      - press_start_machine_button
+    description:
+      - Clean all clothes in the washing machine.
+      - Remove dirt of items in the machine.
+      - Start the washing machine.
+    parameters: {}
+
+attributes: {}

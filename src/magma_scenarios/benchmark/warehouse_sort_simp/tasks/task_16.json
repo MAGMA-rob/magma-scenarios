@@ -1,0 +1,36 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "The default cycle rule is to send all object to area1.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that the default rule is to send all objects to area1."
+            }
+        },
+        {
+            "instruction": "Due to power failure, area1 must not be used. Use area2 instead.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that area1 can not be used anymore, and that area2 must be used instead."
+            }
+        },
+        {
+            "instruction": "Launch a cycle according to your default assignment.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

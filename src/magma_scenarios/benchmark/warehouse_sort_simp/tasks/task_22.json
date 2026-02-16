@@ -1,0 +1,51 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "I have multiple elements to give you. First, here is the object-area assignement to respect: ref_obj_1 and ref_obj_2 must go to area1, and ref_obj_3 to area3. Understood?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1, and the ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "Also, when an user is asking for a cycle, you must sort all objects per default.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that when an user ask for a cycle, it means sorting all objects."
+            }
+        },
+        {
+            "instruction": "Please I need to empty area1, therefore launch a cycle but do not send anything in area2. Every associated objects must be sent in area2",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "force_recovery": true
+        }
+    ]
+}

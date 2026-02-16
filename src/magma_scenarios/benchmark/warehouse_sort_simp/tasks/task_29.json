@@ -1,0 +1,125 @@
+{
+    "criteria" : ["c-reasoning","lg-memorization"],
+    "stages": [
+        {
+            "instruction": "Today, all objects must go to area1!",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that all object must go to area1"
+            }
+        },
+        {
+            "instruction": "Launch a cycle!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Hey, for all future cycle, obj_ref_1 must go to area2.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that obj_ref_1 must go to area2"
+            }
+        },
+        {
+            "instruction": "Launch a cycle for all objects!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_3","ref_obj_2"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1"],
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["c-reasoning"]
+        },
+        {
+            "instruction": "Launch a cycle according to the default assignment of each objects. Except for obj_ref_3, send it to area2!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_2"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_3"],
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["lg-memorization"]
+        },
+        {
+            "instruction": "Hey, the default target for obj_ref_2 is now area3",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that obj_ref_2 must go to area3"
+            }
+        },
+        {
+            "instruction": "Launch a cycle for all objects!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_3"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1"],
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_2"],
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "answer_to_user": true,
+            "keys_evaluator" : ["lg-memorization"]
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 2,
+    "stages": [
+        {
+            "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
+            }
+        },
+        {
+            "instruction": "The default cycle rule is to send all object to area1.",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that the default rule is to send all objects to area1."
+            }
+        },
+        {
+            "instruction": "Launch a cycle. Objects marked for maintenance must go to area2.",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {}
+        }
+    ]
+}

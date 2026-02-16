@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  press_button:
+    name:
+      - toggle_button
+      - button_press
+      - button_toggle
+      - push_button
+    description:
+      - "Toggle the button."
+      - "Press the button."
+      - "Change the state of the button."
+      - "Interact with the button."
+  place_mug:
+    name:
+      - drop_mug
+      - put_mug_in_machine
+      - place_cup
+      - place_mug
+    description:
+      - "Drop a mug on the coffee maker."
+      - "Put a vessel in front of the coffee maker."
+      - "Place a cup in glass or paper for coffee."
+  load_capsule:
+    name:
+      - load_capsule
+      - place_capsule
+      - load_coffee
+      - load_pod
+    description:
+      - "Load a capsule in the coffee maker."
+      - "Place a capsule on the coffee maker."
+      - "Load some coffee."
+    parameters:
+      name:
+        name:  # parameter name variations
+          - name
+          - capsule
+          - id
+          - capsule_id
+        description:
+          - "Name of the capsule type."
+          - "Capsule type"
+          - "Capsule id"
+          - "Capsule identifier"
+
+attributes: 
+  coffee_pod:
+    - ["black", "milky", "white"]
+    - ["black_capsule", "milky_capsule", "white_capsule"]
+    - ["black_coffee", "with_milk", "white_cream_coffee"]

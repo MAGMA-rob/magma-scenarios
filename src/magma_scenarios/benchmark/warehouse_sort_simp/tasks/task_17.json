@@ -1,0 +1,52 @@
+{
+    "criteria" : ["c-reasoning"],
+    "stages": [
+        {
+            "instruction": "Here are the default object assignment you must respect : ref_obj_1 to area1, ref_obj_3 to area3",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand the object assignment ref_obj_1 to area1, ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "Launch a cycle for the object without assignment and send it to area1",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_3"],
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": ["c-reasoning"]
+        },
+        {
+            "instruction": "Hey stop what you are doing, it's an error. I want you to just take one ref_obj_2 and put it to area3, no cycle.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {"logs":["empty"]},
+            "should_env_reset": true,
+            "keys_evaluator": ["c-reasoning"]
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "criteria" : ["c-reasoning"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "Here is the object-area assignement to respect: ref_obj_1 and ref_obj_2 must go to area1, and ref_obj_3 to area3. Understood?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1, and the ref_obj_3 to area3."
+            }
+        },
+        {
+            "instruction": "Launch a cycle sending all objects to area1 right now",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area1"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "force_recovery": true
+        },
+        {
+            "instruction": "Launch a cycle for all objects according their default area",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_1","ref_obj_2"],
+                        "area1"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_3",
+                        "area3"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": ["c-reasoning"]
+        }
+    ]
+}
