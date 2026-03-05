@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
@@ -17,18 +17,18 @@ class ColorSimplifiedTools(BaseToolsAPI):
             description="Take an object corresponding to the color. Automatically take only non-sorted object.",
             params_spec={"color":{"description": "The color of the object to take", "type": str}}
     )
-    def take_object_per_color(self, obs, env_id, params : Dict) -> ToolExecution:
+    def take_object_per_color(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
         color = None
         obj_name = None
         r = ""
-        box_poses = [obs["extra"]["green_box_pose"][env_id],
-                     obs["extra"]["yellow_box_pose"][env_id]
+        box_poses = [obs.maniskill_obs["extra"]["green_box_pose"][env_id],
+                     obs.maniskill_obs["extra"]["yellow_box_pose"][env_id]
                      ]
 
         color = params.get("color", None)
 
-        for obj_name, obj_pos in obs["extra"].items():
+        for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
             if f"{color}_cube" in obj_name:
                 if not is_object_inside_target(obj_pos[env_id], box_poses[0]) and \
                     not is_object_inside_target(obj_pos[env_id], box_poses[1]):
@@ -53,7 +53,7 @@ class ColorSimplifiedTools(BaseToolsAPI):
             description="Put the held object in a box corresponding to the given color",
             params_spec={"color":{"description": "The color of the target box", "type": str}}
     )
-    def put_to_box(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def put_to_box(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         r = ""
         obj_in_gripper = None
         poses = []
@@ -62,7 +62,7 @@ class ColorSimplifiedTools(BaseToolsAPI):
         color = params["color"]
         box_name = f"{color}_box_pose"
         # Check that box of this color exists
-        if not box_name in obs["extra"]:
+        if not box_name in obs.maniskill_obs["extra"]:
             r = f"No {color} box in the scene."
             return ToolExecution(poses=poses, verifier=None, reason=r)
         
@@ -76,7 +76,7 @@ class ColorSimplifiedTools(BaseToolsAPI):
                     reason=f"The object is not in the box and not in the gripper")
             return ToolResult(True)
 
-        reduced_obs = {k: v[env_id][:3] for k, v in obs["extra"].items()}
+        reduced_obs = {k: v[env_id][:3] for k, v in obs.maniskill_obs["extra"].items()}
         agent_tcp_pos = reduced_obs.pop("agent_tcp", None)[:3]
         obj_in_gripper = find_object_in_gripper(
             agent_tcp_pos,
@@ -86,7 +86,7 @@ class ColorSimplifiedTools(BaseToolsAPI):
         if obj_in_gripper is None:
             r = f"There is no object currently in the gripper. You must pick one first."
         else:
-            box_pose = obs["extra"][box_name][env_id].cpu().numpy()
+            box_pose = obs.maniskill_obs["extra"][box_name][env_id].cpu().numpy()
             box_pose[2] += 0.2
             poses = [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
 
