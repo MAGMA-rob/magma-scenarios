@@ -1,6 +1,9 @@
 # Author : Loan BERNAT
 # BSD-2-Clause
 
+# example command:
+# python3 -m magma_scenarios.tool_tester --nb_env 1 WarehouseSortingSimp
+
 import argparse, sys, ast
 from typing import Dict, Any, Optional
 import threading, queue
