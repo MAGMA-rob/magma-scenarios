@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tasks import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
+from magma_core.base.goals import At, NotAt
 from magma_core.base.data_structures.situation import Instruction
-from magma_core.utils.env_utils import is_object_inside_target
 
-import sapien, torch
-from typing import List, Dict, Literal, Tuple, Optional, Any
+from typing import List, Dict, Optional
 from .att import AREAS
 
-class ObjectToZone(BaseTaskStage): # EST CE QUE COACHING A ACCES AUX TOOLS ?
+class ObjectToZone(BaseTaskStage):
 
     target_steps = 2
     acceptance_steps = 1
@@ -31,9 +30,25 @@ class ObjectToZone(BaseTaskStage): # EST CE QUE COACHING A ACCES AUX TOOLS ?
         :param all_area: The list of all existing area.
         :type all_area: List[str]
         """
-        super().__init__(reset_at_end=True, stage_goal_description=f"The goal of this stage is to sort only one object per class without using the cycle tool (use only take and drop) according to {assignement}")
-        self.assignment = assignement
-        self.obj = all_objects
+        goals = []
+        for obj in all_objects:
+            target = assignement.get(obj, None)
+            forbidden_area = []
+            for area in AREAS:
+                if area == target:
+                    goals.append(At(obj,area))
+                else:
+                    forbidden_area.append(area)
+            if forbidden_area:
+                goals.append(NotAt(obj,forbidden_area,True))
+
+
+        super().__init__(
+            goals,
+            reset_at_end=True,
+            stage_goal_description=f"The goal of this stage is to sort only one object per class without using the cycle tool (use only take and drop) according to {assignement}"
+        )
+
 
         if instruction == "none":
             query = EmptyInstruction()
@@ -51,29 +66,6 @@ class ObjectToZone(BaseTaskStage): # EST CE QUE COACHING A ACCES AUX TOOLS ?
             flag_answer_to_user=False
         )
 
-    def verif_env_completion(self, obs: Dict) -> torch.Tensor:
-        nb_envs = obs["extra"]["area1"].shape[0]
-        device_1 = obs["extra"]["area1"].device
-        out = torch.zeros(nb_envs, dtype=torch.int8, device=device_1)
-
-        verify = torch.ones(nb_envs, dtype=torch.bool, device=device_1)
-        any_error = torch.zeros(nb_envs, dtype=torch.bool, device=device_1)
-
-        for obj_name in self.obj:
-            pos = obs["extra"][obj_name]
-            target = self.assignment.get(obj_name, None)
-            if target is not None:
-                verify &= is_object_inside_target(pos, obs["extra"][target])
-
-            for area in AREAS:
-                if target is not None and area != target:
-                    any_error |= is_object_inside_target(pos, obs["extra"][area])
-
-        out[any_error] = -1
-        out[~any_error & verify] = 1
-
-        return out.int()
-
     def verif_log_completion(self, stage_log : List[Log], full_log : List[Log]) -> int:
         for l in stage_log:
             if l.function == "launch_cycle":
@@ -87,7 +79,7 @@ class Cycle(BaseTaskStage):
 
     def __init__(
             self,
-            assignement : Dict[str,str],
+            assignment : Dict[str,str],
             known_areas : List[str],
             flag_answer : bool,
             manu_order : Optional[str] = None,
@@ -105,10 +97,22 @@ class Cycle(BaseTaskStage):
         :param manu_order: The optional desired manufacturing order.
         :type manu_order: Optional[str]
         """
-        super().__init__(reset_at_end=True, stage_goal_description=f"The goal of this stage is to sort all objects according to the assignment provided by the user and the memory : {assignement}")
-        self.assignment = assignement
+
+        goals = []
+        for obj_name, associated_area in assignment.items():     
+            forbidden_area = []
+            for area in known_areas:
+                if area == associated_area:
+                    goals.append(At(obj_name, area))
+                else:
+                    forbidden_area.append(area)
+            if forbidden_area:
+                goals.append(NotAt(obj_name, forbidden_area, True))
+
+        super().__init__(goals, 
+            reset_at_end=True,
+            stage_goal_description=f"The goal of this stage is to sort all objects according to the assignment provided by the user and the memory : {assignment}")
         self.manu_order = manu_order
-        self.areas = known_areas
 
         if instruction == "none":
             query = EmptyInstruction()
@@ -120,31 +124,11 @@ class Cycle(BaseTaskStage):
             preserved_memory_indices=[0],
             instruction=query,
             attributes={
-                "objects" : list(assignement.keys()),
+                "objects" : list(assignment.keys()),
                 "target_areas" : known_areas,
             },
             flag_answer_to_user=flag_answer
         )
-
-
-    def verif_env_completion(self, obs: Dict) -> torch.Tensor:
-        nb_envs = obs["extra"]["area1"].shape[0]
-        device_1 = obs["extra"]["area1"].device
-        out = torch.zeros(nb_envs, dtype=torch.int8, device=device_1)
-
-        verify = torch.ones(nb_envs, dtype=torch.bool, device=device_1)
-        any_error = torch.zeros(nb_envs, dtype=torch.bool, device=device_1)
-        for obj_name, associated_area in self.assignment.items():
-            pos = obs["extra"][obj_name]
-            if associated_area != "none":
-                verify &= is_object_inside_target(pos, obs["extra"][associated_area])
-            for area in self.areas:
-                if area != associated_area:
-                    any_error |= is_object_inside_target(pos, obs["extra"][area])
-
-        out[any_error] = -1
-        out[~any_error & verify] = 1
-        return out.int()
 
     def verif_log_completion(self, stage_log : List[Log], full_log : List[Log]) -> int:
         if self.manu_order is None: return 1

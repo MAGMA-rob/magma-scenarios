@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tasks import BaseTask, AskingBaseStage
+from magma_core.base.tasks import BaseTask
+from magma_core.base.stage import AskingBaseStage
 from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
@@ -15,6 +16,7 @@ from .att import OBJECTS, AREAS
 
 # launch_cycle(assignment={"ref_obj_1":"area1"|"ref_obj_2":"area2"|"ref_obj_3":"area3"}, manu_order="A121")
 # launch_cycle(assignment={"ref_obj_1":"area2"|"ref_obj_2":"area3"})
+# launch_cycle(assignment={"ref_obj_1":"area2"|"ref_obj_3":"area3"})
 # launch_cycle(assignment={"ref_obj_1":"area2"})
 
 class WarehouseSortingSimp(BaseTask):
@@ -86,7 +88,7 @@ class WarehouseSortingSimp(BaseTask):
                     raise ValueError(f"The task needs to have the same amount of 'cycle' and assignment.")
                 self.stages.append(
                     Cycle(
-                        assignement=assignments[i],
+                        assignment=assignments[i],
                         instruction=content,
                         known_areas=task_attributes["target_areas"].copy(),
                         flag_answer= "flag" in t
