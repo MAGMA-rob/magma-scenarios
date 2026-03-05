@@ -10,7 +10,7 @@ import sapien, torch
 from typing import List, Dict, Literal, Tuple, Optional, Any
 from .att import AREAS
 
-class ObjectToZone(BaseTaskStage): # EST CE QUE COACHING A ACCES AUX TOOLS ?
+class ObjectToZone(BaseTaskStage):
 
     target_steps = 2
     acceptance_steps = 1
