@@ -90,13 +90,12 @@ class WarehouseSortingTool(BaseToolsAPI):
     def add_new_location(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         poses = []
         location_name = params["location_name"]
-        task_attributes = obs.task_attributes
         r = ""
 
         def verifier(new_obs: Dict) -> ToolResult:
             return ToolResult(True, reason=f"{location_name} was added to known areas" ,logs=Log(content=("target_areas",location_name),action="ADD"))
         
-        if location_name in task_attributes['target_areas']:
+        if location_name in obs.task_attributes['target_areas']:
             r = f"{location_name} already exist! If you want to create a new area, please choose a non-existing name."
         else:
             poses = ["OK"]
@@ -107,13 +106,12 @@ class WarehouseSortingTool(BaseToolsAPI):
     def remove_location(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         poses = []
         location_name = params["location_name"]
-        task_attributes = obs.task_attributes
         r = ""
 
         def verifier(new_obs: Dict) -> ToolResult:
             return ToolResult(True, reason=f"{location_name} was removed from known areas" ,logs=Log(content=("target_areas",location_name), action="REMOVE"))
         
-        if location_name not in task_attributes['target_areas']:
+        if location_name not in obs.task_attributes['target_areas']:
             r = f"{location_name} does not exist! Only existing area can be deleted."
         else:
             poses = ["OK"]
