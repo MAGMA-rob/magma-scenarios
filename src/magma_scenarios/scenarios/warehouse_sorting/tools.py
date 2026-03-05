@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
 from magma_core.base.data_structures import Log
@@ -23,14 +23,14 @@ import sapien, torch
 
 class WarehouseSortingTool(BaseToolsAPI):
 
-    def take_obj(self, obs, env_id, params : Dict) -> ToolExecution:
+    def take_obj(self, obs : Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
         name_obj = None
         r = ""
 
         name_obj = params.get("obj", None)
 
-        for obj_name, obj_pos in obs["extra"].items():
+        for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
             if name_obj in obj_name:
                 poses = compute_grasp_trajectory(self.get_agent(),obj_pos[env_id].cpu().numpy())
                 break
@@ -54,7 +54,7 @@ class WarehouseSortingTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
 
-    def depose(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def depose(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_in_gripper = None
         poses = []
         r = ""
@@ -69,7 +69,7 @@ class WarehouseSortingTool(BaseToolsAPI):
                 return ToolResult(False, reason=f"The object is not in the box and not in the gripper")
             return ToolResult(True, reason=f"Successfully depose {obj_in_gripper} in {area_name}")
         
-        reduced_obs = {k: v[env_id][:3] for k, v in obs["extra"].items()}
+        reduced_obs = {k: v[env_id][:3] for k, v in obs.maniskill_obs["extra"].items()}
         agent_tcp_pos = reduced_obs.pop("agent_tcp", None)
         obj_in_gripper = find_object_in_gripper(
             agent_tcp_pos,
@@ -79,24 +79,23 @@ class WarehouseSortingTool(BaseToolsAPI):
         if obj_in_gripper is None:
             r = f"There is no object currently in the gripper. You must pick one first."
         else:
-            if not area_name in obs["extra"]:
+            if not area_name in obs.maniskill_obs["extra"]:
                 r = f"Unknown area {area_name}. Please use only known area."
             else:
-                poses = compute_drop_trajectory(self.get_agent(), drop_pose=obs["extra"][area_name][env_id].cpu().numpy(),
+                poses = compute_drop_trajectory(self.get_agent(), drop_pose=obs.maniskill_obs["extra"][area_name][env_id].cpu().numpy(),
                                                 drop_seuil=0.3, approach_seuil=0.2)
 
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
-    def add_new_location(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def add_new_location(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         poses = []
         location_name = params["location_name"]
-        task_attributes = obs['task_attributes']
         r = ""
 
         def verifier(new_obs: Dict) -> ToolResult:
             return ToolResult(True, reason=f"{location_name} was added to known areas" ,logs=Log(content=("target_areas",location_name),action="ADD"))
         
-        if location_name in task_attributes['target_areas']:
+        if location_name in obs.task_attributes['target_areas']:
             r = f"{location_name} already exist! If you want to create a new area, please choose a non-existing name."
         else:
             poses = ["OK"]
@@ -104,16 +103,15 @@ class WarehouseSortingTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
     
-    def remove_location(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def remove_location(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         poses = []
         location_name = params["location_name"]
-        task_attributes = obs['task_attributes']
         r = ""
 
         def verifier(new_obs: Dict) -> ToolResult:
             return ToolResult(True, reason=f"{location_name} was removed from known areas" ,logs=Log(content=("target_areas",location_name), action="REMOVE"))
         
-        if location_name not in task_attributes['target_areas']:
+        if location_name not in obs.task_attributes['target_areas']:
             r = f"{location_name} does not exist! Only existing area can be deleted."
         else:
             poses = ["OK"]
@@ -131,9 +129,9 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 "manu_order": {"description": "The Manufacturing Order associated with this cycle", "type": str}
             }
     )
-    def launch_cycle(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, manu_order, assignment = [], "", {}
-        task_attributes = obs['task_attributes']
+        task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
             for obj_name in obj_to_sort:
@@ -170,7 +168,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
         manu_order = params['manu_order']
 
         for obj_name, target in assignment.items():
-            if torch.norm(obs["extra"][obj_name][env_id][:2] - obs["extra"][target][env_id][:2]) > 0.1:
+            if torch.norm(obs.maniskill_obs["extra"][obj_name][env_id][:2] - obs.maniskill_obs["extra"][target][env_id][:2]) > 0.1:
                 obj_to_sort.append(obj_name)
 
         if not obj_to_sort:
@@ -198,7 +196,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 poses += [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
                 return poses
             return []
-        p = redo(obs)
+        p = redo(obs.maniskill_obs)
         return ToolExecution(poses=p,verifier=verifier,redo=redo)
     
     @register_tool(
@@ -207,7 +205,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 "location_name": {"description": "The name of the new location. Must not already exist.", "type": str}
             }
     )
-    def add_new_location(self, obs: Dict, env_id: int, params: Dict) -> ToolExecution:
+    def add_new_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().add_new_location(obs, env_id, params)
 
     @register_tool(
@@ -216,7 +214,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 "location_name": {"description": "The name of the location to remove. Must exist.", "type": str}
             }
     )
-    def remove_location(self, obs: Dict, env_id: int, params: Dict) -> ToolExecution:
+    def remove_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().remove_location(obs, env_id, params)
     
 
@@ -237,7 +235,7 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 "target": {"description": "Move the robot gripper upper the area and drop the current object.", "type": str}
             }
     )
-    def depose(self, obs: Dict, env_id: int, params: Dict) -> ToolExecution:
+    def depose(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().depose(obs, env_id, params)
 
     @register_tool(
@@ -246,7 +244,7 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 "location_name": {"description": "The name of the new location. Must not already exist.", "type": str}
             }
     )
-    def add_new_location(self, obs: Dict, env_id: int, params: Dict) -> ToolExecution:
+    def add_new_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().add_new_location(obs, env_id, params)
 
     @register_tool(
@@ -255,7 +253,7 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 "location_name": {"description": "The name of the location to remove. Must exist.", "type": str}
             }
     )
-    def remove_location(self, obs: Dict, env_id: int, params: Dict) -> ToolExecution:
+    def remove_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().remove_location(obs, env_id, params)
 
     @register_tool(
@@ -264,9 +262,9 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
             }
     )
-    def launch_cycle(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, assignment = [], {}
-        task_attributes = obs['task_attributes']
+        task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
             for obj_name in obj_to_sort:
@@ -301,7 +299,7 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
             return ToolExecution([],verifier=verifier,reason=f"These areas {', '.join(map(str, invalid_areas))} are invalid. Please use only known target.")
 
         for obj_name, target in assignment.items():
-            if torch.norm(obs["extra"][obj_name][env_id][:2] - obs["extra"][target][env_id][:2]) > 0.1:
+            if torch.norm(obs.maniskill_obs["extra"][obj_name][env_id][:2] - obs.maniskill_obs["extra"][target][env_id][:2]) > 0.1:
                 obj_to_sort.append(obj_name)
 
         if not obj_to_sort:
@@ -324,10 +322,10 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                     continue
 
                 poses = compute_grasp_trajectory(self.get_agent(),obj_pose.cpu().numpy())
-                box_pose = obs["extra"][assignment[obj_name]][env_id].cpu().numpy()
+                box_pose = obs.maniskill_obs["extra"][assignment[obj_name]][env_id].cpu().numpy()
                 box_pose[2] += 0.25
                 poses += [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
                 return poses
             return []
-        p = redo(obs)
+        p = redo(obs.maniskill_obs)
         return ToolExecution(poses=p,verifier=verifier,redo=redo)

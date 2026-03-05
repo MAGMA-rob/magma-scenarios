@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
@@ -29,10 +29,10 @@ class LaunchTool(BaseToolsAPI):
                 }
             }
     )
-    def take(self, obs: dict, env_id: int, params: dict) -> ToolExecution:
+    def take(self, obs: Observation, env_id: int, params: dict) -> ToolExecution:
         """Go fetch an object by its name."""
 
-        extra: LaundryExtraState = obs["extra"]
+        extra: LaundryExtraState = obs.maniskill_obs["extra"]
         name = params["name"]
         object = extra.get(name, None)
         if object is None:
@@ -64,10 +64,10 @@ class LaunchTool(BaseToolsAPI):
             description="Put the held clothes into the washing machine.",
             params_spec={}
     )
-    def drop(self, obs: dict, env_id: int, params: dict) -> ToolExecution:
+    def drop(self, obs: Observation, env_id: int, params: dict) -> ToolExecution:
         """Put the object in the gripper into a container."""
 
-        extra = obs["extra"]
+        extra = obs.maniskill_obs["extra"]
 
         target_pos: torch.Tensor = extra["washing_machine"]["pose"][env_id]
 
@@ -110,7 +110,7 @@ class LaunchTool(BaseToolsAPI):
             description="Wash all clothes in the washing machine, only if a detergent is also in the machine.",
             params_spec={}
     )
-    def action_wash(self, obs: dict, env_id: int, params: dict):
+    def action_wash(self, obs: Observation, env_id: int, params: dict):
         """Wash the clothes in the machine.
 
         The machine must contains the detergent.

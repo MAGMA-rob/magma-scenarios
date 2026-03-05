@@ -2,8 +2,9 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log
 from magma_core.utils.env_utils import is_object_inside_target
+
 
 from magma_scenarios.utils import compute_grasp_trajectory
 
@@ -20,10 +21,10 @@ class CycleTool(BaseToolsAPI):
                     "target_container" : {"description": "The target container to send objects inside.", "type": str}
                 }
     )
-    def launch_cycle(self, obs, env_id, params : Dict) -> ToolExecution:
+    def launch_cycle(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         obj_to_sort = []
         manu_order = ""
-        task_attributes = obs['task_attributes']
+        task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:  
             for obj_name in obj_to_sort:
@@ -39,11 +40,11 @@ class CycleTool(BaseToolsAPI):
 
         manu_order = params['manufacturing_order']
 
-        for obj_name, obj_pos in obs["extra"].items():
+        for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
             if (params["reference"] in obj_name 
                 and 
-                (torch.norm(obj_pos[env_id][:2] - obs["extra"]["containerA"][env_id][:2]) > 0.1
-                 or torch.norm(obj_pos[env_id][:2] - obs["extra"]["containerB"][env_id][:2]) > 0.1
+                (torch.norm(obj_pos[env_id][:2] - obs.maniskill_obs["extra"]["containerA"][env_id][:2]) > 0.1
+                 or torch.norm(obj_pos[env_id][:2] - obs.maniskill_obs["extra"]["containerB"][env_id][:2]) > 0.1
                  )):
                 obj_to_sort.append(obj_name)
 
@@ -69,7 +70,7 @@ class CycleTool(BaseToolsAPI):
 
 
                 poses = compute_grasp_trajectory(self.get_agent(), obj_pose.cpu().numpy())
-                box_pose = obs["extra"][params["target_container"]][env_id].cpu().numpy()
+                box_pose = obs.maniskill_obs["extra"][params["target_container"]][env_id].cpu().numpy()
                 box_pose[2] += 0.2
                 poses += [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
 
@@ -77,7 +78,7 @@ class CycleTool(BaseToolsAPI):
 
             return []
 
-        p = redo(obs)
+        p = redo(obs.maniskill_obs)
 
         return ToolExecution(poses=p,verifier=verifier,redo=redo)
     
@@ -87,9 +88,9 @@ class CycleTool(BaseToolsAPI):
                 "ref_name" : {"description" : "The name of the ref to add. It must be composed of 4 character only.", "type":str}
             }
     )
-    def add_ref(self, obs, env_id, params : Dict) -> ToolExecution:
+    def add_ref(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
 
-        task_attributes = obs['task_attributes']
+        task_attributes = obs.task_attributes
         ref_name = params['ref_name']
 
         def verifier(new_env_state : Dict) -> ToolResult:
