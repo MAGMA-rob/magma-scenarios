@@ -13,7 +13,7 @@ from pathlib import Path
 from .tool import Tool, BTN_STROKE
 
 def tensor_is_button_pressed(btn_translation) -> torch.Tensor:
-    button_STROKE_LIMIT = -BTN_STROKE/2 * torch.ones(btn_translation.size(), device=btn_translation.get_device())
+    button_STROKE_LIMIT = -BTN_STROKE/2 * torch.ones(btn_translation.size())
     return (btn_translation < button_STROKE_LIMIT)
 
 attributes = {"objects": ["sw0","sw1","sw2","sw3","sw4"]}

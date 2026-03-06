@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_scenarios.utils import compute_grasp_drop_trajectory
 
@@ -15,18 +15,18 @@ class BiRobotTools(BaseToolsAPI):
         description="Return the list of existing objects and their position.",
         params_spec={}
     )
-    def get_near_objects(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:
+    def get_near_objects(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
 
         def verifier(new_obs: Dict) -> ToolResult:
             # Check if the object is no longer in the gripper and is now in the box
             zones = {'mutual':[],'right':[],'left':[]}
             for obj_name, obj_pose in new_obs['extra'].items():
                 if "obj" in obj_name:
-                    if is_object_inside_target(obj_pose[env_id], obs['extra']["right_zone"][env_id]):
+                    if is_object_inside_target(obj_pose[env_id], obs.maniskill_obs['extra']["right_zone"][env_id]):
                         zones['right'].append(obj_name)
-                    elif is_object_inside_target(obj_pose[env_id], obs['extra']["left_zone"][env_id]):
+                    elif is_object_inside_target(obj_pose[env_id], obs.maniskill_obs['extra']["left_zone"][env_id]):
                         zones['left'].append(obj_name)
-                    elif is_object_inside_target(obj_pose[env_id], obs['extra']["mutual_zone"][env_id]):
+                    elif is_object_inside_target(obj_pose[env_id], obs.maniskill_obs['extra']["mutual_zone"][env_id]):
                         zones['mutual'].append(obj_name)
                     elif obj_pose[env_id][1] > 0:
                         zones['right'].append(obj_name)
@@ -55,14 +55,14 @@ class BiRobotTools(BaseToolsAPI):
                 "target_area": {"description": "The target area where to depose the object.", "type":str}
             }
     )
-    def deplace(self, obs : Dict, env_id : int, params: Dict) -> ToolExecution:        
-        robot_name = obs['selected_robot_name']
+    def deplace(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:        
+        robot_name = obs.selected_robot_name
         object_name = params['object']
         target_area = params['target_area']
 
-        if not target_area in obs['task_attributes']["known_area"]:
+        if not target_area in obs.task_attributes["known_area"]:
             return BaseToolsAPI._return_failed_tool(f"You used an unknow area : {target_area}.")
-        elif not object_name in obs['extra']:
+        elif not object_name in obs.maniskill_obs['extra']:
             return BaseToolsAPI._return_failed_tool(f"You used an unknow object name : {object_name}.")
 
         if robot_name == "arm1" and target_area == "right":
@@ -71,15 +71,15 @@ class BiRobotTools(BaseToolsAPI):
             return BaseToolsAPI._return_failed_tool(f"The area {target_area} is out of range for robot {robot_name}.")
 
 
-        obj_pos = obs['extra'][object_name][env_id]
-        if is_object_inside_target(obj_pos, obs['extra']["right_zone"][env_id]):
+        obj_pos = obs.maniskill_obs['extra'][object_name][env_id]
+        if is_object_inside_target(obj_pos, obs.maniskill_obs['extra']["right_zone"][env_id]):
             if robot_name == "arm1": return BaseToolsAPI._return_failed_tool(f"Object {object_name} is out of range for robot {robot_name}")
-        elif is_object_inside_target(obj_pos, obs['extra']["left_zone"][env_id]):
+        elif is_object_inside_target(obj_pos, obs.maniskill_obs['extra']["left_zone"][env_id]):
             if robot_name == "arm2": return BaseToolsAPI._return_failed_tool(f"Object {object_name} is out of range for robot {robot_name}")
 
         
         target_area += "_zone"
-        target_pose = obs['extra'][target_area][env_id]
+        target_pose = obs.maniskill_obs['extra'][target_area][env_id]
 
         # We must have a final pose to avoid collision between two robots.
         final_pose = None

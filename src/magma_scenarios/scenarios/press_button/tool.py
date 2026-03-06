@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import Log, ToolExecution, ToolResult
+from magma_core.base.data_structures import Log, ToolExecution, ToolResult, Observation
 
 from typing import Dict, List
 import sapien, torch
@@ -42,11 +42,11 @@ class Tool(BaseToolsAPI):
                 "id": {"description": "The name of the button to press", "type": str}
             }
     )
-    def press_button(self, obs, env_id, params : Dict) -> ToolExecution:
+    def press_button(self, obs : Observation, env_id, params : Dict) -> ToolExecution:
         """tool to press a button"""
         poses = []
         id = params["id"]
-        btn_pose = obs["extra"].get(id, None)
+        btn_pose = obs.maniskill_obs["extra"].get(id, None)
         r = ""
         if btn_pose is None:
             r=f"No objects corresponding to id = {id}. You must pass the id of the object to take."

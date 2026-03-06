@@ -3,7 +3,7 @@
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
 from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.base.data_structures import Log, ToolExecution, ToolResult
+from magma_core.base.data_structures import Log, ToolExecution, ToolResult, Observation
 
 from magma_scenarios.utils import compute_press_trajectory, compute_grasp_drop_trajectory, sapien_to_tensor
 
@@ -25,11 +25,11 @@ class MakingCoffeeTool(BaseToolsAPI):
             description="Press the start button of the coffee maker.",
             params_spec={}
     )
-    def press_button(self, obs, env_id, params : Dict) -> ToolExecution:
+    def press_button(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """tool to press a button"""
         poses = []
 
-        poses = compute_press_trajectory(obj_pos=obs["extra"]["coffee_maker"][env_id][:3].cpu().numpy())
+        poses = compute_press_trajectory(obj_pos=obs.maniskill_obs["extra"]["coffee_maker"][env_id][:3].cpu().numpy())
 
         # define verifier inline
         def verifier(new_obs: Dict) -> ToolResult:
@@ -48,22 +48,22 @@ class MakingCoffeeTool(BaseToolsAPI):
                 "name": {"description": "The name of the capsule to take.", "type": str}
             }
     )
-    def load_capsule(self, obs, env_id, params : Dict) -> ToolExecution:
+    def load_capsule(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """load a capsule in the coffee maker"""
         poses = []
         coffee_name = None
         pods_name = None
-        target_capsule_pose = obs["add_constants"]["loaded_capsule_pose"]
-        base_pose = obs["add_constants"]["base_pose"]
+        target_capsule_pose = obs.add_constants["loaded_capsule_pose"]
+        base_pose = obs.add_constants["base_pose"]
 
         coffee_name = params.get("name", None)
 
-        target_obj = obs["extra"]["coffee_maker"][env_id].cpu().numpy()
+        target_obj = obs.maniskill_obs["extra"]["coffee_maker"][env_id].cpu().numpy()
         drop_pose = sapien.Pose(
             p=target_obj[:3] + target_capsule_pose.get_p(),
             q = [0,1,0,0]
             )
-        for obj_name, obj_pos in obs["extra"].items():
+        for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
             if coffee_name in obj_name:
                 pods_name = obj_name
                 poses = compute_grasp_drop_trajectory(
@@ -98,22 +98,22 @@ class MakingCoffeeTool(BaseToolsAPI):
             description="Place a mug on the coffee maker.",
             params_spec={}
     )
-    def place_mug(self, obs, env_id, params : Dict) -> ToolExecution:
+    def place_mug(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """drop a mug on the coffee maker"""
         poses = []
         target_obj = []
         mug_pose = []
-        target_mug_pose = obs["add_constants"]["dropped_mug_pose"]
-        base_pose = obs["add_constants"]["base_pose"]
+        target_mug_pose = obs.add_constants["dropped_mug_pose"]
+        base_pose = obs.add_constants["base_pose"]
 
-        target_obj = obs["extra"]["coffee_maker"][env_id].cpu().numpy()
+        target_obj = obs.maniskill_obs["extra"]["coffee_maker"][env_id].cpu().numpy()
 
         drop_pose = sapien.Pose(
             p=target_obj[:3] + target_mug_pose.get_p(),
             q = [0,1,0,0]
             )
         
-        mug_pose = obs["extra"]["mug"][env_id].cpu().numpy()
+        mug_pose = obs.maniskill_obs["extra"]["mug"][env_id].cpu().numpy()
         
         poses = compute_grasp_drop_trajectory(
             self.get_agent(), obj_pose=mug_pose[:3], drop_pose=drop_pose,
