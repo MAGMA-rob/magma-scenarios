@@ -5,7 +5,7 @@ from magma_core.base.tasks import BaseBenchmarkTask
 
 from pathlib import Path
 
-from ..tools import WithoutManufacturingOrder, WithManufacturingOrder
+from .tools import WithoutManufacturingOrder, WithManufacturingOrder
 from .att import OBJECTS, AREAS
 
 class WS_Simp_Benchmark(BaseBenchmarkTask):

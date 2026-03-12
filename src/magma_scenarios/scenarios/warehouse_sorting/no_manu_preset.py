@@ -10,8 +10,8 @@ from typing import List, Dict, Tuple
 import copy, random
 from pathlib import Path
 
-from ..tools import WithoutManufacturingOrder
-from ..stages import Cycle, ConstraintSorting, ObjectToZone, AddLocationStage, RemoveLocationStage
+from .tools import WithoutManufacturingOrder
+from .stages import Cycle, ConstraintSorting, ObjectToZone, AddLocationStage, RemoveLocationStage
 from .att import OBJECTS, AREAS
 
 # launch_cycle(assignment={"ref_obj_1":"area1"|"ref_obj_2":"area2"|"ref_obj_3":"area3"}, manu_order="A121")
@@ -34,7 +34,7 @@ class WarehouseSortingSimp(BaseTask):
         TaskStyle.LONG_STAGE
     ]
 
-    randomized_config_path = str(Path(__file__).parent.parent.joinpath("config.yaml"))
+    randomized_config_path = str(Path(__file__).parent.joinpath("config.yaml"))
 
     all_task_attributes = {
         "objects" : OBJECTS,
@@ -86,10 +86,14 @@ class WarehouseSortingSimp(BaseTask):
             elif t == "cycle" or t == "cycle-flag":
                 if i >= len(assignments):
                     raise ValueError(f"The task needs to have the same amount of 'cycle' and assignment.")
+                if content == "none":
+                    ins = EmptyInstruction()
+                else:
+                    ins = UserInstruction(content)
                 self.stages.append(
                     Cycle(
                         assignment=assignments[i],
-                        instruction=content,
+                        instruction=ins,
                         known_areas=task_attributes["target_areas"].copy(),
                         flag_answer= "flag" in t
                     )

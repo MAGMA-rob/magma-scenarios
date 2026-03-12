@@ -26,5 +26,11 @@ class GiveObjectAssignmentRequest(BaseConstraintRequest):
         random.shuffle(all_objects)
         selected_areas = random.choices(all_areas, k=nb_change)
 
+        self.constraint_msg = "Hey, here are some sorting rules: "
         for i in range(nb_change):
             self.constraints.append(ObjectAssignmentConstraint(all_objects[i],selected_areas[i]))
+            self.constraint_msg += f"{all_objects[i]} goes to {selected_areas[i]}"
+            if i < nb_change -1:
+                self.constraint_msg += ","
+        self.constraint_msg += "."        
+        

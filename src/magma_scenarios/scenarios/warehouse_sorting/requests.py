@@ -4,10 +4,11 @@ import random
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.user_request import BaseRequest
 from magma_core.base.state import TaskState
-from magma_core.base.data_structures import TemplateInstruction, UserInstruction
+from magma_core.base.data_structures import UserInstruction
 
 from .stages import Cycle, ObjectToZone
 from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage
+from magma_scenarios.templates.constraints import ObjectAssignmentConstraint
 
 class CycleRequest(BaseRequest):
 
@@ -24,7 +25,7 @@ class CycleRequest(BaseRequest):
         ) -> List[BaseTaskStage]:
         stages = []
 
-        assignement = base_assignement
+        assignement = base_assignement.copy()
         missing_assignment = {}
         forbidden_object = []
         obj_with_forbidden_zones = []
@@ -52,7 +53,13 @@ class CycleRequest(BaseRequest):
 
         assignement.update(missing_assignment)
         objs = " and ".join(assignement.keys())
-        cycle_instruction = UserInstruction(f"Launch a cycle for {objs}")
+        instruction_str = f"Launch a cycle for {objs}."
+        if base_assignement:
+            instruction_str += " And consider "
+            for obj, area in base_assignement.items():
+                instruction_str += f"{obj} to {area}"
+            instruction_str += " as news default assignment."
+        cycle_instruction = UserInstruction(instruction_str)
 
         if obj_with_forbidden_zones or forbidden_object:
             objs = " and ".join(forbidden_object)
@@ -114,6 +121,8 @@ class CycleRequest(BaseRequest):
 
 class CycleWithPermanentRulesRequest(CycleRequest):
 
+    constraints : list[ObjectAssignmentConstraint]
+
     def __init__(self, max_object_per_cycle_request: int = 3, max_permanent_rule : int = 2) -> None:
         super().__init__(max_object_per_cycle_request)
         self.max_rules = max_permanent_rule
@@ -121,6 +130,7 @@ class CycleWithPermanentRulesRequest(CycleRequest):
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_objects = state.entities.get("objects", []).copy()
         all_areas = state.entities.get("zones", [])
+        self.constraints = []
 
         if len(all_objects) <= 0 or len(all_areas) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
@@ -132,10 +142,17 @@ class CycleWithPermanentRulesRequest(CycleRequest):
 
         assignement = {}
         for i in range(nb_rules):
-            assignement[all_objects[i]] = random.choice(all_areas)
+            a = random.choice(all_areas)
+            assignement[all_objects[i]] = a
+            self.constraints.append(ObjectAssignmentConstraint(all_objects[i], a))
+        
         
         return self._create_stages(all_objects[:nb_obj], all_areas, state, base_assignement=assignement)
-
+    
+    def apply_request(self, state: TaskState) -> TaskState:
+        for c in self.constraints:
+            c.apply(state)
+        return state
         
 
 class MoveOneObjectRequest(BaseRequest):

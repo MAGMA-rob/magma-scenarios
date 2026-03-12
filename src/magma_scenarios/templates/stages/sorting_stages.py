@@ -10,6 +10,9 @@ class MissingInformationStage(BaseTaskStage):
 
     """
 
+    target_steps = 1
+    acceptance_steps = 0
+
     def __init__(
             self,
             instruction : Instruction,
@@ -32,6 +35,9 @@ class ForbiddenElemStage(BaseTaskStage):
     """
     This stage allows to handle phase where users asks for an action but it is forbidden.
     """
+
+    target_steps = 1
+    acceptance_steps = 0
 
     def __init__(
             self,

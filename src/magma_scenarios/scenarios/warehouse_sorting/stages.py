@@ -7,7 +7,7 @@ from magma_core.base.goals import At, NotAt
 from magma_core.base.data_structures.situation import Instruction
 
 from typing import List, Dict, Optional
-from .tasks.att import AREAS
+from .att import AREAS
 
 class ObjectToZone(BaseTaskStage):
 

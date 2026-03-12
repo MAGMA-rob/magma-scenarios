@@ -1,4 +1,10 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from .main import Laundry
+SCENARIO_NAME = "laundry"
+
+TASK_DEFINITIONS = {}
+
+TASK_PRESETS = {
+    "Laundry": "main:Laundry",
+}
