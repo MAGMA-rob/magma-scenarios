@@ -10,7 +10,7 @@ from typing import List, Dict, Tuple, Optional, Any
 from pathlib import Path
 
 from ..tools import WithManufacturingOrder
-from .stages import Cycle, ConstraintSorting
+from ..stages import Cycle, ConstraintSorting
 
 # # launch_cycle(assignment={"ref_obj_1":"area1"|"ref_obj_2":"area2"|"ref_obj_3":"area3"}, manu_order="A121")
 

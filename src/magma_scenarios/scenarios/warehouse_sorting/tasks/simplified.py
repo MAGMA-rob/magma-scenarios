@@ -11,7 +11,7 @@ import copy, random
 from pathlib import Path
 
 from ..tools import WithoutManufacturingOrder
-from .stages import Cycle, ConstraintSorting, ObjectToZone, AddLocationStage, RemoveLocationStage
+from ..stages import Cycle, ConstraintSorting, ObjectToZone, AddLocationStage, RemoveLocationStage
 from .att import OBJECTS, AREAS
 
 # launch_cycle(assignment={"ref_obj_1":"area1"|"ref_obj_2":"area2"|"ref_obj_3":"area3"}, manu_order="A121")

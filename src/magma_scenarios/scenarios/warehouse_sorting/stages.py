@@ -7,7 +7,7 @@ from magma_core.base.goals import At, NotAt
 from magma_core.base.data_structures.situation import Instruction
 
 from typing import List, Dict, Optional
-from .att import AREAS
+from .tasks.att import AREAS
 
 class ObjectToZone(BaseTaskStage):
 
@@ -49,7 +49,6 @@ class ObjectToZone(BaseTaskStage):
             stage_goal_description=f"The goal of this stage is to sort only one object per class without using the cycle tool (use only take and drop) according to {assignement}"
         )
 
-
         if instruction == "none":
             query = EmptyInstruction()
         else:
@@ -83,7 +82,7 @@ class Cycle(BaseTaskStage):
             known_areas : List[str],
             flag_answer : bool,
             manu_order : Optional[str] = None,
-            instruction : str = "none",
+            instruction : Instruction = EmptyInstruction(),
         ) -> None:
         """
         Docstring for __init__
@@ -114,15 +113,10 @@ class Cycle(BaseTaskStage):
             stage_goal_description=f"The goal of this stage is to sort all objects according to the assignment provided by the user and the memory : {assignment}")
         self.manu_order = manu_order
 
-        if instruction == "none":
-            query = EmptyInstruction()
-        else:
-            query = UserInstruction(instruction)
-
         self.situation = Situation(
             memory=["You are in charge of sorting objects in a factory."],
             preserved_memory_indices=[0],
-            instruction=query,
+            instruction=instruction,
             attributes={
                 "objects" : list(assignment.keys()),
                 "target_areas" : known_areas,
