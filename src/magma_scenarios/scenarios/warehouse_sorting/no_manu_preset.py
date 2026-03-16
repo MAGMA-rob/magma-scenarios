@@ -19,7 +19,7 @@ from .att import OBJECTS, AREAS
 # launch_cycle(assignment={"ref_obj_1":"area2"|"ref_obj_3":"area3"})
 # launch_cycle(assignment={"ref_obj_1":"area2"})
 
-class WarehouseSortingSimp(BaseTask):
+class NoManuPreset(BaseTask):
     """
     Class to create a Sorting task in a factory. Robot knows some objects and area. Users gives constraint about objects assignment.
     The robot must solves these constraint to complete multiple cycle.
@@ -167,7 +167,7 @@ class WarehouseSortingSimp(BaseTask):
         else:
             self.approximal_difficulty = "Hard"
 
-class WarehouseSortingSimpPreset1(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset1(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we ask the model if it knows some default assignment (answer is no). We give it some assignment then ask for a cycle.
@@ -194,7 +194,7 @@ class WarehouseSortingSimpPreset1(WarehouseSortingSimp):
 
         super().__init__(queries, 3, 3, assignments)
 
-class WarehouseSortingSimpPreset2(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset2(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we give to the model full default assignment. Followed by a cycle. Then we present it a new area it can use for some objects.
@@ -226,7 +226,7 @@ class WarehouseSortingSimpPreset2(WarehouseSortingSimp):
         
         super().__init__(queries, 3, 2, assignments)
 
-class WarehouseSortingSimpPreset3(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset3(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we give a simple constraint and do two cycle. We repeat this n times depending on the difficulty you choose
@@ -254,7 +254,7 @@ class WarehouseSortingSimpPreset3(WarehouseSortingSimp):
 
         super().__init__(queries, 3, 5, assignments)
 
-class WarehouseSortingSimpPreset4(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset4(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we give assignment then cycle. Then we give a constraint about that future cycle concern only object associated to a specific area.
@@ -286,7 +286,7 @@ class WarehouseSortingSimpPreset4(WarehouseSortingSimp):
 
         super().__init__(queries, 3, 5, assignments)
 
-class WarehouseSortingSimpPreset5(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset5(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we class objects in two category. Each category have a target. Then we ask for multiple cycle.
@@ -336,7 +336,7 @@ class WarehouseSortingSimpPreset5(WarehouseSortingSimp):
         
         super().__init__(queries, 3, 5, assignments)
 
-class WarehouseSortingSimpPreset6(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset6(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we ask the model to do some take and depose while updating constraint.
@@ -370,7 +370,7 @@ class WarehouseSortingSimpPreset6(WarehouseSortingSimp):
 
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpPreset7(WarehouseSortingSimp):
+class WarehouseSortingSimpPreset7(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     Here we ask the model to do some cycle, then we give constraint, ask question etc..
@@ -404,7 +404,7 @@ class WarehouseSortingSimpPreset7(WarehouseSortingSimp):
 
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpAdd(WarehouseSortingSimp):
+class WarehouseSortingSimpAdd(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     It allows to verify that the model is able to add a new area and remove older ones.
@@ -420,7 +420,7 @@ class WarehouseSortingSimpAdd(WarehouseSortingSimp):
         assignments: List[Dict[str, str]] = [{"ref_obj_1": "area4","ref_obj_2": "area1"}] 
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpAdd2(WarehouseSortingSimp):
+class WarehouseSortingSimpAdd2(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     It allows to verify that the model is able to add multiples new areas while maintening memory consistensy of informations.
@@ -437,7 +437,7 @@ class WarehouseSortingSimpAdd2(WarehouseSortingSimp):
         assignments: List[Dict[str, str]] = [{"ref_obj_1": "area4","ref_obj_2": "area5", "ref_obj_3": "area5"}] 
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpAdd3(WarehouseSortingSimp):
+class WarehouseSortingSimpAdd3(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     We are asking the model to remove area, then to launch a cycle using a removed areas. To verify consistensy.
@@ -461,7 +461,7 @@ class WarehouseSortingSimpAdd3(WarehouseSortingSimp):
 
         super().__init__(queries, 3, 5, assignments)
 
-class WarehouseSortingSimpInterrupt(WarehouseSortingSimp):
+class WarehouseSortingSimpInterrupt(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     The idea is to ask the model to do a cycle according default assignment, then to interupt it with a new cycle to do and ask him to continue its precedent task after.
@@ -497,7 +497,7 @@ class WarehouseSortingSimpInterrupt(WarehouseSortingSimp):
         assignments.append({"ref_obj_1": areas[0],"ref_obj_2": areas[1]})
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpInterrupt2(WarehouseSortingSimp):
+class WarehouseSortingSimpInterrupt2(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     The idea is to ask the model to do a cycle according default assignment, then to interupt it with a new cycle to do and ask him to continue its precedent task after.
@@ -528,7 +528,7 @@ class WarehouseSortingSimpInterrupt2(WarehouseSortingSimp):
         ]
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpInterdictionPreset1(WarehouseSortingSimp):
+class WarehouseSortingSimpInterdictionPreset1(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     In this preset, we are passing restritive constraint to the model. Then ask the model to do cycle which break these constraint. We are testing the capicity of the model to refuse.
@@ -561,7 +561,7 @@ class WarehouseSortingSimpInterdictionPreset1(WarehouseSortingSimp):
         assignments.append({"ref_obj_1": areas[0],"ref_obj_2": areas[1]})
         super().__init__(queries, nb_of_object, nb_of_area, assignments)
 
-class WarehouseSortingSimpInterdictionPreset2(WarehouseSortingSimp):
+class WarehouseSortingSimpInterdictionPreset2(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
     In this preset, we are passing restritive constraint to the model. Then ask the model to do cycle which break these constraint. We are testing the capicity of the model to refuse.

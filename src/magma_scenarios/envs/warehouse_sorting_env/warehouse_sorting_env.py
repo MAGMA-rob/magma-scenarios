@@ -24,7 +24,7 @@ class WarehouseSortingEnv(DefaultEnv):
     Task Description
     ----------------
     The task is to manipulate cube on a table. Objects are cube, but to change object type we call them reference here.
-    There are 3 cubes and 3 containers.
+    There are 3 cubes and 5 containers.
 
     Randomizations
     --------------
@@ -84,12 +84,7 @@ class WarehouseSortingEnv(DefaultEnv):
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         with torch.device(self.device):
-            # the initialization functions where you as a user place all the objects and initialize their properties
-            # are designed to support partial resets, where you generate initial state for a subset of the environments.
-            # this is done by using the env_idx variable, which also tells you the batch size
             b = len(env_idx)
-            # when using scene builders, you must always call .initialize on them so they can set the correct poses of objects in the prebuilt scene
-            # note that the table scene is built such that z=0 is the surface of the table.
             self.table_scene.initialize(env_idx)
 
             r = 0.15
@@ -111,23 +106,15 @@ class WarehouseSortingEnv(DefaultEnv):
                     random_cell = available_cells[random_index]
                     available_cells.pop(random_index)
 
-                    # here we write some randomization code that randomizes the x, y position of the cube we are pushing
-                    # in the range [-0.1, -0.1] to [0.1, 0.1]
                     xyz = torch.tensor([random_cell[0], random_cell[1], self.cube_half_size]).repeat(b, 1)
                     xyz[..., :2] = xyz[..., :2] + torch.rand((b, 2)) * 0.05 - 0.05
 
-                    # we can then create a pose object using Pose.create_from_pq to then set the cube pose with. Note that even though our quaternion
-                    # is not batched, Pose.create_from_pq will automatically batch p or q accordingly
-                    # furthermore, notice how here we do not even using env_idx as a variable to say set the pose for objects in desired
-                    # environments. This is because internally any calls to set data on the GPU buffer (e.g. set_pose, set_linear_velocity etc.)
-                    # automatically are masked so that you can only set data on objects in environments that are meant to be initialized
                     obj_pose = Pose.create_from_pq(p=xyz, q=q)
                     
                     elem.set_pose(obj_pose)
 
 
     def _get_obs_extra(self, info: Dict):
-        # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
         obs = dict(
             agent_tcp = self.agent.tcp.pose.raw_pose
         )
