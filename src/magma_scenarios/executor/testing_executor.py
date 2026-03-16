@@ -24,7 +24,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
             randomized : bool = False,
         ):
         
-        super().__init__(nb_env, planner_endpoint=planner_endpoint, ollama_worker=None, randomized=randomized)
+        super().__init__(nb_env, planner_endpoint=planner_endpoint, ollama_worker=None, nb_randomization=int(randomized))
 
         self._eval_envs : Dict[int,ToolInfos] = {}
    
