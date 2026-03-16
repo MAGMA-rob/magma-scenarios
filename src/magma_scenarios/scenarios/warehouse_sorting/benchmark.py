@@ -16,7 +16,7 @@ class WS_Simp_Benchmark(BaseBenchmarkTask):
     name : str = "Benchmark Warehouse sorting simplified [PAPER VERSION]"
     env_id : str = "SortingCubesWarehouse-v1"
 
-    randomized_config_path = str(Path(__file__).joinpath("config.yaml"))
+    randomized_config_path = str(Path(__file__).parent.joinpath("config.yaml"))
 
     Tools_cls = WithoutManufacturingOrder
 
@@ -34,7 +34,7 @@ class WS_Benchmark(BaseBenchmarkTask):
     name : str = "Benchmark Warehouse sorting"
     env_id : str = "SortingCubesWarehouse-v1"
 
-    randomized_config_path = str(Path(__file__).joinpath("config.yaml"))
+    randomized_config_path = str(Path(__file__).parent.joinpath("config.yaml"))
 
     Tools_cls = WithManufacturingOrder
 

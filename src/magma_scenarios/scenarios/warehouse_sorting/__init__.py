@@ -26,7 +26,11 @@ TASK_PRESETS = {
 
     # Preset with manufacturing orders
     "WarehouseSorting": "preset:WarehouseSorting",
-    "WarehouseSortingPreset1": "preset:WarehouseSortingPreset1"
+    "WarehouseSortingPreset1": "preset:WarehouseSortingPreset1",
+
+
+    # Benchmark
+    "SimpBench": "benchmark:WS_Simp_Benchmark"
 }
 
 
