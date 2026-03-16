@@ -9,7 +9,7 @@ TASK_DEFINITIONS = {
 
 TASK_PRESETS = {
     # Preset without manufacturing orders
-    "WarehouseSortingSimp": "no_manu_preset:WarehouseSortingSimp",
+    "NoManuPreset": "no_manu_preset:NoManuPreset",
     "WarehouseSortingSimpPreset1": "no_manu_preset:WarehouseSortingSimpPreset1",
     "WarehouseSortingSimpAdd": "no_manu_preset:WarehouseSortingSimpAdd",
     "WarehouseSortingSimpAdd2": "no_manu_preset:WarehouseSortingSimpAdd2",
