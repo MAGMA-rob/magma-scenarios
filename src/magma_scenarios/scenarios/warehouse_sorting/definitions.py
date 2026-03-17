@@ -6,7 +6,13 @@ from magma_scenarios.templates.requests import (
     GiveObjectCategoryRequest
 )
 
-from .requests import MoveOneObjectRequest, CycleRequest, CycleWithPermanentRulesRequest
+from .requests import (
+    MoveOneObjectRequest,
+    CycleRequest,
+    CycleWithPermanentRulesRequest,
+    AddAreas,
+    RemoveAreas
+)
 from .att import OBJECTS, AREAS
 from .tools import WithoutManufacturingOrder
 
@@ -15,6 +21,8 @@ from pathlib import Path
 class SimpleSortingDefinition(TaskDefinition):
 
     active_requests = [
+        AddAreas(AREAS),
+        RemoveAreas(),
         MoveOneObjectRequest(),
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
@@ -26,8 +34,10 @@ class SimpleSortingDefinition(TaskDefinition):
     def __init__(self) -> None:
         
         self.starting_state = TaskState()
-        self.starting_state.entities["objects"] = OBJECTS
-        self.starting_state.entities["zones"] = AREAS
+        self.starting_state.attributes = {
+            "objects": OBJECTS,
+            "target_areas": AREAS
+        }
 
         super().__init__(randomized_config_path=str(Path(__file__).parent.joinpath("config.yaml")))
 
@@ -43,6 +53,8 @@ known_category = [
 class SortingCategoryDefinition(TaskDefinition):
 
     active_requests = [
+        AddAreas(AREAS),
+        RemoveAreas(),
         MoveOneObjectRequest(),
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
@@ -55,7 +67,9 @@ class SortingCategoryDefinition(TaskDefinition):
     def __init__(self) -> None:
         
         self.starting_state = TaskState()
-        self.starting_state.entities["objects"] = OBJECTS
-        self.starting_state.entities["zones"] = AREAS
+        self.starting_state.attributes = {
+            "objects": OBJECTS,
+            "target_areas": AREAS
+        }
 
         super().__init__(randomized_config_path=str(Path(__file__).parent.joinpath("config.yaml")))

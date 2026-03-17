@@ -9,9 +9,9 @@ class ObjectAssignmentConstraint(BaseConstraint):
         self.zone = zone
 
     def apply(self, state: TaskState):
-        all_obj = state.entities.get("objects", [])
-        all_zone = state.entities.get("zones", [])
+        all_obj = state.attributes.get("objects", [])
+        all_zone = state.attributes.get("target_areas", [])
         if not self.obj in all_obj or not self.zone in all_zone:
             raise RuntimeError(f"The {self.__class__.__name__} failed to be applied")
-        state.relations["object_zone"][self.obj] = self.zone
+        state.relations["object_area"][self.obj] = self.zone
 

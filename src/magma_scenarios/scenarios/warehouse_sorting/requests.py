@@ -1,14 +1,16 @@
 from typing import Dict, Any, List
 import random
+from copy import deepcopy
 
-from magma_core.base.stage import BaseTaskStage
+from magma_core.base.stage import BaseTaskStage, ModifAttributesBaseStage
 from magma_core.base.user_request import BaseRequest
 from magma_core.base.state import TaskState
-from magma_core.base.data_structures import UserInstruction
+from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
-from .stages import Cycle, ObjectToZone
-from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage
+from .stages import ObjectToZone
+from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage, Cycle
 from magma_scenarios.templates.constraints import ObjectAssignmentConstraint
+from magma_scenarios.templates.requests import AddValueToListRequest, RemoveValueToListRequest
 
 class CycleRequest(BaseRequest):
 
@@ -28,7 +30,7 @@ class CycleRequest(BaseRequest):
         assignement = base_assignement.copy()
         missing_assignment = {}
         forbidden_object = []
-        obj_with_forbidden_zones = []
+        obj_with_forbidden_areas = []
 
         for obj in objects_to_sort:
             # 1 : Verify that the object is not forbidden
@@ -37,7 +39,7 @@ class CycleRequest(BaseRequest):
             
             # 2 : Verify if the object have a default assignement (if we do not give it as a base assignment)
             if not obj in assignement:
-                target_area = state.relations.get("object_zone",{}).get(obj, "none")
+                target_area = state.relations.get("object_area",{}).get(obj, "none")
                 if target_area not in all_areas:
                     target_area = random.choice(all_areas)
                     missing_assignment[obj] = target_area
@@ -48,8 +50,8 @@ class CycleRequest(BaseRequest):
                 target_area = assignement[obj]
             
             # 3 : Forbidden zone
-            if target_area in state.properties.get("forbidden_zones", []):
-                obj_with_forbidden_zones.append(obj)
+            if target_area in state.properties.get("forbidden_areas", []):
+                obj_with_forbidden_areas.append(obj)
 
         assignement.update(missing_assignment)
         objs = " and ".join(assignement.keys())
@@ -61,14 +63,14 @@ class CycleRequest(BaseRequest):
             instruction_str += " as news default assignment."
         cycle_instruction = UserInstruction(instruction_str)
 
-        if obj_with_forbidden_zones or forbidden_object:
+        if obj_with_forbidden_areas or forbidden_object:
             objs = " and ".join(forbidden_object)
-            areas = " and ".join([assignement[o] for o in obj_with_forbidden_zones])
+            areas = " and ".join([assignement[o] for o in obj_with_forbidden_areas])
 
             answer = "The model must inform that "
             if forbidden_object:
                 answer+= f"{objs} are forbidden"
-            if obj_with_forbidden_zones:
+            if obj_with_forbidden_areas:
                 answer+= f"{areas} can not be used."
 
             s = ForbiddenElemStage(
@@ -108,8 +110,8 @@ class CycleRequest(BaseRequest):
 
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        all_objects = state.entities.get("objects", []).copy()
-        all_areas = state.entities.get("zones", [])
+        all_objects = state.attributes.get("objects", []).copy()
+        all_areas = state.attributes.get("target_areas", [])
 
         if len(all_objects) <= 0 or len(all_areas) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
@@ -128,8 +130,8 @@ class CycleWithPermanentRulesRequest(CycleRequest):
         self.max_rules = max_permanent_rule
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        all_objects = state.entities.get("objects", []).copy()
-        all_areas = state.entities.get("zones", [])
+        all_objects = state.attributes.get("objects", []).copy()
+        all_areas = state.attributes.get("target_areas", [])
         self.constraints = []
 
         if len(all_objects) <= 0 or len(all_areas) <=0:
@@ -161,8 +163,8 @@ class MoveOneObjectRequest(BaseRequest):
         super().__init__()
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:        
-        all_objects = state.entities.get("objects", [])
-        all_areas = state.entities.get("zones", [])
+        all_objects = state.attributes.get("objects", [])
+        all_areas = state.attributes.get("target_areas", [])
 
         if len(all_objects) <= 0 or len(all_areas) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
@@ -177,4 +179,113 @@ class MoveOneObjectRequest(BaseRequest):
                 f"Can you store one {obj} to {area} without using your cycle mode"
             )
         ]
+    
+class CycleByCategoriesRequest(CycleRequest):
+
+    def __init__(self, max_categories_per_cycle_request : int = 2) -> None:
+        super().__init__()
+        self.max_categories = max_categories_per_cycle_request
+
+    # On tire au piff parmis les areas qui existent. Soit elles ont des objets et on fait, soit 
+    # On explique qu'elles ne sont attribuées à aucune
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        all_objects = state.relations.get("objects", [])
+        all_areas = state.attributes.get("target_areas", [])
+
+        if len(all_objects) <=0:
+            raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
         
+        nb_cat = random.randint(1,min(self.max_categories, len(all_objects)))
+
+        known_types = list(state.relations.keys())
+        
+        for _, type in state.relations["object_type"].items():
+            if type not in known_types:
+                known_types.append(type)
+
+        # ca va pas marcher.
+
+        return self._create_stages(all_objects[:nb_obj], all_areas, state)
+
+class AddAreas(AddValueToListRequest):
+
+    def __init__(self, all_areas : List[str], max_update : int = 2) -> None:
+        super().__init__(modifiable_task_attributes={"target_areas":all_areas}, max_update = max_update)    
+    
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        
+        n = random.randint(1,self.max_update)
+
+        all_modif = []
+        self.att_state = deepcopy(state.attributes)
+
+        for _ in range(n):
+            out = self._get_random_key_value(["target_areas"], self.att_state)
+            if out is None:
+                break
+            self.att_state[out[0]].append(out[1])
+            all_modif.append(out[1])
+
+        stages = []
+        if all_modif:
+            instruction = f"Please add {' and '.join(all_modif)} to your known areas"
+            ins = UserInstruction(instruction)
+
+            for i, area in enumerate(all_modif):
+                stages.append(
+                    ModifAttributesBaseStage(
+                        mode = "ADD",
+                        instruction=ins,
+                        val_name=area,
+                        att_name="target_areas",
+                        memory=state.memory,
+                        preserved_memory_indices=state.preserved_memory_indices,
+                        attributes=state.attributes,
+                        flag_answer_to_user= i == len(all_modif)-1
+                    )
+                )
+                ins = EmptyInstruction()
+        
+        return stages
+    
+class RemoveAreas(RemoveValueToListRequest):
+
+    def __init__(self, max_update : int = 2) -> None:
+        super().__init__(["target_areas"], max_update = max_update)
+    
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        
+        n = random.randint(1,self.max_update)
+
+        all_modif = []
+        self.att_state = deepcopy(state.attributes)
+
+        for _ in range(n):
+            out = self._get_random_key_value(["target_areas"], self.att_state)
+            if out is None:
+                break
+            self.att_state[out[0]].remove(out[1])
+            all_modif.append(out[1])
+
+        stages = []
+        if all_modif:
+            instruction = f"Please remove {' and '.join(all_modif)} from your knowledge base."
+            ins = UserInstruction(instruction)
+
+            for i, area in enumerate(all_modif):
+                stages.append(
+                    ModifAttributesBaseStage(
+                        mode = "REMOVE",
+                        instruction=ins,
+                        val_name=area,
+                        att_name="target_areas",
+                        memory=state.memory,
+                        preserved_memory_indices=state.preserved_memory_indices,
+                        attributes=state.attributes,
+                        flag_answer_to_user= i == len(all_modif)-1
+                    )
+                )
+                ins = EmptyInstruction()
+        
+        return stages
