@@ -180,33 +180,202 @@ class MoveOneObjectRequest(BaseRequest):
             )
         ]
     
-class CycleByCategoriesRequest(CycleRequest):
+class CycleByCategoriesRequest(BaseRequest):
 
-    def __init__(self, max_categories_per_cycle_request : int = 2) -> None:
+    def __init__(self, max_categories_per_cycle_request : int = 2, max_added_objects_per_empty_category : int = 1) -> None:
         super().__init__()
         self.max_categories = max_categories_per_cycle_request
+        self.max_added_objects = max_added_objects_per_empty_category
 
-    # On tire au piff parmis les areas qui existent. Soit elles ont des objets et on fait, soit 
-    # On explique qu'elles ne sont attribuées à aucune
+    def _get_known_types(self, state: TaskState) -> List[str]:
+        known_types = list(state.relations.get("type_area", {}).keys())
+        for obj_type in state.relations.get("object_type", {}).values():
+            if obj_type not in known_types:
+                known_types.append(obj_type)
+        return known_types
+
+    def _build_cycle_request_instruction(self, categories: List[str]) -> UserInstruction:
+        if len(categories) == 1:
+            return UserInstruction(f"Launch a cycle for all objects from category {categories[0]}.")
+        return UserInstruction(
+            f"Launch a cycle for all objects from categories {' and '.join(categories)}."
+        )
+
+    def _build_category_resolution_instruction(
+            self,
+            forgotten_types : List[str],
+            added_objects_by_type : Dict[str, List[str]]
+        ) -> UserInstruction:
+        parts = []
+        for obj_type in forgotten_types:
+            parts.append(f"Ok, forget category {obj_type} for this cycle")
+        for obj_type, objs in added_objects_by_type.items():
+            obj_str = " and ".join(objs)
+            parts.append(f"For this cycle, consider {obj_str} as {obj_type}")
+        return UserInstruction(". ".join(parts) + ".")
+
+    def _build_missing_assignment_instruction(self, missing_type_assignment : Dict[str, str]) -> UserInstruction:
+        parts = []
+        for obj_type, area in missing_type_assignment.items():
+            parts.append(f"For this cycle, category {obj_type} goes to {area}")
+        return UserInstruction(". ".join(parts) + ".")
+
+    def _build_area_override_instruction(self) -> UserInstruction:
+        return UserInstruction("Please override these area constraints just for this cycle.")
+
+    def sampling_weight(self, state: TaskState) -> float:
+        
+        if len(state.properties.get("forbidden_objects", [])) > 0 or len(state.properties.get("forbidden_areas", [])) > 0:
+            return 0 # not yet implemented
+
+        if len(self._get_known_types(state)) <= 0:
+            return 0
+        if len(state.attributes.get("objects", [])) <= 0:
+            return 0
+        if len(state.attributes.get("target_areas", [])) <= 0:
+            return 0
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        all_objects = state.relations.get("objects", [])
-        all_areas = state.attributes.get("target_areas", [])
+        all_types : List = self._get_known_types(state)
+        all_objects : List = state.attributes.get("objects", []).copy()
+        all_areas : List = state.attributes.get("target_areas", [])
 
-        if len(all_objects) <=0:
-            raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
+        if len(all_types) <= 0 or len(all_objects) <= 0 or len(all_areas) <= 0:
+            raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty categories, objects or areas")
+
+        nb_cat = random.randint(1, min(self.max_categories, len(all_types)))
+        random.shuffle(all_types)
+        selected_types = all_types[:nb_cat]
+
+        object_types = state.relations.get("object_type", {})
+        type_areas = state.relations.get("type_area", {})
+
+        type_to_objects = {}
+        available_objects = [o for o in all_objects if not o in list(object_types.keys())]
+        empty_types = []
+
+        for obj_type in selected_types:
+            # build tous les objets associé à ce type 
+            associated_objects = [
+                obj_name
+                for obj_name, associated_type in object_types.items()
+                if associated_type == obj_type
+            ]
+
+            if associated_objects:
+                type_to_objects[obj_type] = associated_objects
+            else:
+                empty_types.append(obj_type)
+
+        forgotten_types = [] #type to not use
+        replaced_categories = [] #type to replace forgotten one
+        added_objects_by_type = {} #answer of the human to add object to a type
+
+        if empty_types: # si on a sampler des types sans objets
+            cycle_already_possible = any(type_to_objects.values())
+            if cycle_already_possible: #si on a des cycles qui fonctionnent on oublie juste
+                forgotten_types.extend(empty_types)
+            else:
+                for t in empty_types:
+                    if len(available_objects) > 0:
+                        # on ajoute à une nouvelle categorie
+                        new_objects = random.choices(available_objects,k=random.randint(1,min(self.max_added_objects, len(available_objects))))
+                        added_objects_by_type[t] = new_objects
+                        #clean available
+                        for o in new_objects:
+                            available_objects.remove(o)
+                    else: 
+                        # pas d'objet sans type on oublie juste pour le moment
+                        # TODO: Choisir une categorie au hasard pour remplacer
+                        forgotten_types.append(t)
+                    
+
+        if not any(type_to_objects.values()):
+            raise RuntimeError(
+                f"The {self.__class__.__name__} failed to build a cycle because no object could be associated to the selected categories"
+            )
+
+        stages = []
+        current_instruction = self._build_cycle_request_instruction(selected_types)
+
+        if empty_types:
+            empty_types_str = " and ".join(empty_types)
+            verb = "has" if len(empty_types) == 1 else "have"
+            stages.append(
+                ForbiddenElemStage(
+                    instruction=current_instruction,
+                    answer=f"The model must inform that {empty_types_str} {verb} no associated object.",
+                    memory=[],
+                    attributes=state.attributes
+                )
+            )
+            current_instruction = self._build_category_resolution_instruction(
+                forgotten_types=forgotten_types,
+                added_objects_by_type=added_objects_by_type
+            )
+
+        # Maintenant on build les assignments par type
+        missing_type_assignment = {}
+        assignment = {}
+        for obj_type, objs in type_to_objects.items():
+            target_area = type_areas.get(obj_type, "none")
+            if target_area not in all_areas:
+                target_area = random.choice(all_areas)
+                missing_type_assignment[obj_type] = target_area
+
+            for obj_name in objs:
+                assignment[obj_name] = target_area
+
+        if missing_type_assignment:
+            missing_types_str = " and ".join(missing_type_assignment.keys())
+            stages.append(
+                MissingInformationStage(
+                    instruction=current_instruction,
+                    answer=f"The robot must ask about target areas for {missing_types_str}",
+                    memory=[],
+                    attributes=state.attributes,
+                )
+            )
+            current_instruction = self._build_missing_assignment_instruction(missing_type_assignment)
         
-        nb_cat = random.randint(1,min(self.max_categories, len(all_objects)))
+        # on verifie les interdictions
+        # forbidden_object = []
+        # obj_with_forbidden_areas = []
+        # for obj_name, target_area in assignment.items():
+        #     if obj_name in state.properties.get("forbidden_objects", []):
+        #         forbidden_object.append(obj_name)
+        #     if target_area in state.properties.get("forbidden_areas", []):
+        #         obj_with_forbidden_areas.append(obj_name)
 
-        known_types = list(state.relations.keys())
-        
-        for _, type in state.relations["object_type"].items():
-            if type not in known_types:
-                known_types.append(type)
+        # if obj_with_forbidden_areas or forbidden_object:
+        #     objs = " and ".join(forbidden_object)
+        #     areas = " and ".join([assignment[o] for o in obj_with_forbidden_areas])
 
-        # ca va pas marcher.
+        #     answer = "The model must inform that "
+        #     if forbidden_object:
+        #         answer += f"{objs} are forbidden"
+        #     if obj_with_forbidden_areas:
+        #         answer += f"{areas} can not be used."
 
-        return self._create_stages(all_objects[:nb_obj], all_areas, state)
+        #     stages.append(
+        #         ForbiddenElemStage(
+        #             instruction=current_instruction,
+        #             answer=answer,
+        #             memory=[],
+        #             attributes=state.attributes
+        #         )
+        #     )
+        #     current_instruction = self._build_area_override_instruction()
+
+        stages.append(Cycle(
+            assignment=assignment,
+            known_areas=all_areas,
+            flag_answer=True,
+            instruction=current_instruction
+        ))
+
+        return stages
 
 class AddAreas(AddValueToListRequest):
 

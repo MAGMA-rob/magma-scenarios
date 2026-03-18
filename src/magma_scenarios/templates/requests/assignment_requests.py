@@ -78,7 +78,7 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
                 state.relations["object_type"][all_objects[i]] = t
         
         self.constraint_msg = "Hello,"
-        for t, objs in assignment:
+        for t, objs in assignment.items():
             obj_str = " and ".join(objs)
             self.constraint_msg += f" {obj_str} are now {t},"
         self.constraint_msg += "."
@@ -127,7 +127,7 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
                 state.relations["type_area"][categories[i]] = target_area
         
         self.constraint_msg = ""
-        for area, types in assignment:
+        for area, types in assignment.items():
             types_str = " and ".join(types)
             self.constraint_msg += f" {types_str} are now going to {area},"
         self.constraint_msg += "."

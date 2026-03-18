@@ -11,7 +11,8 @@ from .requests import (
     CycleRequest,
     CycleWithPermanentRulesRequest,
     AddAreas,
-    RemoveAreas
+    RemoveAreas,
+    CycleByCategoriesRequest
 )
 from .att import OBJECTS, AREAS
 from .tools import WithoutManufacturingOrder
@@ -57,7 +58,7 @@ class SortingCategoryDefinition(TaskDefinition):
         RemoveAreas(),
         MoveOneObjectRequest(),
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
-        CycleRequest(),
+        CycleByCategoriesRequest(),
         GiveObjectCategoryRequest(known_category, max_object_assignment=3),
         GiveCategoryAssignmentRequest(known_category, max_categories_assignment=3)
     ]
