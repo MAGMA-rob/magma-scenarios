@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+import os
 import sapien
 import torch
 import numpy as np
+from math import pi
 import mani_skill.envs.scene
 from mani_skill.utils.building import actors
+from transforms3d.euler import euler2quat
 from mani_skill.utils.registration import register_env
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose as MSPose
@@ -121,14 +124,27 @@ class LaundryEnv(DefaultEnv):
             initial_pose=sapien.Pose(p=[0, -0.3, 0.02]),
         )
 
-        self.machine_actor = self.create_box(
-            thickness=0.01,
-            size=0.3,
-            height=0.1,
-            name="washing_machine",
-            initial_pose=np.array((-0.8, -0.5, 0.02)),
-            add_bottom_wall=True
-        )
+        self.machine_actor = self.create_washmachine()
+    
+    def create_washmachine(self, name="washing_machine"):
+        """ Create a washing machine from a SAPIEN urdf file."""
+
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        urdf_path = os.path.join(dir_path, "washmachine-103781/mobility.urdf")
+
+        loader = self.scene.create_urdf_loader()
+        loader.scale = 0.5
+        loader.fix_root_link = True
+        loader.set_material(0.3, 0, 0)
+        loader.set_density(1)
+
+        # the .parse function can also parse multiple articulations
+        # actors and cameras but we only use the articulations
+        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+        builder = articulation_builders[0]
+        builder.initial_pose = sapien.Pose(p=[-0.8, -0.5, 0], q=euler2quat(0, 0, -pi/2))
+        
+        return builder.build(name=name)
 
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         b = len(env_idx)
@@ -143,6 +159,10 @@ class LaundryEnv(DefaultEnv):
             clothe.set_pose(
                 MSPose.create_from_pq(xyz, torch.tensor((1, 0, 0, 0), device=dev))
             )
+        
+        qpos = self.machine_actor.get_qpos()
+        qpos[0] = pi/2 #set the wash machine door (first link) open
+        self.machine_actor.set_qpos(qpos)
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""

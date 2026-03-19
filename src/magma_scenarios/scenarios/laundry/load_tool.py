@@ -86,8 +86,8 @@ class LaunchTool(BaseToolsAPI):
         poses.extend(compute_drop_trajectory(
             self.get_agent(),
             drop_pose=target_pos,
-            drop_seuil=0.1,
-            approach_seuil=0.2
+            drop_seuil=0.2,
+            approach_seuil=0.3
         ))
 
         def verifier(new_obs: dict) -> ToolResult:
