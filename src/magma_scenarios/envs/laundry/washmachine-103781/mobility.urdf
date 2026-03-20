@@ -529,12 +529,12 @@
 				<mesh filename="textured_objs/original-6.obj"/>
 			</geometry>
 		</collision>
-		<collision>
+		<!-- <collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-48.obj"/>
 			</geometry>
-		</collision>
+		</collision> -->
 		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
@@ -559,12 +559,12 @@
 				<mesh filename="textured_objs/original-24.obj"/>
 			</geometry>
 		</collision>
-		<collision>
+		<!-- <collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-47.obj"/>
 			</geometry>
-		</collision>
+		</collision> -->
 		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
