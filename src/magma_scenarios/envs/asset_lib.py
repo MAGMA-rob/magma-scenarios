@@ -1,13 +1,14 @@
+from mani_skill.utils.building.articulation_builder import ArticulationBuilder
 from mani_skill.envs.scene import ManiSkillScene
 from magma_scenarios.utils import make_urdf_loader, make_articulation_builder
 
 # see https://maniskill.readthedocs.io/en/latest/user_guide/tutorials/custom_tasks/loading_objects.html
 
-def create_cardboard_box(scene:ManiSkillScene, name="cardboard_box"):
-    """ Create a cardboard box from a SAPIEN urdf file."""
+def create_cardboard_box_builder(scene:ManiSkillScene) -> ArticulationBuilder:
+    """ Create a builder to build cardboard box from a SAPIEN urdf file."""
     loader = make_urdf_loader(scene, scale=0.21)
     builder = make_articulation_builder(asset_name="box-100154", loader=loader)
-    return builder.build(name=name)
+    return builder
 
 def create_pen(scene:ManiSkillScene, name="pen"):
     """ Create a pen from a SAPIEN urdf file."""

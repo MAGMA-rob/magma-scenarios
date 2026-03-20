@@ -10,7 +10,7 @@ import sapien
 import torch
 from transforms3d.euler import euler2quat
 
-from magma_scenarios.envs.asset_lib import create_cardboard_box, create_jar, create_pen, create_water_bottle
+from magma_scenarios.envs.asset_lib import create_cardboard_box_builder, create_jar, create_pen, create_water_bottle
 
 from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
@@ -60,13 +60,14 @@ class WarehouseSortingEnv(DefaultEnv):
 
         self.containers = []
         self.cardboard_box = []
+        box_builder = create_cardboard_box_builder(scene=self.scene)
         for i in range(len(containers_poses)):
             pose = np.array(containers_poses[i])
             self.containers.append(
                 self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True, color=[1,1,1,0])
             )
             self.cardboard_box.append(
-                create_cardboard_box(scene=self.scene, name=f"box{i + 1}")
+                box_builder.build(name=f"box{i + 1}")
             )
 
 	
@@ -119,7 +120,10 @@ class WarehouseSortingEnv(DefaultEnv):
                 pose = np.array(containers_poses[i])
                 box = self.cardboard_box[i]
                 qpos = box.get_qpos()
-                qpos[0][0] = qpos[0][1] = qpos[0][2] = qpos[0][3] = 0.6
+                qpos[0][0] = 0.6
+                qpos[0][1] = 0.6
+                qpos[0][2] = 0.6
+                qpos[0][3] = 0.6
                 box.set_qpos(qpos)
                 box.set_pose(Pose.create_from_pq(p=(pose + [0,0,0.06])))
 
