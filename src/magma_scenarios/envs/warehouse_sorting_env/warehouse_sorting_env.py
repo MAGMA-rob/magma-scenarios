@@ -4,12 +4,13 @@
 #Author: Mathieu Zimmermann
 from typing import Any, Dict, Union
 
-from os.path import dirname, join, realpath
 from math import pi
 import numpy as np
 import sapien
 import torch
 from transforms3d.euler import euler2quat
+
+from magma_scenarios.envs.asset_lib import create_cardboard_box, create_jar, create_pen, create_water_bottle
 
 from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
@@ -52,9 +53,9 @@ class WarehouseSortingEnv(DefaultEnv):
 
         # Create three cubes with random names
         self.industrial_objects = [
-            self.create_water_bottle(name="ref_obj_1"),
-            self.create_jar(name="ref_obj_2"),
-            self.create_pen(name="ref_obj_3")
+            create_water_bottle(self.scene, "ref_obj_1"),
+            create_jar(self.scene, "ref_obj_2"),
+            create_pen(self.scene, "ref_obj_3")
         ]
 
         self.containers = []
@@ -65,88 +66,9 @@ class WarehouseSortingEnv(DefaultEnv):
                 self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True, color=[1,1,1,0])
             )
             self.cardboard_box.append(
-                self.create_cardboard_box(name=f"box{i + 1}")
+                create_cardboard_box(scene=self.scene, name=f"box{i + 1}")
             )
 
-    def create_pen(self, name="pen"):
-        """ Create a pen from a SAPIEN urdf file."""
-
-        dir_path = dirname(realpath(__file__))
-        urdf_path = join(dir_path, "pen-101712/mobility.urdf")
-
-        loader = self.scene.create_urdf_loader()
-        loader.scale = 0.08
-        loader.fix_root_link = False
-        loader.set_material(0.3, 0, 0)
-        loader.set_density(50)
-
-        # the .parse function can also parse multiple articulations
-        # actors and cameras but we only use the articulations
-        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
-        builder = articulation_builders[0]
-        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
-        
-        return builder.build(name=name)
-
-    def create_jar(self, name="jar"):
-        """ Create a jar / bottle from a SAPIEN urdf file."""
-
-        dir_path = dirname(realpath(__file__))
-        urdf_path = join(dir_path, "jar-4427/mobility.urdf")
-
-        loader = self.scene.create_urdf_loader()
-        loader.scale = 0.06
-        loader.fix_root_link = False
-        loader.set_material(0.3, 0, 0)
-        loader.set_density(10)
-
-        # the .parse function can also parse multiple articulations
-        # actors and cameras but we only use the articulations
-        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
-        builder = articulation_builders[0]
-        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
-        
-        return builder.build(name=name)
-
-    def create_water_bottle(self, name="water_bottle"):
-        """ Create a water bottle from a SAPIEN urdf file."""
-
-        dir_path = dirname(realpath(__file__))
-        urdf_path = join(dir_path, "water-3822/mobility.urdf")
-
-        loader = self.scene.create_urdf_loader()
-        loader.scale = 0.09
-        loader.fix_root_link = False
-        loader.set_material(0.3, 0, 0)
-        loader.set_density(10)
-
-        # the .parse function can also parse multiple articulations
-        # actors and cameras but we only use the articulations
-        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
-        builder = articulation_builders[0]
-        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
-        
-        return builder.build(name=name)
-
-    def create_cardboard_box(self, name="cardboard_box"):
-        """ Create a cardboard box from a SAPIEN urdf file."""
-
-        dir_path = dirname(realpath(__file__))
-        urdf_path = join(dir_path, "box-100154/mobility.urdf")
-
-        loader = self.scene.create_urdf_loader()
-        loader.scale = 0.21
-        loader.fix_root_link = True
-        loader.set_material(0.3, 0, 0)
-        loader.set_density(1)
-
-        # the .parse function can also parse multiple articulations
-        # actors and cameras but we only use the articulations
-        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
-        builder = articulation_builders[0]
-        builder.initial_pose = sapien.Pose(p=[0,0,0])
-        
-        return builder.build(name=name)
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         with torch.device(self.device):

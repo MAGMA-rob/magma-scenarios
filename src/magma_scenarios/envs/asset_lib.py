@@ -1,0 +1,26 @@
+from mani_skill.envs.scene import ManiSkillScene
+from magma_scenarios.utils import make_urdf_loader, make_articulation_builder
+
+def create_cardboard_box(scene:ManiSkillScene, name="cardboard_box"):
+    """ Create a cardboard box from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.21)
+    builder = make_articulation_builder(asset_name="box-100154", loader=loader)
+    return builder.build(name=name)
+
+def create_pen(scene:ManiSkillScene, name="pen"):
+    """ Create a pen from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.08, is_fix=False, density=50)
+    builder = make_articulation_builder(asset_name="pen-101712", loader=loader)
+    return builder.build(name=name)
+
+def create_jar(scene:ManiSkillScene, name="jar"):
+    """ Create a jar / bottle from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.06, is_fix=False, density=10)
+    builder = make_articulation_builder(asset_name="jar-4427", loader=loader)
+    return builder.build(name=name)
+
+def create_water_bottle(scene:ManiSkillScene, name="water_bottle"):
+    """ Create a water bottle from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.09, is_fix=False, density=10)
+    builder = make_articulation_builder(asset_name="water-3822", loader=loader)
+    return builder.build(name=name)
