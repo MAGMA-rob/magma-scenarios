@@ -104,8 +104,7 @@ class WarehouseSortingEnv(DefaultEnv):
         # actors and cameras but we only use the articulations
         articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
         builder = articulation_builders[0]
-        pose_temp = pose + [0,0,0.07]
-        builder.initial_pose = sapien.Pose(p=pose_temp)
+        builder.initial_pose = sapien.Pose(p=[0,0,0])
         
         return builder.build(name=name)
 	
@@ -152,15 +151,14 @@ class WarehouseSortingEnv(DefaultEnv):
                     
                     elem.set_pose(obj_pose)
 
-            # set cardboard box widely open
-            for box in self.cardboard_box:
+            # set cardboard box position and widely open
+            for i in range(len(containers_poses)):
+                pose = np.array(containers_poses[i])
+                box = self.cardboard_box[i]
                 qpos = box.get_qpos()
-                for i in range(len(qpos)):
-                    qpos[i][0] = 3*pi/2
-                    qpos[i][1] = 3*pi/2
-                    qpos[i][2] = 3*pi/2
-                    qpos[i][3] = 3*pi/2
+                qpos[0][0] = qpos[0][1] = qpos[0][2] = qpos[0][3] = 0.6
                 box.set_qpos(qpos)
+                box.set_pose(Pose.create_from_pq(p=pose))
 
     def _get_obs_extra(self, info: Dict):
         # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
