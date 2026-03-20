@@ -1,6 +1,8 @@
 from mani_skill.envs.scene import ManiSkillScene
 from magma_scenarios.utils import make_urdf_loader, make_articulation_builder
 
+# see https://maniskill.readthedocs.io/en/latest/user_guide/tutorials/custom_tasks/loading_objects.html
+
 def create_cardboard_box(scene:ManiSkillScene, name="cardboard_box"):
     """ Create a cardboard box from a SAPIEN urdf file."""
     loader = make_urdf_loader(scene, scale=0.21)
@@ -30,4 +32,10 @@ def create_wash_machine(scene:ManiSkillScene, name="washing_machine"):
     """ Create a water bottle from a SAPIEN urdf file."""
     loader = make_urdf_loader(scene, scale=0.5, is_fix=True, density=1)
     builder = make_articulation_builder(asset_name="washmachine-103781", loader=loader)
+    return builder.build(name=name)
+
+def create_coffee_maker(scene:ManiSkillScene, name="coffee_maker"):
+    """ Create a coffee maker from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.2, is_fix=True, density=1)
+    builder = make_articulation_builder(asset_name="coffee_maker_103057", loader=loader)
     return builder.build(name=name)
