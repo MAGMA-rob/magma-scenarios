@@ -4,6 +4,8 @@
 #Author: Mathieu Zimmermann
 from typing import Any, Dict, Union
 
+from os.path import dirname, join, realpath
+from math import pi
 import numpy as np
 import sapien
 import torch
@@ -76,11 +78,36 @@ class WarehouseSortingEnv(DefaultEnv):
         ]
 
         self.containers = []
+        self.cardboard_box = []
         for i in range(len(containers_poses)):
             pose = np.array(containers_poses[i])
             self.containers.append(
-                self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True)
+                self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True, color=[1,1,1,0])
             )
+            self.cardboard_box.append(
+                self.create_cardboard_box(name=f"box{i + 1}", pose=pose)
+            )
+
+    def create_cardboard_box(self, name="cardboard_box", pose=[-1,-0.25,-0.1]):
+        """ Create a cardboard box from a SAPIEN urdf file."""
+
+        dir_path = dirname(realpath(__file__))
+        urdf_path = join(dir_path, "box-100154/mobility.urdf")
+
+        loader = self.scene.create_urdf_loader()
+        loader.scale = 0.21
+        loader.fix_root_link = True
+        loader.set_material(0.3, 0, 0)
+        loader.set_density(1)
+
+        # the .parse function can also parse multiple articulations
+        # actors and cameras but we only use the articulations
+        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+        builder = articulation_builders[0]
+        pose_temp = pose + [0,0,0.07]
+        builder.initial_pose = sapien.Pose(p=pose_temp)
+        
+        return builder.build(name=name)
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         with torch.device(self.device):
@@ -125,6 +152,15 @@ class WarehouseSortingEnv(DefaultEnv):
                     
                     elem.set_pose(obj_pose)
 
+            # set cardboard box widely open
+            for box in self.cardboard_box:
+                qpos = box.get_qpos()
+                for i in range(len(qpos)):
+                    qpos[i][0] = 3*pi/2
+                    qpos[i][1] = 3*pi/2
+                    qpos[i][2] = 3*pi/2
+                    qpos[i][3] = 3*pi/2
+                box.set_qpos(qpos)
 
     def _get_obs_extra(self, info: Dict):
         # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
