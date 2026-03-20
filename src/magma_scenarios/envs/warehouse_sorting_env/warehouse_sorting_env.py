@@ -9,6 +9,7 @@ from math import pi
 import numpy as np
 import sapien
 import torch
+from transforms3d.euler import euler2quat
 
 from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
@@ -51,14 +52,7 @@ class WarehouseSortingEnv(DefaultEnv):
 
         # Create three cubes with random names
         self.industrial_objects = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            ),
+            self.create_water_bottle(name="ref_obj_1"),
             actors.build_cube(
                 self.scene,
                 half_size=self.cube_half_size,
@@ -85,10 +79,30 @@ class WarehouseSortingEnv(DefaultEnv):
                 self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True, color=[1,1,1,0])
             )
             self.cardboard_box.append(
-                self.create_cardboard_box(name=f"box{i + 1}", pose=pose)
+                self.create_cardboard_box(name=f"box{i + 1}")
             )
 
-    def create_cardboard_box(self, name="cardboard_box", pose=[-1,-0.25,-0.1]):
+    def create_water_bottle(self, name="water_bottle"):
+        """ Create a water bottle from a SAPIEN urdf file."""
+
+        dir_path = dirname(realpath(__file__))
+        urdf_path = join(dir_path, "water-3822/mobility.urdf")
+
+        loader = self.scene.create_urdf_loader()
+        loader.scale = 0.09
+        loader.fix_root_link = False
+        loader.set_material(0.3, 0, 0)
+        loader.set_density(10)
+
+        # the .parse function can also parse multiple articulations
+        # actors and cameras but we only use the articulations
+        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+        builder = articulation_builders[0]
+        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
+        
+        return builder.build(name=name)
+
+    def create_cardboard_box(self, name="cardboard_box"):
         """ Create a cardboard box from a SAPIEN urdf file."""
 
         dir_path = dirname(realpath(__file__))
@@ -119,7 +133,7 @@ class WarehouseSortingEnv(DefaultEnv):
             self.table_scene.initialize(env_idx)
 
             r = 0.15
-            q = [1, 0, 0, 0]
+            q = [1,0,0,0]
             for i in range(len(containers_poses)):
                 p = containers_poses[i]
                 p_batched = torch.tensor(p).repeat(b,1)
@@ -129,6 +143,7 @@ class WarehouseSortingEnv(DefaultEnv):
                 (0,-r),(0,0),(0,r),
                 (r,-r),(r,0),(r,r)]
             
+            q = euler2quat(0, pi/2, 0)
             for elem_list in [self.industrial_objects]:
                 for elem in elem_list:
                     #Get a random availaible cell
@@ -158,7 +173,7 @@ class WarehouseSortingEnv(DefaultEnv):
                 qpos = box.get_qpos()
                 qpos[0][0] = qpos[0][1] = qpos[0][2] = qpos[0][3] = 0.6
                 box.set_qpos(qpos)
-                box.set_pose(Pose.create_from_pq(p=pose))
+                box.set_pose(Pose.create_from_pq(p=(pose + [0,0,0.06])))
 
     def _get_obs_extra(self, info: Dict):
         # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
