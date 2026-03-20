@@ -53,22 +53,8 @@ class WarehouseSortingEnv(DefaultEnv):
         # Create three cubes with random names
         self.industrial_objects = [
             self.create_water_bottle(name="ref_obj_1"),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_3",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            )
+            self.create_jar(name="ref_obj_2"),
+            self.create_pen(name="ref_obj_3")
         ]
 
         self.containers = []
@@ -81,6 +67,46 @@ class WarehouseSortingEnv(DefaultEnv):
             self.cardboard_box.append(
                 self.create_cardboard_box(name=f"box{i + 1}")
             )
+
+    def create_pen(self, name="pen"):
+        """ Create a pen from a SAPIEN urdf file."""
+
+        dir_path = dirname(realpath(__file__))
+        urdf_path = join(dir_path, "pen-101712/mobility.urdf")
+
+        loader = self.scene.create_urdf_loader()
+        loader.scale = 0.08
+        loader.fix_root_link = False
+        loader.set_material(0.3, 0, 0)
+        loader.set_density(50)
+
+        # the .parse function can also parse multiple articulations
+        # actors and cameras but we only use the articulations
+        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+        builder = articulation_builders[0]
+        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
+        
+        return builder.build(name=name)
+
+    def create_jar(self, name="jar"):
+        """ Create a jar / bottle from a SAPIEN urdf file."""
+
+        dir_path = dirname(realpath(__file__))
+        urdf_path = join(dir_path, "jar-4427/mobility.urdf")
+
+        loader = self.scene.create_urdf_loader()
+        loader.scale = 0.06
+        loader.fix_root_link = False
+        loader.set_material(0.3, 0, 0)
+        loader.set_density(10)
+
+        # the .parse function can also parse multiple articulations
+        # actors and cameras but we only use the articulations
+        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+        builder = articulation_builders[0]
+        builder.initial_pose = Pose.create_from_pq(p=[0,0,0.115], q=euler2quat(0,pi/2,0))
+        
+        return builder.build(name=name)
 
     def create_water_bottle(self, name="water_bottle"):
         """ Create a water bottle from a SAPIEN urdf file."""
