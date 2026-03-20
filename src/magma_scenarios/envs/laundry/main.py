@@ -125,6 +125,14 @@ class LaundryEnv(DefaultEnv):
         )
 
         self.machine_actor = self.create_washmachine()
+        self.wash_machine_collision = self.create_box(
+            thickness=0.01,
+            size=0.3,
+            height=0.1,
+            name="washing_machine_basket",
+            initial_pose=np.array((-0.8, -0.5, 0.02)),
+            add_bottom_wall=True
+        )
     
     def create_washmachine(self, name="washing_machine"):
         """ Create a washing machine from a SAPIEN urdf file."""
@@ -169,6 +177,7 @@ class LaundryEnv(DefaultEnv):
         obs = {
             "detergent": ObjectObservation(pose=self.detergent.pose.raw_pose),
             "washing_machine": ObjectObservation(pose=self.machine_actor.pose.raw_pose),
+            "washing_machine_basket": ObjectObservation(pose=self.wash_machine_collision.pose.raw_pose),
             "agent_tcp": ObjectObservation(pose=self.agent.tcp.pose.raw_pose),
         }
         for clothe in self._clothes:
