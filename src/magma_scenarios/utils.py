@@ -144,6 +144,7 @@ def make_urdf_loader(scene:ManiSkillScene, density= 1, scale = 1, is_fix=True) -
     loader = scene.create_urdf_loader()
     loader.scale = scale
     loader.fix_root_link = is_fix
+    loader.set_material(0.3,0,0) # joint friction
     loader.set_density(density)
     return loader
 
