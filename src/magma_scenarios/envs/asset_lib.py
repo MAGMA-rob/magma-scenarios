@@ -24,3 +24,10 @@ def create_water_bottle(scene:ManiSkillScene, name="water_bottle"):
     loader = make_urdf_loader(scene, scale=0.09, is_fix=False, density=10)
     builder = make_articulation_builder(asset_name="water-3822", loader=loader)
     return builder.build(name=name)
+
+
+def create_wash_machine(scene:ManiSkillScene, name="washing_machine"):
+    """ Create a water bottle from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.5, is_fix=True, density=1)
+    builder = make_articulation_builder(asset_name="washmachine-103781", loader=loader)
+    return builder.build(name=name)
