@@ -122,36 +122,36 @@
 				<mesh filename="textured_objs/original-10.obj"/>
 			</geometry>
 		</visual>
-		<!-- <collision>
+		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-4.obj"/>
 			</geometry>
-		</collision> -->
-		<!-- <collision>
+		</collision>
+		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-3.obj"/>
 			</geometry>
-		</collision> -->
-		<!-- <collision>
+		</collision>
+		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-9.obj"/>
 			</geometry>
-		</collision> -->
-		<!-- <collision>
+		</collision>
+		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-5.obj"/>
 			</geometry>
-		</collision> -->
-		<!-- <collision>
+		</collision> 
+		<collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
 				<mesh filename="textured_objs/original-6.obj"/>
 			</geometry>
-		</collision> -->
+		</collision>
 		<!-- <collision>
 			<origin xyz="0 0 0"/>
 			<geometry>
