@@ -5,9 +5,10 @@ from collections import defaultdict
 from magma_core.base.state.task_state import TaskState
 from magma_core.base.user_request import BaseConstraintRequest
 
-from ..constraints import ObjectAssignmentConstraint
+from ..constraints import ObjectAssignmentConstraint, ObjectCategoryConstraint, CategoryAreaConstraint
 
 class GiveObjectAssignmentRequest(BaseConstraintRequest):
+    """Sample direct object-to-area rules and expose them as one constraint request."""
 
     def __init__(self, max_simultaneous_change : int = 1):
         super().__init__()
@@ -16,7 +17,7 @@ class GiveObjectAssignmentRequest(BaseConstraintRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.relations.get("object_area",{})) < 1:
             return 3 # if no assignment, probability to sample this request increase.
-        return 0
+        return 1
     
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -41,6 +42,7 @@ class GiveObjectAssignmentRequest(BaseConstraintRequest):
         self.constraint_msg += "."
 
 class GiveObjectCategoryRequest(BaseConstraintRequest):
+    """Sample object-to-category updates for sorting tasks."""
 
     categories : List[str]
 
@@ -54,7 +56,7 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.relations.get("object_type",{})) < 1:
             return 3 # if no assignment, probability to sample this request increase.
-        return 0
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -65,9 +67,6 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
         
         random.shuffle(all_objects)
         nb_update = random.randint(1,min(self.max_obj, len(all_objects)))
-        if not "object_type" in state.relations:
-            state.relations["object_type"] = {}
-
 
         assignment = defaultdict(list)
         for i in range(nb_update):
@@ -75,7 +74,9 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
             t = random.choice(self.categories)
             if cur_t != t:
                 assignment[t].append(all_objects[i])
-                state.relations["object_type"][all_objects[i]] = t
+                self.constraints.append(ObjectCategoryConstraint(
+                    all_objects[i], t
+                ))
         
         self.constraint_msg = "Hello,"
         for t, objs in assignment.items():
@@ -84,6 +85,7 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
         self.constraint_msg += "."
 
 class GiveCategoryAssignmentRequest(BaseConstraintRequest):
+    """Sample category-to-area routing rules for sorting tasks."""
 
     categories : List[str]
 
@@ -97,7 +99,7 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.relations.get("type_area",{})) < 1:
             return 3 # if no assignment, probability to sample this request increase.
-        return 0
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -105,9 +107,6 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
 
         if len(all_area) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects")
-        
-        if not "type_area" in state.relations:
-            state.relations["type_area"] = {}
 
         known_type = [v for _, v in state.relations["object_type"].items()]
         nb_update = random.randint(1,min(self.max_categories, len(self.categories)))
@@ -124,7 +123,11 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
             target_area = random.choice(all_area)
             if cur_area != target_area:
                 assignment[target_area].append(categories[i])
-                state.relations["type_area"][categories[i]] = target_area
+                self.constraints.append(
+                    CategoryAreaConstraint(
+                        categories[i], target_area
+                    )
+                )
         
         self.constraint_msg = ""
         for area, types in assignment.items():

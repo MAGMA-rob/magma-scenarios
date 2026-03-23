@@ -6,10 +6,11 @@ from magma_core.base.user_request import BaseAttributesModifRequest
 
 class AddValueToListRequest(BaseAttributesModifRequest):
     """
-    Base class for defining a request to add value to a list.
+    Base helper for requests that add values to list attributes.
 
-    You must inherits from it and define at least create_stage.
-    the att_state attributes is to stock the updated attributes wich will be used in apply_request.
+    Subclasses usually build a ``ModifAttributesBaseStage`` and store the
+    updated attributes in ``self.att_state`` so the change can be applied to
+    the latent task state after the interaction.
     """
 
     def __init__(self, modifiable_task_attributes: Dict[str, Any], max_update : int = 1) -> None:
@@ -36,10 +37,11 @@ class AddValueToListRequest(BaseAttributesModifRequest):
     
 class RemoveValueToListRequest(BaseAttributesModifRequest):
     """
-    Base class for defining a request to add value to a list.
+    Base helper for requests that remove values from list attributes.
 
-    You must inherits from it and define at least create_stage.
-    the att_state attributes is to stock the updated attributes wich will be used in apply_request.
+    Subclasses usually build a ``ModifAttributesBaseStage`` and store the
+    updated attributes in ``self.att_state`` so the change can be applied to
+    the latent task state after the interaction.
     """
 
     def __init__(self, modifiable_attributes_name : List, max_update : int = 1) -> None:

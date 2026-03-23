@@ -7,8 +7,7 @@ from typing import List, Dict, Literal, Optional
 
 class MissingInformationStage(BaseTaskStage):
     """
-    This stage allows to handle phase where users asks for an action but the agent does not have all needed informations.
-
+    Text-only stage used when the agent must ask for missing sorting details.
     """
 
     target_steps = 1
@@ -34,7 +33,7 @@ class MissingInformationStage(BaseTaskStage):
 
 class ForbiddenElemStage(BaseTaskStage):
     """
-    This stage allows to handle phase where users asks for an action but it is forbidden.
+    Text-only stage used when the request involves forbidden objects or areas.
     """
 
     target_steps = 1
@@ -60,6 +59,7 @@ class ForbiddenElemStage(BaseTaskStage):
 
 
 class Cycle(BaseTaskStage):
+    """Execution stage for a sorting cycle with direct placement and forbidden-area checks."""
 
     target_steps = 1
     acceptance_steps = 1

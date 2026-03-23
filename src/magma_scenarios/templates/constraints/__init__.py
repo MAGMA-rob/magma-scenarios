@@ -1,5 +1,7 @@
 from .sorting_constraints import (
-    ObjectAssignmentConstraint
+    ObjectAssignmentConstraint,
+    CategoryAreaConstraint,
+    ObjectCategoryConstraint
 )
 
-__all__ = ["ObjectAssignmentConstraint"]
+__all__ = ["ObjectAssignmentConstraint","CategoryAreaConstraint","ObjectCategoryConstraint"]
