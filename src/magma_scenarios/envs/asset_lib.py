@@ -42,8 +42,14 @@ def create_coffee_maker(scene:ManiSkillScene, name="coffee_maker"):
     builder = make_articulation_builder(asset_name="coffee_maker_103057", loader=loader)
     return builder.build(name=name)
 
-def create_donut(scene:ManiSkillScene, name="donut", pose=Pose(p=[0, 0, 0]), color=(0.7,0.47,0), scale=0.03):
+def create_donut(scene:ManiSkillScene, name="donut", pose=Pose(p=[0, 0, 0]), color=(0.7,0.47,0), scale=0.02):
     """ Create a custom donut from .obj file."""
     builder = make_obj_builder(scene=scene, obj_path="donut/torus.obj", color=color, scale=scale)
     builder.set_initial_pose(pose)
     return builder.build_dynamic(name=name)
+
+def create_soap(scene:ManiSkillScene, name="soap"):
+    """ Create a soap container from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.1, is_fix=False, density=50)
+    builder = make_articulation_builder(asset_name="3398-soap", loader=loader)
+    return builder.build(name=name)

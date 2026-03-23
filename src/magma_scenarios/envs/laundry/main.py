@@ -13,7 +13,7 @@ from mani_skill.utils.registration import register_env
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose as MSPose
 
-from magma_scenarios.envs.asset_lib import create_wash_machine
+from magma_scenarios.envs.asset_lib import create_wash_machine, create_soap
 
 from magma_core.base.envs import DefaultEnv
 from .observation import ObjectObservation
@@ -118,13 +118,8 @@ class LaundryEnv(DefaultEnv):
                 initial_pose=sapien.Pose(p=[0.0, 0.4, 0.02]),
             ),
         ]
-        self.detergent = actors.build_box(
-            self.scene,
-            (0.06, 0.03, 0.03),
-            WHITE,
-            name="OMO",
-            initial_pose=sapien.Pose(p=[0, -0.3, 0.02]),
-        )
+        
+        self.detergent = create_soap(self.scene, name="OMO")
 
         self.machine_actor = create_wash_machine(self.scene)
         self.wash_machine_collision = self.create_box(
@@ -156,6 +151,9 @@ class LaundryEnv(DefaultEnv):
         qpos = self.machine_actor.get_qpos()
         qpos[0] = pi/2 #set the wash machine door (first link) open
         self.machine_actor.set_qpos(qpos)
+
+        # set soap position
+        self.detergent.set_pose(sapien.Pose(p=[0, -0.3, 0.02], q=euler2quat(0,90,0)))
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""

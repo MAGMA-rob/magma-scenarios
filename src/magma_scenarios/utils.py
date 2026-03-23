@@ -163,11 +163,14 @@ def make_articulation_builder(asset_name:str, loader:URDFLoader)-> ArticulationB
     builder.initial_pose = sapien.Pose(p=[0,0,0])
     return builder
 
-def make_obj_builder(scene:ManiSkillScene,obj_path:str, color, scale):
+def make_obj_builder(scene:ManiSkillScene,obj_path:str, color, scale, use_convex_collision=True):
     """ Make a builder for an .obj asset."""
     mesh_path = join(get_asset_path(), obj_path)
     scale_tup = (scale, scale, scale)
     builder = scene.create_actor_builder()
-    builder.add_nonconvex_collision_from_file(filename=mesh_path, scale=scale_tup)
+    if(use_convex_collision):
+        builder.add_convex_collision_from_file(filename=mesh_path, scale=scale_tup)
+    else:
+        builder.add_nonconvex_collision_from_file(filename=mesh_path, scale=scale_tup)
     builder.add_visual_from_file(filename=mesh_path, material=color, scale=scale_tup)
     return builder
