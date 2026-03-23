@@ -148,13 +148,26 @@ def make_urdf_loader(scene:ManiSkillScene, density= 1, scale = 1, is_fix=True) -
     loader.set_density(density)
     return loader
 
+def get_asset_path() -> str:
+    """ Get the asset root path. """
+    dir_path = dirname(realpath(__file__))
+    return join(dir_path, "assets")
+
 def make_articulation_builder(asset_name:str, loader:URDFLoader)-> ArticulationBuilder:
     """ Make a articulation builder for an URDF asset."""
-    dir_path = dirname(realpath(__file__))
-    urdf_path = join(dir_path, f"assets/{asset_name}/mobility.urdf")
+    urdf_path = join(get_asset_path(), f"{asset_name}/mobility.urdf")
     # the .parse function can also parse multiple articulations
     # actors and cameras but we only use the articulations
     articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
     builder = articulation_builders[0]
     builder.initial_pose = sapien.Pose(p=[0,0,0])
+    return builder
+
+def make_obj_builder(scene:ManiSkillScene,obj_path:str, color, scale):
+    """ Make a builder for an .obj asset."""
+    mesh_path = join(get_asset_path(), obj_path)
+    scale_tup = (scale, scale, scale)
+    builder = scene.create_actor_builder()
+    builder.add_nonconvex_collision_from_file(filename=mesh_path, scale=scale_tup)
+    builder.add_visual_from_file(filename=mesh_path, material=color, scale=scale_tup)
     return builder
