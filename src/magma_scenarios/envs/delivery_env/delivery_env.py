@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+from os import name
 from typing import Any, Dict, Union
 
 import numpy as np
@@ -15,6 +16,7 @@ from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
+from magma_scenarios.envs.asset_lib import create_cardboard_box_builder
 
 container_pose = [-1,-0.25,0]
 
@@ -137,7 +139,9 @@ class DeliveryEnv(DefaultEnv):
                 initial_pose=sapien.Pose(p=[0.1, 0, self.cube_half_size]),
             )
         ]
-        self.container = self.create_box(size=self.size_box, thickness=self.thickness_box, name=f"container", add_bottom_wall=True)
+        box_builder = create_cardboard_box_builder(self.scene)
+        self.container = box_builder.build(name="container")
+
         self.objects = []
 
     """
