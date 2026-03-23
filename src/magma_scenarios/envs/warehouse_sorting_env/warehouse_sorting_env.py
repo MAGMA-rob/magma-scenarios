@@ -62,12 +62,8 @@ class WarehouseSortingEnv(DefaultEnv):
         self.cardboard_box = []
         box_builder = create_cardboard_box_builder(scene=self.scene)
         for i in range(len(containers_poses)):
-            pose = np.array(containers_poses[i])
             self.containers.append(
-                self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True, color=[1,1,1,0])
-            )
-            self.cardboard_box.append(
-                box_builder.build(name=f"box{i + 1}")
+                box_builder.build(name=f"area{i + 1}")
             )
 
 	
@@ -81,12 +77,20 @@ class WarehouseSortingEnv(DefaultEnv):
             # note that the table scene is built such that z=0 is the surface of the table.
             self.table_scene.initialize(env_idx)
 
+            # set cardboard box position and widely open
             r = 0.15
             q = [1,0,0,0]
             for i in range(len(containers_poses)):
                 p = containers_poses[i]
                 p_batched = torch.tensor(p).repeat(b,1)
-                self.containers[i].set_pose(Pose.create_from_pq(p=p_batched,q=q))
+                box = self.containers[i]
+                qpos = box.get_qpos()
+                qpos[0][0] = 0.6
+                qpos[0][1] = 0.6
+                qpos[0][2] = 0.6
+                qpos[0][3] = 0.6
+                box.set_qpos(qpos)
+                box.set_pose(Pose.create_from_pq(p=p_batched,q=q))
 
             available_cells = [(-r,-r),(-r,0),(-r,r),
                 (0,-r),(0,0),(0,r),
@@ -114,18 +118,6 @@ class WarehouseSortingEnv(DefaultEnv):
                     obj_pose = Pose.create_from_pq(p=xyz, q=q)
                     
                     elem.set_pose(obj_pose)
-
-            # set cardboard box position and widely open
-            for i in range(len(containers_poses)):
-                pose = np.array(containers_poses[i])
-                box = self.cardboard_box[i]
-                qpos = box.get_qpos()
-                qpos[0][0] = 0.6
-                qpos[0][1] = 0.6
-                qpos[0][2] = 0.6
-                qpos[0][3] = 0.6
-                box.set_qpos(qpos)
-                box.set_pose(Pose.create_from_pq(p=(pose + [0,0,0.06])))
 
     def _get_obs_extra(self, info: Dict):
         # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
