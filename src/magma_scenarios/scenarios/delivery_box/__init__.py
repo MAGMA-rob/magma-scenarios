@@ -3,9 +3,11 @@
 
 SCENARIO_NAME = "delivery_box"
 
-TASK_DEFINITIONS = {}
+TASK_DEFINITIONS = {
+    "EvolvingRecipeDefinition": "delivery_definition:EvolvingRecipeDefinition",
+}
 
 TASK_PRESETS = {
-    "BenchDeliveryTask": "tasks.simple_delivery:BenchDeliveryTask",
-    "EvolvingDelivery": "tasks.simple_delivery:EvolvingDelivery",
+    "BenchDeliveryTask": "simple_preset:BenchDeliveryTask",
+    "SimplePreset": "simple_preset:SimplePreset",
 }

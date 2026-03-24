@@ -3,7 +3,9 @@
 
 SCENARIO_NAME = "make_coffee"
 
-TASK_DEFINITIONS = {}
+TASK_DEFINITIONS = {
+    "NamedCoffeeDefinition": "coffee_definition:NamedCoffeeDefinition",
+}
 
 TASK_PRESETS = {
     "ConstrainedPreset": "coffee_preset:ConstrainedPreset",

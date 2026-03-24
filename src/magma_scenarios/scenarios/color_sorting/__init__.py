@@ -3,11 +3,10 @@
 
 SCENARIO_NAME = "color_sorting"
 
-TASK_DEFINITIONS = {}
+TASK_DEFINITIONS = {
+    "SortingDefinition": "color_sorting_definition:SortingDefinition",
+}
 
 TASK_PRESETS = {
-    "SortColorWithDetection": "tasks.detection_task:SortColorWithDetection",
-    "OrderedSortColorCube": "tasks.main:OrderedSortColorCube",
-    "MultipleCubeColorSorting": "tasks.main:MultipleCubeColorSorting",
-    "SeqSortColorCube": "tasks.main:SeqSortColorCube",
+    "CleanTablePreset": "simple_preset:CleanTablePreset",
 }
