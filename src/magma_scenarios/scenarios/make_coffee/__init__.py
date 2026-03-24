@@ -6,7 +6,7 @@ SCENARIO_NAME = "make_coffee"
 TASK_DEFINITIONS = {}
 
 TASK_PRESETS = {
-    "MakeCoffeeBasic": "main:MakeCoffeeBasic",
-    "ConstrainedCoffee": "main:ConstrainedCoffee",
-    "MultipleUserCoffee": "main:MultipleUserCoffee",
+    "ConstrainedPreset": "coffee_preset:ConstrainedPreset",
+    "MultipleUserPreset": "coffee_preset:MultipleUserPreset",
+    "TestComposite": "coffee_preset:TestComposite",
 }

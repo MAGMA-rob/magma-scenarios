@@ -7,7 +7,7 @@ import torch
 
 from magma_core.base.executor import ToolsBaseExecutor
 from magma_core.base.data_structures import ToolInfos, Log
-from magma_core.utils.global_utils import extract_env_state_val
+from magma_core.utils.global_utils import extract_env_state_val, batch_set_value
 
 class ToolsTestingExecutor(ToolsBaseExecutor):
     """
@@ -40,15 +40,23 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         stage_id = self._eval_envs[0].current_task_stage
         env_ids = list(range(self.nb_env))
         env_verif = self.task_ref.verif_stage_env_completion(stage_id, obs, env_ids=env_ids).cpu().tolist()
+        st = self.env.get_state_dict().copy()
+        env_ids_tensor = torch.tensor([env_ids])
         for i in range(self.nb_env):
             full_log, stage_log = self._get_logs(i)
             log_verif = self.task_ref.verif_stage_log_completion(stage_id=stage_id ,full_log=full_log, stage_log=stage_log)
             out.append(self.task_ref.combine_stage_verif_scores(stage_id, env_verif[i], log_verif))
+            if self.task_ref.should_reset_same_stage(stage_id):
+                batch_set_value(
+                    state_env=st,
+                    env_ids=env_ids_tensor,
+                    template=self.task_ref._default_env_state
+                )
+                self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
 
         if all([score == 1 for score in out]):
             if stage_id != self.task_ref.get_nb_total_stage()-1:
-                new_id = stage_id+1
-                st = self.env.get_state_dict().copy()
+                new_id = stage_id+1  
                 self._pass_to_the_next_stage(stage_id, env_ids, st)
 
                 while self.task_ref.is_stage_text_only(new_id):
@@ -62,10 +70,10 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     # Specific modifications
                     self._eval_envs[i].current_task_stage = new_id
                     self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
-
-                self.env.set_state_dict(st)
             else:
                 print("FINISHED TASK")
+
+        self.env.set_state_dict(st)
 
         return out
     

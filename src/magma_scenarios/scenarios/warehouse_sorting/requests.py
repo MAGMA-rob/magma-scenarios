@@ -9,7 +9,7 @@ from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
 from .stages import ObjectToZone
 from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage, Cycle
-from magma_scenarios.templates.constraints import ObjectAssignmentConstraint
+from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 from magma_scenarios.templates.requests import AddValueToListRequest, RemoveValueToListRequest
 
 class CycleRequest(BaseRequest):
@@ -123,7 +123,7 @@ class CycleRequest(BaseRequest):
 
 class CycleWithPermanentRulesRequest(CycleRequest):
 
-    constraints : list[ObjectAssignmentConstraint]
+    constraints : list[RelationAssignmentConstraint]
 
     def __init__(self, max_object_per_cycle_request: int = 3, max_permanent_rule : int = 2) -> None:
         super().__init__(max_object_per_cycle_request)
@@ -146,7 +146,15 @@ class CycleWithPermanentRulesRequest(CycleRequest):
         for i in range(nb_rules):
             a = random.choice(all_areas)
             assignement[all_objects[i]] = a
-            self.constraints.append(ObjectAssignmentConstraint(all_objects[i], a))
+            self.constraints.append(
+                RelationAssignmentConstraint(
+                    source_value=all_objects[i],
+                    target_value=a,
+                    relation_key="object_area",
+                    source_attribute_key="objects",
+                    target_attribute_key="target_areas",
+                )
+            )
         
         
         return self._create_stages(all_objects[:nb_obj], all_areas, state, base_assignement=assignement)

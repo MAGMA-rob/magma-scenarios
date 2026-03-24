@@ -5,7 +5,7 @@ from collections import defaultdict
 from magma_core.base.state.task_state import TaskState
 from magma_core.base.user_request import BaseConstraintRequest
 
-from ..constraints import ObjectAssignmentConstraint, ObjectCategoryConstraint, CategoryAreaConstraint
+from ..constraints import RelationAssignmentConstraint
 
 class GiveObjectAssignmentRequest(BaseConstraintRequest):
     """Sample direct object-to-area rules and expose them as one constraint request."""
@@ -35,7 +35,15 @@ class GiveObjectAssignmentRequest(BaseConstraintRequest):
 
         self.constraint_msg = "Hey, here are some sorting rules: "
         for i in range(nb_change):
-            self.constraints.append(ObjectAssignmentConstraint(all_objects[i],selected_areas[i]))
+            self.constraints.append(
+                RelationAssignmentConstraint(
+                    source_value=all_objects[i],
+                    target_value=selected_areas[i],
+                    relation_key="object_area",
+                    source_attribute_key="objects",
+                    target_attribute_key="target_areas",
+                )
+            )
             self.constraint_msg += f"{all_objects[i]} goes to {selected_areas[i]}"
             if i < nb_change -1:
                 self.constraint_msg += ","
@@ -74,9 +82,14 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
             t = random.choice(self.categories)
             if cur_t != t:
                 assignment[t].append(all_objects[i])
-                self.constraints.append(ObjectCategoryConstraint(
-                    all_objects[i], t
-                ))
+                self.constraints.append(
+                    RelationAssignmentConstraint(
+                        source_value=all_objects[i],
+                        target_value=t,
+                        relation_key="object_type",
+                        source_attribute_key="objects",
+                    )
+                )
         
         self.constraint_msg = "Hello,"
         for t, objs in assignment.items():
@@ -124,8 +137,11 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
             if cur_area != target_area:
                 assignment[target_area].append(categories[i])
                 self.constraints.append(
-                    CategoryAreaConstraint(
-                        categories[i], target_area
+                    RelationAssignmentConstraint(
+                        source_value=categories[i],
+                        target_value=target_area,
+                        relation_key="type_area",
+                        target_attribute_key="target_areas",
                     )
                 )
         
