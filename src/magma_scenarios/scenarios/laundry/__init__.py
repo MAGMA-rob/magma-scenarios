@@ -6,5 +6,5 @@ SCENARIO_NAME = "laundry"
 TASK_DEFINITIONS = {}
 
 TASK_PRESETS = {
-    "Laundry": "main:Laundry",
+    "SimplePreset": "laundry_preset:SimplePreset",
 }

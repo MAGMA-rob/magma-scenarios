@@ -47,10 +47,11 @@ class AskCoffeeRequest(BaseRequest):
 
 class GiveCoffeePreference(BaseConstraintRequest):
 
-    def __init__(self, possible_names : List[str], max_name : int = 4):
+    def __init__(self, possible_names : List[str], max_name : int = 4, max_different_name : int = 6):
         super().__init__()
         self.max_nb = max_name
         self.possible_names = possible_names
+        self.max_difference = self.max_difference
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -58,9 +59,17 @@ class GiveCoffeePreference(BaseConstraintRequest):
         coffee = state.attributes.get("coffee_pod",[])
         if len(coffee) <= 0:
             raise RuntimeError("Empty coffee pod")
+        
+        # If we are at the maximum of different preference we just modify existing ones
+        if len(state.relations.get("coffee_preference",{})) >= self.max_difference:
+            n = random.randint(1,min(len(self.possible_names),self.max_nb))
+            names = random.sample(list(state.relations.get("coffee_preference",{}).keys()),k=n)
+        else:
+            # Otherwise we sample new ones
+            max_diff = self.max_difference - len(state.relations.get("coffee_preference",{}))
+            n = random.randint(1,min(len(self.possible_names),self.max_nb,max_diff))
+            names = random.sample(self.possible_names,k=n)
 
-        n = random.randint(1,min(len(self.possible_names),self.max_nb))
-        names = random.sample(self.possible_names,k=n)
         coffees = random.choices(coffee,k=n)
         
         assignment = defaultdict(list)

@@ -4,6 +4,7 @@
 from typing import Dict, List, Union, Tuple
 from collections import OrderedDict
 import torch
+import copy
 
 from magma_core.base.executor import ToolsBaseExecutor
 from magma_core.base.data_structures import ToolInfos, Log
@@ -44,7 +45,12 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         env_ids_tensor = torch.tensor([env_ids])
         for i in range(self.nb_env):
             full_log, stage_log = self._get_logs(i)
-            log_verif = self.task_ref.verif_stage_log_completion(stage_id=stage_id ,full_log=full_log, stage_log=stage_log)
+            log_verif = self.task_ref.verif_stage_log_completion(
+                stage_id=stage_id,
+                full_log=full_log,
+                stage_log=stage_log,
+                composite_progress=self._eval_envs[i].composite_progress,
+            )
             out.append(self.task_ref.combine_stage_verif_scores(stage_id, env_verif[i], log_verif))
             if self.task_ref.should_reset_same_stage(stage_id):
                 batch_set_value(
@@ -99,10 +105,12 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                 stage_id = self._eval_envs[env_id].current_task_stage
                 logs = self._eval_envs[env_id].logs
                 stage_log_length = self._eval_envs[env_id].stage_log_start_idx
+                composite_progress = self._eval_envs[env_id].composite_progress
             else:
                 stage_id = 0
                 stage_log_length = 0
                 logs = []
+                composite_progress = {}
 
                 while self.task_ref.is_stage_text_only(stage_id):
                     print(f"[EXECUTOR] Skip Stage {stage_id}")
@@ -119,6 +127,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     stage_id=stage_id,
                     node_id=env_id,
                     logs=logs,
+                    composite_progress=composite_progress,
                     source_node_id=0,
                     original_log_length=stage_log_length
                 )
@@ -131,6 +140,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     current_node_step=0,
                     node_id=env_id,
                     logs=logs,
+                    composite_progress=composite_progress,
                     source_node_id=0,
                     original_log_length=stage_log_length
                 )
@@ -194,6 +204,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
 
         return {
             "logs" : self._eval_envs[node_id].logs,
-            "env_state" : extract_env_state_val(self.env.get_state_dict().copy(),node_id)
+            "env_state" : extract_env_state_val(self.env.get_state_dict().copy(),node_id),
+            "composite_progress" : copy.deepcopy(self._eval_envs[node_id].composite_progress),
         }
    
