@@ -21,7 +21,7 @@ class SortingDefinition(TaskDefinition):
 
     active_requests = [
         GiveOrderConstraint(),
-        AskForCycle(),
+        AskForCycle(5),
     ]
 
     def __init__(self):

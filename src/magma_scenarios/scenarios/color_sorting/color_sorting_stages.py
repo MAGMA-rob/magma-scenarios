@@ -29,7 +29,7 @@ class ExactCubeAt(At):
 class MaxSortedColor(MaxAt):
 
     def __init__(self, color : str, maximum: int):
-        super().__init__([f"{color}_cube_{i}" for i in range(3)], f"{color}_box_pose", maximum, True)
+        super().__init__([f"{color}_cube_{i+1}" for i in range(3)], f"{color}_box_pose", maximum, True)
 
 class CountCubes(BaseGoal):
 

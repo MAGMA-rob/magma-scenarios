@@ -89,7 +89,8 @@ class SimplePreset(BaseTask):
                         recipe=s["recipe"],
                         manufacturing_order=s["manufacturing_order"],
                         deliveries=s["delivery"],
-                        instruction=s["instruction"]
+                        instruction=s["instruction"],
+                        flag_answer_to_user=True
                     )
                 )
 
