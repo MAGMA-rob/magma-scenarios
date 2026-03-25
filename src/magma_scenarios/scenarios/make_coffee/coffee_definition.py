@@ -10,6 +10,7 @@ from .attributes import att, loaded_capsule_pose, dropped_mug_pose
 from .coffee_request import GiveCoffeePreference, AskCoffeeRequest, AskCoffeePerUser
 
 from importlib import resources
+import sapien
 
 people_name = [
     "Arthur", "Matthieu", "Florent", "Ariane",
@@ -19,7 +20,7 @@ people_name = [
     "Alexandra", "Angela", "Merlin", "Yanis"
 ]
 
-class NamedCoffeeDefinition(TaskDefinition):
+class SimpleDefinition(TaskDefinition):
     env_id = "MakeCoffee-v1"
     randomized_config_path = str(resources.files(__package__).joinpath("make_coffee_cfg.yaml"))
     Tools_cls = MakingCoffeeTool
@@ -27,16 +28,15 @@ class NamedCoffeeDefinition(TaskDefinition):
     active_requests = [
         GiveCoffeePreference(people_name),
         AskCoffeeRequest(),
-        AskCoffeePerUser(people_name)
+        AskCoffeePerUser(people_name, force_order=True)
     ]
 
     def __init__(self) -> None:  
         super().__init__(
-            name="NamedCoffeeDefinition",
+            name="Simple definition",
             tools_constant= {"loaded_capsule_pose": loaded_capsule_pose, "dropped_mug_pose" : dropped_mug_pose, "base_pose" : sapien.Pose(p = [-0.1,0,0.4],q = [0,1,0,0])}
         )
 
         self.starting_state = TaskState()
         self.starting_state.attributes = att
         self.starting_state.relations = {"coffee_preference":{}}
-

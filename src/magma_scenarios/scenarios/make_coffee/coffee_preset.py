@@ -129,7 +129,7 @@ class MultipleUserPreset(BaseCoffee):
                     instruction=random.choice(named_instructions).format(name=people[i]),
                     capsule=names_preference[people[i]],
                     add_memory=[],
-                    flag_answer= i == nb_of_coffee-1
+                    flag_answer= True
                 )
             )
 

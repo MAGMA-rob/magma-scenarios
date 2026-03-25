@@ -62,8 +62,11 @@ class WashStage(BaseTaskStage):
         if len(stage_log) == 0:
             return 0
         
+        if len(stage_log[-1].content) != len(self.to_clean):
+            return -1
+
         for clothe in self.to_clean:
             if not clothe in stage_log[-1].content:
                 return -1
-            
+        
         return 1

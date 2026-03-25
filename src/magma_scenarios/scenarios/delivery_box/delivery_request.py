@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import Dict, List
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.state.task_state import TaskState
@@ -9,6 +9,22 @@ from magma_core.utils.env_utils import craft_random_manu_order
 
 from .attributes import MAX_NB_PER_RECIPE
 from .delivery_stages import CycleStage
+
+
+def build_recipe_instruction(products: List[str], action: str | None = None) -> str:
+    recipe_counts: Dict[str, int] = {}
+    for product_name in products:
+        recipe_counts[product_name] = recipe_counts.get(product_name, 0) + 1
+
+    instruction = " and ".join(
+        f"{count} {product_name}" for product_name, count in recipe_counts.items()
+    )
+
+    if action is None or len(instruction) == 0:
+        return instruction
+
+    return f"{action} {instruction}"
+
 
 class RecipeConstraints(BaseConstraint):
 
@@ -38,9 +54,10 @@ class GiveRecipe(BaseConstraintRequest):
         random.shuffle(all_type)
 
         n = random.randint(1,self.max_lenght)
+        recipe = all_type[:n]
 
-        self.constraints = [RecipeConstraints(add=all_type[:n],remove=[],overridde=True)]
-        self.constraint_msg = f"Please update the default recipe to: {' and '.join(all_type[:n])}."
+        self.constraints = [RecipeConstraints(add=recipe,remove=[],overridde=True)]
+        self.constraint_msg = f"Please update the default recipe to: {build_recipe_instruction(recipe)}."
 
 class UpdateRecipe(BaseConstraintRequest):
     
@@ -76,14 +93,12 @@ class UpdateRecipe(BaseConstraintRequest):
                 to_remove.append(select)
 
         self.constraints = [RecipeConstraints(add=to_add,remove=to_remove)]
-        self.constraint_msg = "Hello! I want you to "
+        actions = []
         if len(to_add) > 0:
-            self.constraint_msg += f"add {' and '.join(to_add)} to the recipe "
+            actions.append(f"{build_recipe_instruction(to_add, 'add')} to the recipe")
         if len(to_remove) > 0:
-            if len(to_add) > 0:
-                self.constraint_msg += "and "
-            self.constraint_msg += f"remove {' and '.join(to_remove)} from the recipe"
-        self.constraint_msg += "."
+            actions.append(f"{build_recipe_instruction(to_remove, 'remove')} from the recipe")
+        self.constraint_msg = f"Hello! I want you to {' and '.join(actions)}."
 
 
 class AskForCycle(BaseRequest):
@@ -112,21 +127,24 @@ class AskForCycleWithOverride(BaseRequest):
         super().__init__()
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        all_types = state.properties.get("product_type",[]).copy()
+        all_types = state.attributes.get("product_type",[]).copy()
         random.shuffle(all_types)
         recipe = []
         manu = craft_random_manu_order(3)
         nb = random.randint(1,99)
 
-        instruction = f"Hey, Can you do me {nb} packs under order {manu} with: "
-        for i, type in enumerate(all_types):
-            n = random.randint(0,2)
+        for product_name in all_types:
+            n = random.randint(0, MAX_NB_PER_RECIPE)
             if n > 0:
-                recipe.extend(n*[type])
-                instruction += f"{n} {type}"
-                if i == len(all_types)-1:
-                    instruction += ", "
-        instruction += "."
+                recipe.extend(n * [product_name])
+
+        if len(recipe) == 0 and len(all_types) > 0:
+            recipe.append(random.choice(all_types))
+
+        instruction = (
+            f"Hey, Can you do me {nb} packs under order {manu} "
+            f"with: {build_recipe_instruction(recipe)}."
+        )
         
         return [
             CycleStage(recipe,manu,nb,instruction,True)
@@ -148,4 +166,3 @@ class AskForCycleWithOverride(BaseRequest):
 
 
 #         return super().create_stages(state)
-

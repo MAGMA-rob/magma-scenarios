@@ -15,7 +15,7 @@ python -m magma_scenarios.request_tester \
     --request CycleByCategoriesRequest \
     --seed 0
 
-python -m magma_scenarios.request_tester \
+python -m magma_scenarios.request_tester \f
     warehouse_sorting.SimpleSortingDefinition \
     --request RemoveAreas \
     --state-file /tmp/custom_state.json
@@ -165,6 +165,9 @@ def resolve_request(requests: List[Any], selector: str) -> Tuple[int, Any]:
     if not candidates:
         raise ValueError(f"Unable to find a request matching '{selector}'.")
     if len(candidates) > 1:
+        for idx, req in candidates:
+            if req.__class__.__name__ == selector:
+                return idx, req
         matches = ", ".join(f"[{idx}] {req.__class__.__name__}" for idx, req in candidates)
         raise ValueError(f"Ambiguous request selector '{selector}'. Matches: {matches}")
 
