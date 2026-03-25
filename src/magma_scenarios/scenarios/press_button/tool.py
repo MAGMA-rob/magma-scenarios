@@ -8,7 +8,7 @@ from typing import Dict, List
 import sapien, torch
 import numpy as np
 
-BTN_STROKE = 0.011
+from .helper import BTN_STROKE
 
 class Tool(BaseToolsAPI):
 

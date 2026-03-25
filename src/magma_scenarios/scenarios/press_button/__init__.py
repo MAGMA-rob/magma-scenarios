@@ -3,12 +3,13 @@
 
 SCENARIO_NAME = "press_button"
 
-TASK_DEFINITIONS = {}
+TASK_DEFINITIONS = {
+    "PressButtonDefinition": "button_definition:PressButtonDefinition",
+}
 
 TASK_PRESETS = {
-    "ButtonPressOrdered": "main:ButtonPressOrdered",
-    "ButtonPressNoOrdering": "main:ButtonPressNoOrdering",
-    "ConstrainedButtonPress": "main:ConstrainedButtonPress",
-    "ButtonPressPreset1": "main:ButtonPressPreset1",
-    "ButtonPressPreset2": "main:ButtonPressPreset2",
+    "ButtonPressOrdered": "button_preset:ButtonPressOrdered",
+    "ButtonPressNoOrdering": "button_preset:ButtonPressNoOrdering",
+    "ButtonPressPreset1": "button_preset:ButtonPressPreset1",
+    "ButtonPressPreset2": "button_preset:ButtonPressPreset2",
 }
