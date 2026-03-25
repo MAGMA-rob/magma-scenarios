@@ -18,7 +18,7 @@ class LoadClotheStage(BaseTaskStage):
     acceptance_steps = 1
 
     def __init__(self, n : int, clothes_to_load : List[str], instruction : Instruction = EmptyInstruction()) -> None:       
-        super().__init__([CountAt(clothes_to_load,"washing_machine",n)],False, f"The goal of this stage is to have {n} clothes from the list {clothes_to_load} in the washing machine")
+        super().__init__([CountAt(clothes_to_load,"washing_machine_basket",n)],False, f"The goal of this stage is to have {n} clothes from the list {clothes_to_load} in the washing machine")
         self.situation = Situation(
             memory = [
                 "To wash clothes, I need to put them inside the wash-machine, add detergents and then use 'wash'.",
@@ -42,7 +42,7 @@ class WashStage(BaseTaskStage):
     acceptance_steps = 1
 
     def __init__(self, clothes : List[str]) -> None:
-        super().__init__([At("detergent","washing_machine")],True, "The goal of this stage is to finally start the washing machine with the detergent inside")
+        super().__init__([At("detergent","washing_machine_basket")],True, "The goal of this stage is to finally start the washing machine with the detergent inside")
         self.to_clean = clothes
         self.situation = Situation(
             memory = [

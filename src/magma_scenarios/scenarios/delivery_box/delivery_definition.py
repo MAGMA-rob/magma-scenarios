@@ -1,4 +1,4 @@
-from typing import Dict, List
+from pathlib import Path
 
 from magma_core.base.state.task_state import TaskState
 from magma_core.base.tasks import TaskDefinition
@@ -26,7 +26,7 @@ class EvolvingRecipeDefinition(TaskDefinition):
     def __init__(self):
         super().__init__(
             name="Evolving Recipe Definition",
-            randomized_config_path=""
+            randomized_config_path=str(Path(__file__).resolve().parent / "delivery.yaml")
         )
 
         self.starting_state = TaskState()

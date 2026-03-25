@@ -1,8 +1,7 @@
 from .assignment_requests import (
     GiveObjectAssignmentRequest,
     GiveObjectCategoryRequest,
-    GiveCategoryAssignmentRequest,
-    BaseAssignmentRequest
+    GiveCategoryAssignmentRequest
 )
 
 from .attributes_request import (
