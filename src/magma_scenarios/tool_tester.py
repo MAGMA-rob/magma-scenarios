@@ -10,6 +10,7 @@ import threading, queue
 from pathlib import Path
 
 from .executor import ToolsTestingExecutor
+from .registry_loader import load_preset
 from magma_core.configs import MAGMAConfig
 
 def parse_args():
@@ -122,7 +123,8 @@ def main(args):
     magma_config = MAGMAConfig.load(default_path)
     tool_executor = ToolsTestingExecutor(magma_config.magma_planner_address, nb_env = args.nb_env, randomized=args.randomized)
     
-    env = tool_executor.initialize(args.task, {})
+    Task_Cls = load_preset(args.task)
+    env = tool_executor.initialize(Task_Cls())
 
     cmd_queue = queue.Queue()
     

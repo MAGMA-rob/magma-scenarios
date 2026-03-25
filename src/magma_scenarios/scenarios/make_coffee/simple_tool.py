@@ -90,7 +90,7 @@ class MakingCoffeeTool(BaseToolsAPI):
                 else:
                     reason = f"Failed to load the {coffee_name} capsule. You can retry."
 
-            return ToolResult(ok, reason, logs=Log(""))
+            return ToolResult(ok, reason, logs=Log(coffee_name))
 
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     

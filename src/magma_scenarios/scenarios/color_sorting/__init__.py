@@ -1,5 +1,12 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from .tasks.detection_task import SortColorWithDetection
-from .tasks.main import OrderedSortColorCube, MultipleCubeColorSorting, SeqSortColorCube
+SCENARIO_NAME = "color_sorting"
+
+TASK_DEFINITIONS = {
+    "SortingDefinition": "color_sorting_definition:SortingDefinition",
+}
+
+TASK_PRESETS = {
+    "CleanTablePreset": "simple_preset:CleanTablePreset",
+}
