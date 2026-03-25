@@ -1,7 +1,11 @@
 from typing import Literal, Union, Sequence, Optional
 import sapien, torch
 import numpy as np
+from os.path import dirname, join, realpath
 
+from mani_skill.utils.building import ArticulationBuilder
+from mani_skill.utils.building import URDFLoader
+from mani_skill.envs.scene import ManiSkillScene
 from mani_skill.agents.base_agent import BaseAgent
 from mani_skill.utils.common import to_numpy
 from transforms3d.euler import euler2quat
@@ -134,3 +138,39 @@ def sapien_to_tensor(pose : sapien.Pose, device = "cpu") -> torch.Tensor:
     array = np.concatenate((pose.get_p(), pose.get_q()))
     return torch.from_numpy(array).to(device)
 
+
+def make_urdf_loader(scene:ManiSkillScene, density= 1, scale = 1, is_fix=True) -> URDFLoader:
+    """ Create a urdf loader with the given physics properties. """
+    loader = scene.create_urdf_loader()
+    loader.scale = scale
+    loader.fix_root_link = is_fix
+    loader.set_material(0.3,0,0) # joint friction
+    loader.set_density(density)
+    return loader
+
+def get_asset_path() -> str:
+    """ Get the asset root path. """
+    dir_path = dirname(realpath(__file__))
+    return join(dir_path, "assets")
+
+def make_articulation_builder(asset_name:str, loader:URDFLoader)-> ArticulationBuilder:
+    """ Make a articulation builder for an URDF asset."""
+    urdf_path = join(get_asset_path(), f"{asset_name}/mobility.urdf")
+    # the .parse function can also parse multiple articulations
+    # actors and cameras but we only use the articulations
+    articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
+    builder = articulation_builders[0]
+    builder.initial_pose = sapien.Pose(p=[0,0,0])
+    return builder
+
+def make_obj_builder(scene:ManiSkillScene,obj_path:str, color, scale, use_convex_collision=True):
+    """ Make a builder for an .obj asset."""
+    mesh_path = join(get_asset_path(), obj_path)
+    scale_tup = (scale, scale, scale)
+    builder = scene.create_actor_builder()
+    if(use_convex_collision):
+        builder.add_convex_collision_from_file(filename=mesh_path, scale=scale_tup)
+    else:
+        builder.add_nonconvex_collision_from_file(filename=mesh_path, scale=scale_tup)
+    builder.add_visual_from_file(filename=mesh_path, material=color, scale=scale_tup)
+    return builder

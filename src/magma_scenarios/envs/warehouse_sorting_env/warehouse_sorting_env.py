@@ -4,9 +4,13 @@
 #Author: Mathieu Zimmermann
 from typing import Any, Dict, Union
 
+from math import pi
 import numpy as np
 import sapien
 import torch
+from transforms3d.euler import euler2quat
+
+from magma_scenarios.envs.asset_lib import create_cardboard_box_builder, create_jar, create_pen, create_water_bottle
 
 from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
@@ -49,55 +53,45 @@ class WarehouseSortingEnv(DefaultEnv):
 
         # Create three cubes with random names
         self.industrial_objects = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="ref_obj_3",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            )
+            create_water_bottle(self.scene, "ref_obj_1"),
+            create_jar(self.scene, "ref_obj_2"),
+            create_pen(self.scene, "ref_obj_3")
         ]
 
         self.containers = []
+        self.cardboard_box = []
+        box_builder = create_cardboard_box_builder(scene=self.scene)
         for i in range(len(containers_poses)):
-            pose = np.array(containers_poses[i])
             self.containers.append(
-                self.create_box(size=self.size_box, initial_pose=pose, thickness=self.thickness_box, name=f"area{i + 1}", add_bottom_wall=True)
+                box_builder.build(name=f"area{i + 1}")
             )
+
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         with torch.device(self.device):
             b = len(env_idx)
             self.table_scene.initialize(env_idx)
 
+            # set cardboard box position and widely open
             r = 0.15
-            q = [1, 0, 0, 0]
+            q = [1,0,0,0]
             for i in range(len(containers_poses)):
                 p = containers_poses[i]
                 p_batched = torch.tensor(p).repeat(b,1)
-                self.containers[i].set_pose(Pose.create_from_pq(p=p_batched,q=q))
+                box = self.containers[i]
+                qpos = box.get_qpos()
+                qpos[0][0] = 0.6
+                qpos[0][1] = 0.6
+                qpos[0][2] = 0.6
+                qpos[0][3] = 0.6
+                box.set_qpos(qpos)
+                box.set_pose(Pose.create_from_pq(p=p_batched,q=q))
 
             available_cells = [(-r,-r),(-r,0),(-r,r),
                 (0,-r),(0,0),(0,r),
                 (r,-r),(r,0),(r,r)]
             
+            q = euler2quat(0, pi/2, 0)
             for elem_list in [self.industrial_objects]:
                 for elem in elem_list:
                     #Get a random availaible cell
@@ -112,7 +106,6 @@ class WarehouseSortingEnv(DefaultEnv):
                     obj_pose = Pose.create_from_pq(p=xyz, q=q)
                     
                     elem.set_pose(obj_pose)
-
 
     def _get_obs_extra(self, info: Dict):
         obs = dict(

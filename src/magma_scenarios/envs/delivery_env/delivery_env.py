@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+from os import name
 from typing import Any, Dict, Union
 
 import numpy as np
@@ -15,6 +16,7 @@ from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
+from magma_scenarios.envs.asset_lib import create_cardboard_box_builder, create_donut
 
 container_pose = [-1,-0.25,0]
 
@@ -32,6 +34,8 @@ class DeliveryEnv(DefaultEnv):
     """
 
     cube_half_size = 0.015
+    cylinder_half_length = 0.04
+    cylinder_radius = 0.015
     size_box = 0.25
     thickness_box = 0.01
 
@@ -63,67 +67,57 @@ class DeliveryEnv(DefaultEnv):
         self.table_scene.build()
 
         self.cocas = [
-            actors.build_cube(
+            actors.build_cylinder(
                 self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([160, 160, 160, 255]) / 255,
+                radius=self.cylinder_radius,
+                half_length=self.cylinder_half_length,
+                color=np.array([240, 10, 10, 255]) / 255,
                 name="coca_1",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
             ),
-            actors.build_cube(
+            actors.build_cylinder(
                 self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([160, 160, 160, 255]) / 255,
+                radius=self.cylinder_radius,
+                half_length=self.cylinder_half_length,
+                color=np.array([240, 10, 10, 255]) / 255,
                 name="coca_2",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
             )
         ]
 
         self.ice_tea = [
-            actors.build_cube(
+            actors.build_cylinder(
                 self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 160, 160, 255]) / 255,
+                radius=self.cylinder_radius,
+                half_length=self.cylinder_half_length,
+                color=np.array([240, 240, 75, 255]) / 255,
                 name="icetea_1",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
             ),
-            actors.build_cube(
+            actors.build_cylinder(
                 self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 160, 160, 255]) / 255,
+                radius=self.cylinder_radius,
+                half_length=self.cylinder_half_length,
+                color=np.array([240, 240, 75, 255]) / 255,
                 name="icetea_2",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
             )
         ]
 
         self.donuts = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="donut_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([12, 42, 160, 255]) / 255,
-                name="donut_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-            )
+            create_donut(self.scene, 'donut_1', pose=sapien.Pose(p=[0, 0, self.cube_half_size])),
+            create_donut(self.scene, 'donut_2', pose=sapien.Pose(p=[0, 0, self.cube_half_size]))
         ]
 
         self.brets = [
             actors.build_cube(
                 self.scene,
                 half_size=self.cube_half_size,
-                color=np.array([160, 12, 42, 255]) / 255,
+                color=np.array([65, 180, 75, 255]) / 255,
                 name="brets_1",
                 body_type="dynamic",
                 initial_pose=sapien.Pose(p=[-0.1, 0, self.cube_half_size]),
@@ -131,13 +125,15 @@ class DeliveryEnv(DefaultEnv):
             actors.build_cube(
                 self.scene,
                 half_size=self.cube_half_size,
-                color=np.array([160, 12, 42, 255]) / 255,
+                color=np.array([65, 180, 75, 255]) / 255,
                 name="brets_2",
                 body_type="dynamic",
                 initial_pose=sapien.Pose(p=[0.1, 0, self.cube_half_size]),
             )
         ]
-        self.container = self.create_box(size=self.size_box, thickness=self.thickness_box, name=f"container", add_bottom_wall=True)
+        box_builder = create_cardboard_box_builder(self.scene)
+        self.container = box_builder.build(name="container")
+
         self.objects = []
 
     """

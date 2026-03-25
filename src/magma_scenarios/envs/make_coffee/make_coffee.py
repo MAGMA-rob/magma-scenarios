@@ -19,6 +19,8 @@ from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
 from mani_skill.utils.building.actors.ycb import get_ycb_builder
 
+from magma_scenarios.envs.asset_lib import create_coffee_maker
+
 from transforms3d.euler import euler2quat
 
 @register_env("MakeCoffee-v1", max_episode_steps=200)
@@ -39,11 +41,6 @@ class MakeCoffeeEnv(DefaultEnv):
     # E.g. Panda and Fetch both share a property called .tcp (tool center point).
     agent: Union[Panda, Fetch]
 
-    # coffee machine param
-    cm_joints_friction=0.3
-    cm_joints_damping=0.5
-    cm_density = 1.0
-    cm_scale = 0.2
 
     # mug params
     mug_scale = 0.035
@@ -79,29 +76,6 @@ class MakeCoffeeEnv(DefaultEnv):
         if not name:
             name = id
         return builder.build(name=name)
-
-    def create_coffee_maker(self, name="coffee_maker"):
-        """ Create a coffee maker from a SAPIEN urdf file.
-        see https://maniskill.readthedocs.io/en/latest/user_guide/tutorials/custom_tasks/loading_objects.html"""
-
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        urdf_path = os.path.join(dir_path, "coffee_maker_103057/mobility.urdf")
-
-        loader = self.scene.create_urdf_loader()
-        loader.scale = self.cm_scale
-        loader.fix_root_link = True
-        loader.set_material(self.cm_joints_friction, 0, 0)
-        loader.set_density(self.cm_density)
-
-        # the .parse function can also parse multiple articulations
-        # actors and cameras but we only use the articulations
-        articulation_builders = loader.parse(str(urdf_path))["articulation_builders"]
-        builder = articulation_builders[0]
-        # choose a reasonable initial pose that doesn't intersect other objects
-        # this matters a lot for articulations in GPU sim or else simulation bugs can occur
-        builder.initial_pose = sapien.Pose(p=[0, 0, 0])
-        
-        return builder.build(name=name)
     
     def create_mug(self, name="mug"):
         builder = self.scene.create_actor_builder()
@@ -129,7 +103,7 @@ class MakeCoffeeEnv(DefaultEnv):
         self.table_scene.build()
 
         # instanciates objects
-        self.coffee_maker = self.create_coffee_maker()
+        self.coffee_maker = create_coffee_maker(self.scene)
         self.mug = self.create_mug()
         self.capsules = []
         

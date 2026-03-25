@@ -1,14 +1,19 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+import os
 import sapien
 import torch
 import numpy as np
+from math import pi
 import mani_skill.envs.scene
 from mani_skill.utils.building import actors
+from transforms3d.euler import euler2quat
 from mani_skill.utils.registration import register_env
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose as MSPose
+
+from magma_scenarios.envs.asset_lib import create_wash_machine, create_soap
 
 from magma_core.base.envs import DefaultEnv
 from .observation import ObjectObservation
@@ -113,22 +118,19 @@ class LaundryEnv(DefaultEnv):
                 initial_pose=sapien.Pose(p=[0.0, 0.4, 0.02]),
             ),
         ]
-        self.detergent = actors.build_box(
-            self.scene,
-            (0.06, 0.03, 0.03),
-            WHITE,
-            name="OMO",
-            initial_pose=sapien.Pose(p=[0, -0.3, 0.02]),
-        )
+        
+        self.detergent = create_soap(self.scene, name="OMO")
 
-        self.machine_actor = self.create_box(
+        self.machine_actor = create_wash_machine(self.scene)
+        self.wash_machine_collision = self.create_box(
             thickness=0.01,
             size=0.3,
             height=0.1,
-            name="washing_machine",
+            name="washing_machine_basket",
             initial_pose=np.array((-0.8, -0.5, 0.02)),
             add_bottom_wall=True
         )
+    
 
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         b = len(env_idx)
@@ -143,12 +145,22 @@ class LaundryEnv(DefaultEnv):
             clothe.set_pose(
                 MSPose.create_from_pq(xyz, torch.tensor((1, 0, 0, 0), device=dev))
             )
+        
+        # set wash machine pose and door open
+        self.machine_actor.set_pose(sapien.Pose(p=[-0.8, -0.5, 0], q=euler2quat(0, 0, -pi/2)))
+        qpos = self.machine_actor.get_qpos()
+        qpos[0] = pi/2 #set the wash machine door (first link) open
+        self.machine_actor.set_qpos(qpos)
+
+        # set soap position
+        self.detergent.set_pose(sapien.Pose(p=[0, -0.3, 0.02], q=euler2quat(0,90,0)))
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""
         obs = {
             "detergent": ObjectObservation(pose=self.detergent.pose.raw_pose),
             "washing_machine": ObjectObservation(pose=self.machine_actor.pose.raw_pose),
+            "washing_machine_basket": ObjectObservation(pose=self.wash_machine_collision.pose.raw_pose),
             "agent_tcp": ObjectObservation(pose=self.agent.tcp.pose.raw_pose),
         }
         for clothe in self._clothes:
