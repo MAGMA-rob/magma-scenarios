@@ -86,8 +86,8 @@ class LaunchTool(BaseToolsAPI):
         poses.extend(compute_drop_trajectory(
             self.get_agent(),
             drop_pose=target_pos,
-            drop_seuil=0.1,
-            approach_seuil=0.2
+            drop_seuil=0.2,
+            approach_seuil=0.3
         ))
 
         def verifier(new_obs: dict) -> ToolResult:
@@ -98,7 +98,7 @@ class LaunchTool(BaseToolsAPI):
                 extra["agent_tcp"]["pose"][env_id], obj_pose
             ):
                 return ToolResult(False, reason="The object is still in the gripper")
-            if not is_object_inside_target(obj_pose, extra["washing_machine"]["pose"][env_id]):
+            if not is_object_inside_target(obj_pose, extra["washing_machine_basket"]["pose"][env_id]):
                 return ToolResult(
                     False, reason="The object is not in the wash machine and not in the gripper"
                 )
@@ -118,13 +118,13 @@ class LaunchTool(BaseToolsAPI):
 
         def verifier(new_obs: dict):
             extra = new_obs["extra"]
-            if is_object_inside_target(extra["detergent"]["pose"][env_id], extra["washing_machine"]["pose"][env_id]):
+            if is_object_inside_target(extra["detergent"]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
 
                 cleaned_items = []
                 for obj_name in extra:
-                    if obj_name == "detergent" or obj_name== "washing_machine" or obj_name == "agent_tcp":
+                    if obj_name == "detergent" or obj_name== "washing_machine_basket" or obj_name == "agent_tcp":
                         continue
-                    if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine"]["pose"][env_id]):
+                    if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
                         cleaned_items.append(obj_name)
 
                 if len(cleaned_items) == 0:
