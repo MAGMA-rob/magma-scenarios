@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tools import BaseToolsAPI, register_tool
+from magma_core.base.tools import BaseToolsAPI, ToolErrorSupport, register_tool
 from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
@@ -17,7 +17,7 @@ class ColorDetectionTools(BaseToolsAPI):
     @register_tool(
             description="Return the description and position of all detected object from the table.",
             params_spec={},
-            errors=[MaskRemainingCubesError]
+            errors=[ToolErrorSupport(MaskRemainingCubesError, pre=False, post=True)]
     )
     def get_object_state(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
 
@@ -54,7 +54,7 @@ class ColorDetectionTools(BaseToolsAPI):
     @register_tool(
             description="Take an object by its name.",
             params_spec={"name": {"description": "The name of the object to take", "type": str}},
-            errors=[MaskRemainingCubesError]
+            errors=[ToolErrorSupport(MaskRemainingCubesError, pre=True, post=False)]
     )
     def take_object_per_id(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
