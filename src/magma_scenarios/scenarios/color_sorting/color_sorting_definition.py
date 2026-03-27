@@ -8,7 +8,7 @@ from magma_core.base.state import TaskState
 
 from .detection_tool import ColorDetectionTools
 from .color_requests import AskForCycle, GiveOrderConstraint
-
+from .attributes import att
 
 class SortingDefinition(TaskDefinition):
     """
@@ -31,4 +31,4 @@ class SortingDefinition(TaskDefinition):
         )
 
         self.starting_state = TaskState()
-        self.starting_state.attributes = {}
+        self.starting_state.attributes = att

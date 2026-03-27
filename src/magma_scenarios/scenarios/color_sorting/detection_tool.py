@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
@@ -48,7 +48,7 @@ class ColorDetectionTools(BaseToolsAPI):
             if len(detected_obj['table']) > 0:
                 s += ",".join(detected_obj['table']) + " are not sorted."
 
-            return ToolResult(True,s,details=detected_obj)
+            return ToolResult(True,s,details=detected_obj,logs=Log(""))
 
         return ToolExecution(poses=["OK"], verifier=verifier)
     

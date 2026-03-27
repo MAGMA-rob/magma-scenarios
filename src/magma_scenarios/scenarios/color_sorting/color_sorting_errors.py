@@ -39,8 +39,6 @@ class MaskRemainingCubesError(BaseError):
             
             masked = random.sample(remaining_objects,k=nb)
             arguments["masked"] = masked
-        
-        print(masked)
 
         for m in masked:
             remaining_objects.remove(m)

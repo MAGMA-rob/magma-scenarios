@@ -7,7 +7,8 @@ from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
 from .detection_tool import ColorDetectionTools
-from .color_sorting_stages import SortByColorStage
+from .color_sorting_stages import SortByColorStage, DetectionStage
+from .attributes import att
 
 class CleanTablePreset(BaseTask):
     """
@@ -25,7 +26,7 @@ class CleanTablePreset(BaseTask):
         TaskStyle.DETECTION_TASK
     ]
 
-    all_task_attributes = {}
+    all_task_attributes = att
     randomized_config_path = str(Path(__file__).resolve().parent / "detection_randomization.yaml")
 
     def __init__(self, nb_already_sorted : int = 4) -> None:
@@ -35,9 +36,10 @@ class CleanTablePreset(BaseTask):
         super().__init__()
         self.env_options = {"nb_cube_completed":nb_already_sorted}
 
-        self.stages = [SortByColorStage(instruction=UserInstruction("Clean the table please"), nb_good_place=nb_already_sorted+1,last=False)]
+        self.stages = [SortByColorStage(instruction=UserInstruction("Clean the table please. You can use the detection function to obtain information about objects."), nb_good_place=nb_already_sorted+1,last=False)]
         for j in range(1, 6-nb_already_sorted):
-            self.stages.append(SortByColorStage(instruction=EmptyInstruction(),nb_good_place=nb_already_sorted+j+1, last=(nb_already_sorted+j==5)))
+            self.stages.append(SortByColorStage(instruction=EmptyInstruction(),nb_good_place=nb_already_sorted+j+1, last=False))
+        self.stages.append(DetectionStage(False,EmptyInstruction()))
     
         if nb_already_sorted < 2:
             self.approximal_difficulty = "Hard"

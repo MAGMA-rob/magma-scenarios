@@ -1,13 +1,15 @@
+from magma_core.base.errors import BaseError
 from torch._tensor import Tensor
 import torch
 from typing import Any, List, Dict
 
 from magma_core.base.stage import BaseTaskStage
-from magma_core.base.data_structures import Instruction, Situation
+from magma_core.base.data_structures import Instruction, Log, Situation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.goals import BaseGoal, At, MaxAt
 
 from .color_sorting_errors import MaskRemainingCubesError
+from .attributes import att
 
 class ExactCubeAt(At):
 
@@ -66,7 +68,7 @@ class SortByColorStage(BaseTaskStage):
         self.situation = Situation(
             memory=[],
             preserved_memory_indices=[],
-            attributes={},
+            attributes=att,
             flag_answer_to_user=last,
             instruction=instruction
         )
@@ -86,7 +88,7 @@ class ExactSortByColorStage(BaseTaskStage):
         self.situation = Situation(
             memory=[],
             preserved_memory_indices=[],
-            attributes={},
+            attributes=att,
             flag_answer_to_user=last,
             instruction=instruction
         )
@@ -101,3 +103,27 @@ class ExactSortByColorStage(BaseTaskStage):
             reset_at_end=last,
             stage_goal_description=f"The goal of this stage is to have {nb_green} green cubes in green box and {nb_yellow} in yellow box."
         )
+
+class DetectionStage(BaseTaskStage):
+
+    target_steps = 1
+    acceptance_steps = 0
+
+    def __init__(self, reset_at_end: bool, instruction : Instruction) -> None:
+        super().__init__([], reset_at_end, "The goal of this stage is to call the detection function to ensure that the original task have been correctly completed")
+
+        self.situation = Situation(
+            memory=[],
+            preserved_memory_indices=[],
+            attributes=att,
+            flag_answer_to_user=True,
+            instruction=instruction
+        )
+
+    def verif_log_completion(self, stage_log: List[Log], full_log: List[Log]) -> int:
+        if len(stage_log) == 0:
+            return 0
+        for l in stage_log:
+            if l.function != "get_object_state":
+                return -1
+        return 1
