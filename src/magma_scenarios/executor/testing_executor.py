@@ -106,11 +106,13 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                 logs = self._eval_envs[env_id].logs
                 stage_log_length = self._eval_envs[env_id].stage_log_start_idx
                 composite_progress = self._eval_envs[env_id].composite_progress
+                active_stage_error_state = getattr(self._eval_envs[env_id], "error_state", {})
             else:
                 stage_id = 0
                 stage_log_length = 0
                 logs = []
                 composite_progress = {}
+                active_stage_error_state = {}
 
                 while self.task_ref.is_stage_text_only(stage_id):
                     print(f"[EXECUTOR] Skip Stage {stage_id}")
@@ -123,6 +125,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     params,
                     env_id,
                     obs,
+                    active_stage_error_state,
                     current_node_step=0,
                     stage_id=stage_id,
                     node_id=env_id,
@@ -136,6 +139,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     actions = func,
                     env_id=env_id,
                     obs=obs,
+                    error_state=active_stage_error_state,
                     stage_id=stage_id,
                     current_node_step=0,
                     node_id=env_id,

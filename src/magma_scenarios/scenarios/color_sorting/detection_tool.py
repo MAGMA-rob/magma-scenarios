@@ -7,6 +7,7 @@ from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
 from magma_scenarios.utils import compute_grasp_trajectory
+from .color_sorting_errors import MaskRemainingCubesError
 
 from typing import Dict, List
 import sapien
@@ -15,7 +16,8 @@ class ColorDetectionTools(BaseToolsAPI):
 
     @register_tool(
             description="Return the description and position of all detected object from the table.",
-            params_spec={}
+            params_spec={},
+            errors=[MaskRemainingCubesError]
     )
     def get_object_state(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
 
@@ -46,7 +48,7 @@ class ColorDetectionTools(BaseToolsAPI):
             if len(detected_obj['table']) > 0:
                 s += ",".join(detected_obj['table']) + " are not sorted."
 
-            return ToolResult(True,s)
+            return ToolResult(True,s,details=detected_obj)
 
         return ToolExecution(poses=["OK"], verifier=verifier)
     

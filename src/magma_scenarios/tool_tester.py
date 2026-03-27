@@ -12,6 +12,7 @@ from pathlib import Path
 from .executor import ToolsTestingExecutor
 from .registry_loader import load_preset
 from magma_core.configs import MAGMAConfig
+from magma_core.utils.text_utils import auto_cast
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Launch a tool tester program to try your task")
@@ -32,7 +33,24 @@ def parse_args():
         action="store_true",
         help="If specified, use a randomizerWrapper"
     )
-    return parser.parse_args()
+    args, unknown = parser.parse_known_args()
+
+    extra_args = {}
+    i = 0
+    while i < len(unknown):
+        if unknown[i].startswith("--"):
+            key = unknown[i][2:]
+            if i + 1 < len(unknown):
+                value = auto_cast(unknown[i + 1])
+            else:
+                value = True
+            extra_args[key] = value
+            i += 2
+        else:
+            raise ValueError(f"Unexpected argument format: {unknown[i]}")
+
+    args.extra = extra_args
+    return args
 
 def parse_cmd(line: str) -> Dict[str, Any]:
     line = line.strip()
@@ -124,7 +142,7 @@ def main(args):
     tool_executor = ToolsTestingExecutor(magma_config.magma_planner_address, nb_env = args.nb_env, randomized=args.randomized)
     
     Task_Cls = load_preset(args.task)
-    env = tool_executor.initialize(Task_Cls())
+    env = tool_executor.initialize(Task_Cls(**args.extra))
 
     cmd_queue = queue.Queue()
     

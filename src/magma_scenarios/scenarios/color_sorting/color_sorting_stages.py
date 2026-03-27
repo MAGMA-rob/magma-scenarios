@@ -7,6 +7,8 @@ from magma_core.base.data_structures import Instruction, Situation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.goals import BaseGoal, At, MaxAt
 
+from .color_sorting_errors import MaskRemainingCubesError
+
 class ExactCubeAt(At):
 
     def __init__(self, obj_name: str, location: str, desired_nb : int, thresh: float = 0.1):
@@ -57,6 +59,8 @@ class SortByColorStage(BaseTaskStage):
 
     target_steps = 3
     acceptance_steps = 1
+
+    possible_errors = [MaskRemainingCubesError()]
 
     def __init__(self, instruction : Instruction, nb_good_place : int, last : bool, max_yellow : int = 3, max_green : int = 3) -> None:            
         self.situation = Situation(
