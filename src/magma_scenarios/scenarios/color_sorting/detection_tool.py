@@ -22,7 +22,6 @@ class ColorDetectionTools(BaseToolsAPI):
     def get_object_state(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
 
         detected_obj = {"green_box":[], "yellow_box":[], "table":[]}
-
         for obj_name, obj_pose in obs.maniskill_obs['extra'].items():
             if "cube" in obj_name:
                 if is_object_inside_target(obj_pose[env_id],obs.maniskill_obs["extra"]["green_box_pose"][env_id]):
@@ -48,13 +47,14 @@ class ColorDetectionTools(BaseToolsAPI):
             if len(detected_obj['table']) > 0:
                 s += ",".join(detected_obj['table']) + " are not sorted."
 
-            return ToolResult(True,s,details=detected_obj,logs=Log(""))
+            return ToolResult(True,s,context=detected_obj,logs=Log(""))
 
         return ToolExecution(poses=["OK"], verifier=verifier)
     
     @register_tool(
             description="Take an object by its name.",
-            params_spec={"name": {"description": "The name of the object to take", "type": str}}
+            params_spec={"name": {"description": "The name of the object to take", "type": str}},
+            errors=[MaskRemainingCubesError]
     )
     def take_object_per_id(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
@@ -87,7 +87,12 @@ class ColorDetectionTools(BaseToolsAPI):
                 reason = f"Failed to grasp {obj_name} due to planning error."
             return ToolResult(ok,reason)
 
-        return ToolExecution(poses=poses, verifier=verifier, reason=r)
+        return ToolExecution(
+            poses=poses,
+            verifier=verifier,
+            reason=r,
+            context={"target_name": obj_name},
+        )
     
     @register_tool(
             description="Put the held object in a box corresponding to the given color.",

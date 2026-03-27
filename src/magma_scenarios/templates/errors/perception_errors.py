@@ -17,8 +17,8 @@ from magma_core.base.errors import BaseError
 
 
 #     def apply(self, tool_result: ToolResult):
-#         if not tool_result.details or len(tool_result.details) == 0:
-#             raise RuntimeError("The Localization Error was activated on a tool that does not return the details dict")
+#         if not tool_result.context or len(tool_result.context) == 0:
+#             raise RuntimeError("The Localization Error was activated on a tool that does not return the context dict")
         
 
 class MaskedObjectError(BaseError):
@@ -33,5 +33,5 @@ class MaskedObjectError(BaseError):
         super().__init__()
 
     def apply(self, tool_result: ToolResult):
-        if not tool_result.details or len(tool_result.details) == 0:
-            raise RuntimeError("The Localization Error was activated on a tool that does not return the details dict")
+        if not tool_result.context or len(tool_result.context) == 0:
+            raise RuntimeError("The Localization Error was activated on a tool that does not return the context dict")

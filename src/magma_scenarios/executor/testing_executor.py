@@ -76,6 +76,8 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     # Specific modifications
                     self._eval_envs[i].current_task_stage = new_id
                     self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
+                    # A new stage must rebuild its own active error profile.
+                    self._eval_envs[i].error_state = {}
             else:
                 print("FINISHED TASK")
 
@@ -96,6 +98,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         # step to have obs
         action = self.step()
         obs , _, _, _,_ = self.env.step(action)
+        state_dict = self.env.get_state_dict().copy()
 
         for env_id, func in tools_call.items():
             func_name = func.get("name", None)
@@ -118,7 +121,6 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     print(f"[EXECUTOR] Skip Stage {stage_id}")
                     stage_id+=1
             
-            # FAUT QUE JARRIVE A DETERMINER ICI SI CEST UN DEBUT DE STAGE OU NON
             if func_name:
                 tool_infos = self._compute_single_tool(
                     func_name,
