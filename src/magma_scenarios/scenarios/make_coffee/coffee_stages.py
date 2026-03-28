@@ -175,7 +175,12 @@ class CoffeeCompositeStage(BaseStageComposite):
         
         return 1
     
-    def get_stage_state(self, agent_step: int, log: List[Log]) -> StageState:
+    def get_stage_state(
+            self,
+            agent_step: int,
+            log: List[Log],
+            recovery_extra_steps: int = 0,
+        ) -> StageState:
         n = 0
         completion = 0
 
@@ -191,10 +196,10 @@ class CoffeeCompositeStage(BaseStageComposite):
         total = sum([v for k,v in self.coffee_desired.items()])
 
         if completion == total:
-            if agent_step <= completion * 3 + 1:
+            if agent_step <= completion * 3 + 1 + recovery_extra_steps:
                 return StageState.OPTIMAL
 
-        max_acceptable = completion * 4    
+        max_acceptable = completion * 4 + recovery_extra_steps
         if agent_step >= max_acceptable: #hardcoded value
             return StageState.EXCEEDED
 

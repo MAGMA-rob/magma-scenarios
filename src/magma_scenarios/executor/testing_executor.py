@@ -192,7 +192,13 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     else:
                         planning_error.append(False)
 
-                out[env_infos.node_id] = {'success':results, "reason":mess, "att_modif" : att_modif, "planning_error":planning_error}
+                out[env_infos.node_id] = {
+                    'success':results,
+                    "reason":mess,
+                    "att_modif" : att_modif,
+                    "planning_error":planning_error,
+                    "error_description": env_infos.get_error_descriptions(),
+                }
                 env_infos.tool_robots = []
 
         return self.randomizer.traduce_end_eval(out) if self.randomized else out

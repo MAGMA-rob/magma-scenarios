@@ -8,6 +8,8 @@ from magma_core.utils.env_utils import is_object_inside_target
 
 class MaskRemainingCubesError(BaseError):
 
+    recovery_extra_steps = 0
+
     def __init__(self, max_masking = 2) -> None:
         super().__init__()
         self.max_nb = max_masking
@@ -92,3 +94,59 @@ class MaskRemainingCubesError(BaseError):
         if arguments is None or arguments.get("masked") is None:
             return "Mask some remaining cubes from perception."
         return f"Masked cubes from perception: {arguments['masked']}."
+
+class GraspFailureError(BaseError):
+
+    recovery_extra_steps = 1
+
+    def __init__(self, max_impossible = 1) -> None:
+        super().__init__()
+        self.max_nb = max_impossible
+
+    def initialize(self, obs : Observation, env_id : int) -> Optional[Dict[str, Any]]:
+        remaining = []
+        for obj_name, obj_pose in obs.maniskill_obs['extra'].items():
+            if "cube" in obj_name:
+                if (not is_object_inside_target(
+                        obj_pose[env_id],
+                        obs.maniskill_obs["extra"]["green_box_pose"][env_id]
+                    )
+                    and not is_object_inside_target(
+                        obj_pose[env_id],
+                        obs.maniskill_obs["extra"]["yellow_box_pose"][env_id])
+                    ):
+                    remaining.append(obj_name)
+
+        if len(remaining) <= 1:
+            return {
+                "innaccessible" : []
+            }
+        
+        if len(remaining) == 2:
+            nb = 1
+        else:
+            nb = random.randint(1,self.max_nb)
+        
+        impossible_to_grasp = random.sample(remaining,k=nb)
+        print(impossible_to_grasp)
+        return {
+            "innaccessible" : impossible_to_grasp
+        }
+
+    def apply_pre_exec(self, tool_execution: ToolExecution, arguments: Dict[str, Any]):
+        innaccessible = arguments.get("innaccessible",None)
+        if innaccessible is None or len(innaccessible)==0:
+            return
+        target_name = tool_execution.context.get("target_name", None)
+        if target_name is None:
+            return
+
+        if target_name in innaccessible:
+            tool_execution.fail(
+                f"Failed to grasp: {target_name}. The object is unreachable right now."
+            )
+
+    def get_description(self, arguments: Dict[str, Any] | None) -> str:
+        if arguments is None or arguments.get("masked") is None:
+            return "Make some object impossible to take"
+        return f"These objects are impossible to take right now: {arguments['masked']}."
