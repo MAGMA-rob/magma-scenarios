@@ -1,18 +1,39 @@
+from typing import Dict, Any
 
-
-from magma_core.base.data_structures.tools import ToolResult
+from magma_core.base.data_structures.observation import Observation
+from magma_core.base.data_structures.tools import ToolResult, ToolExecution
 from magma_core.base.errors import BaseError
 
-class ImpossibleGraspError(BaseError):
+class GraspFailureError(BaseError):
     """
-    Make an object impossible to grasp
+    Allow to inject a grasp failure error to the stage.
+
+    It uses the 'innaccessible' keys from arguments. Please overridde the initialize to set this key.
     """
 
     recovery_extra_steps = 1
 
-    def __init__(self) -> None:
+    def __init__(self, tool_execution_target_key : str = "target_name") -> None:
         super().__init__()
+        self.target_key = tool_execution_target_key
 
-    # def apply(self, tool_result: ToolResult):
-    #     if not tool_result.context or len(tool_result.context) == 0:
-    #         raise RuntimeError("The Localization Error was activated on a tool that does not return the context dict")
+    def initialize(self, obs : Observation, env_id : int) -> Dict[str, Any]:
+        raise NotImplementedError()
+
+    def apply_pre_exec(self, tool_execution: ToolExecution, arguments: Dict[str, Any]):
+        innaccessible = arguments.get("innaccessible",None)
+        if innaccessible is None or len(innaccessible)==0:
+            return
+        target_name = tool_execution.context.get("target_name", None)
+        if target_name is None:
+            return
+
+        if target_name in innaccessible:
+            tool_execution.fail(
+                f"Failed to grasp: {target_name}. The object is unreachable right now."
+            )
+
+    def get_description(self, arguments: Dict[str, Any] | None) -> str:
+        if arguments is None or arguments.get("innaccessible") is None or len(arguments["innaccessible"] == 0):
+            return "Make some object impossible to take"
+        return f"These objects are impossible to take right now: {arguments['innaccessible']}. Try to grasp another objects that also allows to complete the instruction."

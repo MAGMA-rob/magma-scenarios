@@ -7,7 +7,7 @@ from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
 from magma_scenarios.utils import compute_grasp_trajectory
-from .color_sorting_errors import MaskRemainingCubesError
+from .color_sorting_errors import MaskRemainingCubesError, GraspCubeFailureError
 
 from typing import Dict, List
 import sapien
@@ -17,7 +17,9 @@ class ColorDetectionTools(BaseToolsAPI):
     @register_tool(
             description="Return the description and position of all detected object from the table.",
             params_spec={},
-            errors=[ToolErrorSupport(MaskRemainingCubesError, pre=False, post=True)]
+            errors=[
+                ToolErrorSupport(MaskRemainingCubesError, pre=False, post=True)
+            ]
     )
     def get_object_state(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
 
@@ -54,7 +56,10 @@ class ColorDetectionTools(BaseToolsAPI):
     @register_tool(
             description="Take an object by its name.",
             params_spec={"name": {"description": "The name of the object to take", "type": str}},
-            errors=[ToolErrorSupport(MaskRemainingCubesError, pre=True, post=False)]
+            errors=[
+                ToolErrorSupport(MaskRemainingCubesError, pre=True, post=False),
+                ToolErrorSupport(GraspCubeFailureError, pre=True, post=False)
+            ]
     )
     def take_object_per_id(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
