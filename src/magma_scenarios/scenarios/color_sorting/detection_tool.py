@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tools import BaseToolsAPI, ToolErrorSupport, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log
+from magma_core.base.tools import BaseToolsAPI, register_tool
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log, ToolErrorSupport
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
@@ -42,7 +42,7 @@ class ColorDetectionTools(BaseToolsAPI):
                 s += ",".join(detected_obj["green_box"]) + " are in the green_box. "
 
             if len(detected_obj['yellow_box']) == 0:
-                s += "green_box is empty. "
+                s += "yellow_box is empty. "
             else:
                 s += ",".join(detected_obj['yellow_box']) + " are in the yellow_box. "
 

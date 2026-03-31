@@ -2,13 +2,14 @@
 # Copyright (c) 2026, Loan Bernat
 from pathlib import Path
 
-from magma_core.base.tasks import BaseTask
+from magma_core.base.tasks import BaseTask, BaseBenchmarkTask
 from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
 from .detection_tool import ColorDetectionTools
 from .color_sorting_stages import SortByColorStage, DetectionStage
 from .attributes import att
+from .color_sorting_errors import MaskRemainingCubesError, GraspCubeFailureError
 
 class CleanTablePreset(BaseTask):
     """
@@ -48,3 +49,23 @@ class CleanTablePreset(BaseTask):
         else:
             self.approximal_difficulty = "Easy"
 
+class ColorSortingBenchmark(BaseBenchmarkTask):
+    """
+    Benchmark class for color sorting scenario.
+    The idea is to sort cubes of color while being robust to uncertainty (explicit observation / action failure injected)
+    """
+    name : str = "Benchmark Color Sorting"
+    env_id : str = "PartialSixCubesTwoBoxesOnTable-v1"
+
+    randomized_config_path = str(Path(__file__).parent.joinpath("detection_randomization.yaml"))
+
+    Tools_cls = ColorDetectionTools
+
+    benchmark_possible_errors = [
+        MaskRemainingCubesError(),
+        GraspCubeFailureError()
+    ]
+
+    all_task_attributes = {
+        "boxes_color" : ["yellow","green"]
+    }

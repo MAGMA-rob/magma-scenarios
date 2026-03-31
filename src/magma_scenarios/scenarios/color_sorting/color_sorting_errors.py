@@ -64,7 +64,7 @@ class MaskRemainingCubesError(MaskedObjectError):
                 s += ",".join(tool_result.context["green_box"]) + " are in the green_box. "
 
             if len(tool_result.context['yellow_box']) == 0:
-                s += "green_box is empty. "
+                s += "yellow_box is empty. "
             else:
                 s += ",".join(tool_result.context['yellow_box']) + " are in the yellow_box. "
 

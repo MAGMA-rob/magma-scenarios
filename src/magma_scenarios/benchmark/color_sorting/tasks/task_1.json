@@ -1,0 +1,61 @@
+{
+    "criteria" : ["multi-steps","c-reasoning"],
+    "stages": [
+        {
+            "instruction": "Hello, the rule is to always sort all green cubes before yellow ones, right?",
+            "max_step": 1,
+            "expected_behavior": "acknowledge",
+            "complementary_verif": {
+                "judge": "The model understand that it must always sort green cubes before sorting yellow cubes."
+            }
+        },
+        {
+            "instruction": "Ok perfect, I need 1 green cubes and 1 yellow cube to their associated color box?",
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        0
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps","c-reasoning"]
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "flag_answer_to_user": true,
+            "should_reset": true,
+            "keys_evaluator" : ["multi-steps"]
+        }
+    ]
+}

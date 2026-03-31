@@ -97,17 +97,18 @@ class AskForCycle(BaseRequest):
         ) -> List[BaseTaskStage]:
         total = green_count + yellow_count
         stages = []
-
+        cur_instruction = instruction
         for i in range(total):
             stages.append(
                 SortByColorStage(
-                    instruction,
+                    cur_instruction,
                     nb_good_place=i + 1,
                     last=(i == total - 1),
                     max_green=green_count,
                     max_yellow=yellow_count
                 )
             )
+            cur_instruction = EmptyInstruction()
 
         return stages
 

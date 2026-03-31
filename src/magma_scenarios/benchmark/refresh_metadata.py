@@ -10,10 +10,28 @@ from .criteria import KNOWN_CRITERIA
 def count_nb_steps(stage_list : list[dict]) -> int:
     cpt = 0
     for stage in stage_list:
+        if stage.get("force_recovery", None) is not None or stage.get("force_failure", None) is not None:
+            raise ValueError(
+                "Legacy fields 'force_recovery' and 'force_failure' are not supported anymore. "
+                "Please migrate benchmark tasks to the 'injection' field."
+            )
+
         cpt += stage.get("max_step", 0)
-        if stage.get("answer_to_user", None):
+        if stage.get("answer_to_user", None) or stage.get("flag_answer_to_user", None):
             cpt +=1
-        if stage.get("force_recovery",None) or stage.get("force_failure",None):
+
+        raw_injections = stage.get("injection", stage.get("injections", None))
+        has_forced_status = False
+        if raw_injections is not None:
+            if isinstance(raw_injections, dict):
+                raw_injections = [raw_injections]
+            has_forced_status = any(
+                isinstance(injection, dict)
+                and injection.get("mode") in {"force_recovery", "force_failure"}
+                for injection in raw_injections
+            )
+
+        if has_forced_status:
             cpt += 1
     return cpt
 
