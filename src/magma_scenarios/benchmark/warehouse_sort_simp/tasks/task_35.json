@@ -117,7 +117,10 @@
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "force_recovery": "System encounter an error while communicating with the robotic arm.",
+            "injection": {
+                "mode": "force_recovery",
+                "message": "System encounter an error while communicating with the robotic arm."
+            },
             "keys_evaluator" : ["c-reasoning"]
         },
         {

@@ -32,7 +32,10 @@
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "force_recovery" : "Failed to detect objects. Please retry.",
+            "injection": {
+                "mode": "force_recovery",
+                "message": "Failed to detect objects. Please retry."
+            },
             "keys_evaluator": ["c-reasoning"]
         },
         {
@@ -71,7 +74,10 @@
                 }
             ],
             "complementary_verif": {},
-            "force_recovery" : "A planning error occurs. Please re-try.",
+            "injection": {
+                "mode": "force_recovery",
+                "message": "A planning error occurs. Please re-try."
+            },
             "keys_evaluator": ["c-reasoning"]
         }
     ]

@@ -28,7 +28,10 @@
                     ]
                 }
             ],
-            "force_failure": "Communication system with the robot is not responding",
+            "injection": {
+                "mode": "force_failure",
+                "message": "Communication system with the robot is not responding"
+            },
             "should_env_reset": true,
             "complementary_verif": {},
             "keys_evaluator": ["c-reasoning"]
@@ -45,7 +48,10 @@
                     ]
                 }
             ],
-            "force_failure": "Communication system with the robot is not responding"
+            "injection": {
+                "mode": "force_failure",
+                "message": "Communication system with the robot is not responding"
+            }
         }
     ]
 }

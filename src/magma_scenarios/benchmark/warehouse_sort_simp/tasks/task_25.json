@@ -25,7 +25,9 @@
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "force_recovery": true
+            "injection": {
+                "mode": "force_recovery"
+            }
         },
         {
             "instruction": "Launch a cycle for all objects according their default area",

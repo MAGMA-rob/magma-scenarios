@@ -73,7 +73,9 @@
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["c-reasoning"]
         },
         {
@@ -129,7 +131,9 @@
                 }
             ],
             "complementary_verif": {},
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["c-reasoning","lg-memorization"]
         }
     ]

@@ -45,7 +45,9 @@
                 }
             ],
             "complementary_verif": {},
-            "force_recovery": true
+            "injection": {
+                "mode": "force_recovery"
+            }
         }
     ]
 }
