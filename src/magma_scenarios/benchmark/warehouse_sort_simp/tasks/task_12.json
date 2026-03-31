@@ -19,8 +19,7 @@
         },
         {
             "instruction": "Launch a cycle sending ref_obj_1 to area2 and ref_obj_3 to area1.",
-            "max_step": 2,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must inform that area1 is not existing anymore"
             },

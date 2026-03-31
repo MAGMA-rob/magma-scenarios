@@ -4,11 +4,7 @@
     "stages": [
         {
             "instruction": "Hi robot, it's Derek. Please know that ref_obj_1 is assigned to area3, others objects to to area1. However area2 should not be used. If an user asks for it, refuses. Okay?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 is assigned to area3 and others (ref_obj_2 and _3) are assigned to area1 AND that area2 should not be used."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Hey, I need you to launch a cycle for ref_obj_1 and ref_obj_3 please",
@@ -42,8 +38,7 @@
         },
         {
             "instruction": "Hello, can you launch a cycle for all objects to area2?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model informs the user that area2 must not be used and refuses to launch a cycle.."
             },
@@ -51,8 +46,7 @@
         },
         {
             "instruction": "Why?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that it is because it has an order in its memory to not use area2."
             },

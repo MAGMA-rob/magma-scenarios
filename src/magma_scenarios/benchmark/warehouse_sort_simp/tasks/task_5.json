@@ -4,16 +4,11 @@
     "stages": [
         {
             "instruction": "Here is the object-area assignement to respect: ref_obj_1 and ref_obj_2 must go to area2, and ref_obj_3 to area1. Understood?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area2, and the ref_obj_3 to area1."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Hello do you have any object associated to area2? I need to clean it.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that ref_obj_1 and ref_obj_2 is assigned to area2."
             },
@@ -37,7 +32,7 @@
         {
             "instruction": "Can you launch a cycle according to the default assignment of each object?",
             "max_step": 1,
-            "expected_behavior": "acknowledge", 
+            "expected_behavior": "answer", 
             "complementary_verif": {
                 "judge": "The model refuses the instruction because area2 is unavailable (being cleaned)."
             },
@@ -45,11 +40,7 @@
         },
         {
             "instruction": "Ho okay so, as soon as you have area2 cleaned, execute my cycle please.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge", 
-            "complementary_verif": {
-                "judge": "The model understand that as soon as area2 is cleaned, it must launch a cycle for each object according the default assignment"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Okay, area2 is clean now! You can reuse it normally.",

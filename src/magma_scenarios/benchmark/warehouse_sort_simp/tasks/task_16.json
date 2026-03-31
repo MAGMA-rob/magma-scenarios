@@ -4,19 +4,11 @@
     "stages": [
         {
             "instruction": "The default cycle rule is to send all object to area1.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that the default rule is to send all objects to area1."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Due to power failure, area1 must not be used. Use area2 instead.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that area1 can not be used anymore, and that area2 must be used instead."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle according to your default assignment.",

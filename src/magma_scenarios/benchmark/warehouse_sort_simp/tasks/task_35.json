@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "ref_obj_1 is a category 1 object.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 is a category 1 object."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Send all category 1 object to area3, and ref_obj_2 to area2.",
@@ -42,11 +38,7 @@
         },
         {
             "instruction": "ref_obj_2 is now also a category 1 object.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_2 is a category 1 object."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Send all category 1 object to area3.",
@@ -81,8 +73,7 @@
         },
         {
             "instruction": "What are the category 1 objects?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model answer that ref_obj_1 and ref_obj_2 are category 1 objects."
             },
@@ -125,11 +116,7 @@
         },
         {
             "instruction": "ref_obj_2 is not anymore a category 1 object, okay?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_2 is not anymore a category 1 object."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "I want all object that are not from the category 1 to area1",
@@ -164,8 +151,7 @@
         },
         {
             "instruction": "Is ref_obj_3 a category 1 object ?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model answer no."
             },

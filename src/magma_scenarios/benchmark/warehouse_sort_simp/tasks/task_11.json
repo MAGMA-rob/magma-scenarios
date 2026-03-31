@@ -4,11 +4,7 @@
     "stages": [
         {
             "instruction": "Hello, default assignmments are ref_obj_1 and ref_obj_2 to area1 and ref_obj_3 to area2.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1 and ref_obj_3 to area2."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Run a cycle now.",

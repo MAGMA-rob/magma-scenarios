@@ -4,19 +4,11 @@
     "stages": [
         {
             "instruction": "Keep in memory that ref_obj_1 and ref_obj_2 are metallic",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 are metallic."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Ha, and area2 must not be used.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model must understand that area2 must not be used."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Okay so launch a cycle with all metallic object to area3 non-metallic object to another area.",

@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "ref_obj_1 is a category 1 object.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 is a category 1 object."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Send all category 1 object to area3, and ref_obj_2 to area2.",

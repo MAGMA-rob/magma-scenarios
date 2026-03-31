@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "Hello, the rule is to always sort all green cubes before yellow ones, right?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that it must always sort green cubes before sorting yellow cubes."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Ok perfect, I need 1 green cubes and 1 yellow cube to their associated color box?",

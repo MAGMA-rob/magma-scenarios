@@ -4,19 +4,11 @@
     "stages": [
         {
             "instruction": "The default cycle rule is to send all object to area1.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that the default rule is to send all objects to area1."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Due to power failure, area1 must not be used. Use area2 instead.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that area1 can not be used anymore, and that area2 must be used instead."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle according to your default assignment.",
@@ -37,11 +29,7 @@
         },
         {
             "instruction": "area1 is back, you can reuse it normally!",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that it can reuse area1"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle!",
@@ -61,11 +49,7 @@
         },
         {
             "instruction": "By the way, area3 must be used now for ref_obj_2!",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_2 goes to area3."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle now!",
@@ -97,8 +81,7 @@
         },
         {
             "instruction": "What are your current sorting rules?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model answer that ref_obj_1 and ref_obj_3 goes to area1 and ref_obj_2 goes to area3."
             },
