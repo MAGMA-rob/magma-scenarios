@@ -67,8 +67,7 @@
         },
         {
             "instruction": "ref_obj_1 is not marked as maintenance anymore",
-            "expected_behavior": "acknowledge",
-            "keys_evaluator" : ["lg-memorization"]
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "I need a cleaning cycle immediately in area1.",

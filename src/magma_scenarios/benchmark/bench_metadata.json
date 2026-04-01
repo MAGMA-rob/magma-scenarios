@@ -1,11 +1,20 @@
 [
   {
+    "scenario_name": "Color_Sorting",
+    "folder_name": "color_sorting",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning"
+    ]
+  },
+  {
     "scenario_name": "Warehouse_Sorting_Simp",
     "folder_name": "warehouse_sort_simp",
     "criteria": [
       "c-reasoning",
       "multi-steps",
-      "lg-memorization"
+      "lg-memorization",
+      "recovery"
     ]
   }
 ]

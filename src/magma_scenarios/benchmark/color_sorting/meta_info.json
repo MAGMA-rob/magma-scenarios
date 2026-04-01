@@ -1,0 +1,33 @@
+{
+  "scenario_name": "Color_Sorting",
+  "scenario_id": "CS",
+  "scenario_description": "The goal of this task is to evaluate the capacity of the model to sort cubes by color using Detection function and under high uncertainty",
+  "associate_task": "color_sorting.CSB",
+  "options_mplib": {
+    "robot": "panda_v2",
+    "joint_vel_limit": 0.9,
+    "joint_acc_limit": 0.9,
+    "control_timesteps": 0
+  },
+  "tasks_horizon": {
+    "12": [
+      "task_0"
+    ],
+    "10": [
+      "task_1"
+    ]
+  },
+  "criteria": {
+    "multi-steps": 2,
+    "c-reasoning": 1
+  },
+  "criteria_tasks": {
+    "multi-steps": [
+      "task_0.json",
+      "task_1.json"
+    ],
+    "c-reasoning": [
+      "task_1.json"
+    ]
+  }
+}

@@ -3,7 +3,7 @@ from typing import List
 from .attributes import MAX_NB_PER_RECIPE, att
 
 from magma_core.base.stage import BaseTaskStage
-from magma_core.base.goals import BaseGoal, CountAt, MaxAt
+from magma_core.base.goals import AtLeastCountAt, BaseGoal, ExactCountAt, MaxAt
 from magma_core.base.data_structures import UserInstruction, Log, Situation
 
 
@@ -23,12 +23,9 @@ def _build_goals_for_product(product_name: str, count: int) -> List[BaseGoal]:
         return [MaxAt(objects, "container", 0)]
 
     if count == 1:
-        return [
-            CountAt(objects, "container", 1),
-            MaxAt(objects, "container", 1),
-        ]
+        return [ExactCountAt(objects, "container", 1)]
 
-    return [CountAt(objects, "container", 2)]
+    return [AtLeastCountAt(objects, "container", 2)]
 
 
 def _build_recipe_goals(recipe: List[str]) -> List[BaseGoal]:

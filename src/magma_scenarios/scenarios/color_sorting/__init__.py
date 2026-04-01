@@ -9,4 +9,7 @@ TASK_DEFINITIONS = {
 
 TASK_PRESETS = {
     "CleanTablePreset": "simple_preset:CleanTablePreset",
+
+    # Benchmark
+    "CSB": "simple_preset:ColorSortingBenchmark"
 }
