@@ -3,19 +3,11 @@
     "stages": [
         {
             "instruction": "ref_obj_1 and ref_obj_2 are classified as Category A, ref_obj_3 is category B. Right?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 are Category A and ref_obj_3 is Category B."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "And, area1 is for Category A and area2 is for Category B.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that area1 is for Category A and area2 is for Category B."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Let's start a cycle for Category A then right after Category B",
@@ -74,11 +66,7 @@
         },
         {
             "instruction": "From now, Category A objects are going to area3",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that area3 is for Category A"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Let's start a cycle for all categories.",
@@ -102,13 +90,14 @@
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["lg-memorization"]
         },
         {
             "instruction": "Hello, where category B object must be sorted?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model answer that objects Category B are going to area2"
             },

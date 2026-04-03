@@ -4,27 +4,15 @@
     "stages": [
         {
             "instruction": "I want you to know that a maintenance cycle means a cycle where we sort only object marked as maintenance. And a cleaning cycle means that we sort only object non-marked. Understand?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that maintenance cycle -> sort only objects marked as maintenance. cleaning cycle -> sort object not marked as maintenance."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "The default cycle rule is to send all object to area3.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that the default rule is to send all objects to area3."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a maintenance cycle.",

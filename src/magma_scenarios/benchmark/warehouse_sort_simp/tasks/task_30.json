@@ -4,19 +4,11 @@
     "stages": [
         {
             "instruction": "Today, all objects must go to area1!",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that all object must go to area1"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "And area2 must not be used. It's forbidden.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that area2 must not be used."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle",
@@ -33,21 +25,21 @@
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["c-reasoning"]
         },
         {
             "instruction": "I need to have all obj_ref_2 to area2 right now",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must refuses because area2 must not be used."
             }
         },
         {
-            "instruction": "Ho and which area can I use?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "instruction": "Ho and which areas can I use?",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that area1 or/and area3 can be used."
             },

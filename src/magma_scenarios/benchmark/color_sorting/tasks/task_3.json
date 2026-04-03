@@ -1,0 +1,63 @@
+{
+    "criteria" : ["multi-steps","lg-memorization"],
+    "stages": [
+        {
+            "instruction": "I need to have two yellow cubes into the yellow box",
+            "max_step": 7,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose"
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        2
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps"],
+            "flag_answer_to_user": true,
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspCubeFailureError",
+                "arguments" : {
+                    "inaccessible" : ["yellow_cube_1"]
+                }
+            }
+        },
+        {
+            "instruction": "Please store one green cube please now in its box",
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "flag_answer_to_user": true,
+            "injection": {
+                "mode": "force_failure",
+                "message": "Planning error: Green box is unreachable."
+            }
+        },
+        {
+            "instruction": "How many cubes do you have stored since the start?",
+            "max_step": 2,
+            "action_goal" : [],
+            "keys_evaluator": ["lg-memorization"],
+            "complementary_verif": {
+                "judge": "The model must answer that it has store 2"
+            }
+        }
+    ]
+}

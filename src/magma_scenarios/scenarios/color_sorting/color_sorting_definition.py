@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 from pathlib import Path
-from typing import Dict, List
+import random
 
 from magma_core.base.tasks import TaskDefinition
 from magma_core.base.state import TaskState
 
 from .detection_tool import ColorDetectionTools
 from .color_requests import AskForCycle, GiveOrderConstraint
-
+from .attributes import available_colors
 
 class SortingDefinition(TaskDefinition):
     """
@@ -21,7 +21,7 @@ class SortingDefinition(TaskDefinition):
 
     active_requests = [
         GiveOrderConstraint(),
-        AskForCycle(5),
+        AskForCycle(3),
     ]
 
     def __init__(self):
@@ -31,4 +31,8 @@ class SortingDefinition(TaskDefinition):
         )
 
         self.starting_state = TaskState()
-        self.starting_state.attributes = {}
+        colors = random.sample(available_colors, k=2)
+        self.env_options = {"colors": colors}
+        self.starting_state.attributes = {
+            "known_box_color" : colors
+        }

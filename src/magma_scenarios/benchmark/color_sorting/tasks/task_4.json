@@ -1,0 +1,88 @@
+{
+    "criteria" : ["multi-steps"],
+    "stages": [
+        {
+            "instruction": "Hello, the rule is to always alternate between green and yellow cubes when sorting",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Okay, so sort 1 green cube and 2 yellow please",
+            "max_step": 5,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        0
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps"],
+            "flag_answer_to_user": true,
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspCubeFailureError",
+                "arguments" : {
+                    "inaccessible" : ["yellow_cube_1","yellow_cube_2"]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps"],
+            "flag_answer_to_user": true
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        2
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps"],
+            "flag_answer_to_user": true
+        }
+    ]
+}

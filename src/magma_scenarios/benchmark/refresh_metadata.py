@@ -6,16 +6,7 @@ from pathlib import Path
 from collections import Counter, defaultdict
 
 from .criteria import KNOWN_CRITERIA
-
-def count_nb_steps(stage_list : list[dict]) -> int:
-    cpt = 0
-    for stage in stage_list:
-        cpt += stage.get("max_step", 0)
-        if stage.get("answer_to_user", None):
-            cpt +=1
-        if stage.get("force_recovery",None) or stage.get("force_failure",None):
-            cpt += 1
-    return cpt
+from .horizon import count_task_horizon, task_has_recovery_criterion
 
 def main():
 
@@ -63,13 +54,17 @@ def main():
             if "stages" not in task_data or "criteria" not in task_data:
                 raise ValueError(f"task file {task_file} missing 'stages' or 'criteria'")
             
-            for c in task_data["criteria"]:
+            effective_criteria = list(dict.fromkeys(task_data["criteria"]))
+            if task_has_recovery_criterion(task_data["stages"]) and "recovery" not in effective_criteria:
+                effective_criteria.append("recovery")
+
+            for c in effective_criteria:
                 if c not in KNOWN_CRITERIA: 
                     raise ValueError(f"Unknown criteria '{c}' in {task_file}") 
                 criteria_counter[c] += 1
                 criteria_tasks[c].append(task_file.name)
             
-            task_horizon = count_nb_steps(task_data["stages"])
+            task_horizon = count_task_horizon(task_data["stages"])
             tasks_horizon[task_horizon].append(task_file.name.split(".")[0])
 
         # Update meta_info.json with criteria counts

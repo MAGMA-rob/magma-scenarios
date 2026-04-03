@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "Today, all objects must go to area1!",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that all object must go to area1"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle!",

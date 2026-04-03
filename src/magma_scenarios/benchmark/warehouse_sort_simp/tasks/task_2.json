@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "The default attribution for ref_obj_1 and ref_obj_2 is area1. Area3 is reserved for ref_obj_3. Remember this for the day.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area1, and that Area3 is reserved for ref_obj_3"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle",

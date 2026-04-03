@@ -3,16 +3,12 @@
     "stages": [
         {
             "instruction": "Hello! I will give you the object-area assignement to follow for the day : ref_obj_1 and ref_obj_2 must go to area2, and the rest to area3. Understood?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area2, and the rest (ref_obj_3) to area3."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Just to be sure, can you tell me which objects are associated to area3?",
             "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that ref_obj_3 is assigned to area3."
             },

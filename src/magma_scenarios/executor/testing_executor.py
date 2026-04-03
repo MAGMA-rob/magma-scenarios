@@ -76,6 +76,8 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     # Specific modifications
                     self._eval_envs[i].current_task_stage = new_id
                     self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
+                    # A new stage must rebuild its own active error profile.
+                    self._eval_envs[i].error_state = {}
             else:
                 print("FINISHED TASK")
 
@@ -96,6 +98,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         # step to have obs
         action = self.step()
         obs , _, _, _,_ = self.env.step(action)
+        state_dict = self.env.get_state_dict().copy()
 
         for env_id, func in tools_call.items():
             func_name = func.get("name", None)
@@ -106,23 +109,25 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                 logs = self._eval_envs[env_id].logs
                 stage_log_length = self._eval_envs[env_id].stage_log_start_idx
                 composite_progress = self._eval_envs[env_id].composite_progress
+                active_stage_error_state = getattr(self._eval_envs[env_id], "error_state", {})
             else:
                 stage_id = 0
                 stage_log_length = 0
                 logs = []
                 composite_progress = {}
+                active_stage_error_state = {}
 
                 while self.task_ref.is_stage_text_only(stage_id):
                     print(f"[EXECUTOR] Skip Stage {stage_id}")
                     stage_id+=1
             
-            # FAUT QUE JARRIVE A DETERMINER ICI SI CEST UN DEBUT DE STAGE OU NON
             if func_name:
                 tool_infos = self._compute_single_tool(
                     func_name,
                     params,
                     env_id,
                     obs,
+                    active_stage_error_state,
                     current_node_step=0,
                     stage_id=stage_id,
                     node_id=env_id,
@@ -136,6 +141,7 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     actions = func,
                     env_id=env_id,
                     obs=obs,
+                    error_state=active_stage_error_state,
                     stage_id=stage_id,
                     current_node_step=0,
                     node_id=env_id,
@@ -186,7 +192,13 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                     else:
                         planning_error.append(False)
 
-                out[env_infos.node_id] = {'success':results, "reason":mess, "att_modif" : att_modif, "planning_error":planning_error}
+                out[env_infos.node_id] = {
+                    'success':results,
+                    "reason":mess,
+                    "att_modif" : att_modif,
+                    "planning_error":planning_error,
+                    "error_description": env_infos.get_error_descriptions(),
+                }
                 env_infos.tool_robots = []
 
         return self.randomizer.traduce_end_eval(out) if self.randomized else out

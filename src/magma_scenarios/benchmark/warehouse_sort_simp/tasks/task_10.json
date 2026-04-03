@@ -4,11 +4,7 @@
     "stages": [
         {
             "instruction": "Hey, default assignmments are ref_obj_1 and ref_obj_2 to area2 and ref_obj_3 to area3, okay?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_2 must go to area2 and ref_obj_3 to area3."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Let's try this. Run a cycle now.",
@@ -36,11 +32,7 @@
         },
         {
             "instruction": "Ok good, wait for future instructions.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model must answer that he is waiting for future instruction without calling any action"
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Hello robot, some changment about assignment. You can add this novel area area4 to your system and it will be used to store ref_obj_1. With witch area was it assigned before?",
@@ -53,8 +45,7 @@
         },
         {
             "instruction": "Ok can I remove area2 or it is still associated with some objects?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that area2 is associated with ref_obj_2 (can include other information or propositon)."
             }

@@ -27,14 +27,17 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
     """
 
     size_box = 0.3
-    centre_yellow_box=[-0.5,0.3,0]
-    centre_green_box=[-0.5,-0.3,0]
+    centre_box_2=[-0.5,0.3,0]
+    centre_box_1=[-0.5,-0.3,0]
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
-        cubes = ["green_cube_1", "green_cube_2", "green_cube_3",
-                     "yellow_cube_1", "yellow_cube_2", "yellow_cube_3"]
-        
-        nb_cube_completed = min(options.get("nb_cube_completed",0), len(cubes)-1)
+        cube_names = [cube.name for cube in self.cubes]
+        colors = self._get_scene_colors(options)
+        self.box_centers = {
+            colors[0]: self.centre_box_1,
+            colors[1]: self.centre_box_2,
+        }
+        nb_cube_completed = min(options.get("nb_cube_completed",0), len(cube_names)-1)
         with torch.device(self.device):
             # the initialization functions where you as a user place all the objects and initialize their properties
             # are designed to support partial resets, where you generate initial state for a subset of the environments.
@@ -44,18 +47,8 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
             # note that the table scene is built such that z=0 is the surface of the table.
             self.table_scene.initialize(env_idx)
             q = [1, 0, 0, 0]
-            # Set pose of yellow box
-            p = torch.tensor([self.centre_yellow_box[0],
-                              self.centre_yellow_box[1],
-                              self.centre_yellow_box[2]]).repeat(b,1)
-            y_pose = Pose.create_from_pq(p=p,q=q)
-            self.yellow_box.set_pose(y_pose)
-            # Set pose of green box
-            p = torch.tensor([self.centre_green_box[0],
-                              self.centre_green_box[1],
-                              self.centre_green_box[2]]).repeat(b,1)
-            g_pose = Pose.create_from_pq(p=p,q=q)
-            self.green_box.set_pose(g_pose)
+            self._set_boxes_pose(b, q)
+
 
             r = 0.15
 
@@ -63,14 +56,11 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
                 (0,-r),(0,0),(0,r),
                 (r,-r),(r,0),(r,r)]
             
-            completed = random.sample(cubes, nb_cube_completed)
+            completed = random.sample(cube_names, nb_cube_completed)
             
-            for i, cube_name in enumerate(cubes):
-                if cube_name in completed:
-                    if "green" in cube_name:
-                        pos = self.centre_green_box
-                    else:
-                        pos = self.centre_yellow_box
+            for cube in self.cubes:
+                if cube.name in completed:
+                    pos = self.box_centers[self._get_cube_color(cube.name)]
                 else:
                     #Get a random availaible cell
                     random_index = torch.randint(0, len(available_cells), (1,)).item()
@@ -82,21 +72,7 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
                 xyz = torch.tensor([pos[0], pos[1], self.cube_half_size]).repeat(b, 1)
     
                 obj_pose = Pose.create_from_pq(p=xyz, q=q)  
-                cube = getattr(self, cube_name)
                 cube.set_pose(obj_pose)
 
     def _get_obs_extra(self, info: Dict):
-        # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
-        obs = dict(
-            green_cube_1=self.green_cube_1.pose.raw_pose,
-            green_cube_2=self.green_cube_2.pose.raw_pose,
-            green_cube_3=self.green_cube_3.pose.raw_pose,
-            yellow_cube_1=self.yellow_cube_1.pose.raw_pose,
-            yellow_cube_2=self.yellow_cube_2.pose.raw_pose,
-            yellow_cube_3=self.yellow_cube_3.pose.raw_pose,
-            green_box_pose=self.green_box.pose.raw_pose,
-            yellow_box_pose=self.yellow_box.pose.raw_pose,
-            agent_tcp=self.agent.tcp.pose.raw_pose
-        )
-        return obs
-
+        return super()._get_obs_extra(info)

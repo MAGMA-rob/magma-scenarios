@@ -1,0 +1,1 @@
+available_colors = ["green","yellow","black","white","blue","red"]

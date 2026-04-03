@@ -1,0 +1,59 @@
+{
+    "criteria" : ["multi-steps"],
+    "stages": [
+        {
+            "instruction": "Hello, can you sort 2 green cubes and 1 yellow cube to their associated color box?",
+            "max_step": 7,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps"],
+            "injection":{
+                "mode": "runtime_error",
+                "error": "MaskRemainingCubesError",
+                "argument": {
+                    "masked":["green_cube_1","green_cube_3"]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        2
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "flag_answer_to_user": true,
+            "keys_evaluator" : ["multi-steps"]
+        }
+    ]
+}

@@ -3,11 +3,7 @@
     "stages": [
         {
             "instruction": "Here are the default object assignment you must respect : ref_obj_1 to area1, ref_obj_3 to area3",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand the object assignment ref_obj_1 to area1, ref_obj_3 to area3."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle for the object without assignment and send it to area1",

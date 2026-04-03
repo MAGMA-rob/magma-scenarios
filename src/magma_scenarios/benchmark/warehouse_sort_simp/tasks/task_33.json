@@ -46,10 +46,7 @@
         },
         {
             "instruction": "Okay, area4 is for ref_obj_1 and area5 is for ref_obj_2 and ref_obj_3.",
-            "max_step": 2,
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 goes to area5 + ref_obj_2 and ref_obj_3 goes both to area5"
-            }
+            "expected_behavior":"acknowledge"
         },
         {
             "instruction": "Okay launch a cycle now",
@@ -73,13 +70,14 @@
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["c-reasoning"]
         },
         {
             "instruction": "Hi, do you know where to sort ref_obj_3?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
+            "expected_behavior": "answer",
             "complementary_verif": {
                 "judge": "The model must answer that ref_obj_3 is going to area5."
             },
@@ -129,7 +127,9 @@
                 }
             ],
             "complementary_verif": {},
-            "force_recovery": true,
+            "injection": {
+                "mode": "force_recovery"
+            },
             "keys_evaluator" : ["c-reasoning","lg-memorization"]
         }
     ]

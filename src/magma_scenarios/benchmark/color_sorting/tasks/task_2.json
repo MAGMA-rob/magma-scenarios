@@ -1,0 +1,125 @@
+{
+    "criteria" : ["multi-steps","c-reasoning"],
+    "stages": [
+        {
+            "instruction": "The default rule is to send cubes to a box with a different color.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "I need to have two green cubes into the green box",
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "at",
+                    "args" : [
+                        "green_cube_3",
+                        "green_box_pose"
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        0
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps","c-reasoning"],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspCubeFailureError",
+                "arguments" : {
+                    "inaccessible" : ["green_cube_1","green_cube_2"]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "green_box_pose",
+                        2
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "yellow_box_pose",
+                        0
+                    ]
+                }
+            ],
+            "flag_answer_to_user": true,
+            "should_reset": true,
+            "injection": {
+                "mode": "runtime_error",
+                "error": "MaskRemainingCubesError",
+                "arguments" : {
+                    "masked" : ["green_cube_1"]
+                }
+            },
+            "keys_evaluator" : ["multi-steps"]
+        },
+        {
+            "instruction": "Hello, store one cube from each color according to the default rule.",
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "cube*",
+                        "yellow_box_pose",
+                        0
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "keys_evaluator" : ["multi-steps","c-reasoning"],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "MaskRemainingCubesError",
+                "arguments" : {
+                    "masked" : ["green_cube_1","green_cube_2","green_cube_3"]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal" : [
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "green_cube*",
+                        "yellow_box_pose",
+                        1
+                    ]
+                },
+                {
+                    "predicate": "count",
+                    "args" : [
+                        "yellow_cube*",
+                        "green_box_pose",
+                        1
+                    ]
+                }
+            ],
+            "flag_answer_to_user": true,
+            "should_reset": true,
+            "keys_evaluator" : ["multi-steps"]
+        }
+    ]
+}

@@ -180,7 +180,6 @@ class WithManufacturingOrder(WarehouseSortingTool):
             nonlocal cpt
             cpt +=1
             if cpt > cpt_max:
-                print("EXCEEDDING MAX NUMBER OF RETRY")
                 return []
             
             # peut etre on pourrait verif si on a un objet en gripper pour juste faire un put
@@ -311,8 +310,6 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
             nonlocal cpt
             cpt +=1
             if cpt > cpt_max:
-                print("EXCEEDDING MAX NUMBER OF RETRY")
-                print("================")
                 return []
             
             # peut etre on pourrait verif si on a un objet en gripper pour juste faire un put

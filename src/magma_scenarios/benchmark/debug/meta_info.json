@@ -1,0 +1,46 @@
+{
+  "scenario_name": "Debug",
+  "scenario_id": "Debug",
+  "scenario_description": "The goal of this task is to evaluate the capacity of the model to launch cycle under target constraints. [PAPER VERSION] Without manufacturing order parameter.",
+  "associate_task": "warehouse_sorting.SimpBench",
+  "options_mplib": {
+    "robot": "panda_v2",
+    "joint_vel_limit": 0.9,
+    "joint_acc_limit": 0.9,
+    "control_timesteps": 0
+  },
+  "criteria": {
+    "c-reasoning": 2,
+    "recovery": 3,
+    "multi-steps": 1,
+    "lg-memorization": 1
+  },
+  "criteria_tasks": {
+    "c-reasoning": [
+      "task_28.json",
+      "task_26.json"
+    ],
+    "recovery": [
+      "task_28.json",
+      "task_26.json",
+      "task_27.json"
+    ],
+    "multi-steps": [
+      "task_26.json"
+    ],
+    "lg-memorization": [
+      "task_27.json"
+    ]
+  },
+  "tasks_horizon": {
+    "4": [
+      "task_28"
+    ],
+    "8": [
+      "task_26"
+    ],
+    "6": [
+      "task_27"
+    ]
+  }
+}

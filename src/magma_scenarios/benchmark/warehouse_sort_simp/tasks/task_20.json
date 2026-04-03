@@ -1,14 +1,10 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria" : ["c-reasoning","lg-memorization","multi-steps"],
     "c-nb": 1,
     "stages": [
         {
             "instruction": "Hello, ref_obj_1 is assigned to area3, ref_obj_2 to area1 and ref_obj_3 to area2. Okay?",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand the default assignment : ref_obj_1 is assigned to area3, ref_obj_2 to area1 and ref_obj_3 to area2."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Hey, I need you to launch a cycle for ref_obj_1 and ref_obj_3 please",
@@ -61,7 +57,7 @@
             ],
             "complementary_verif": {},
             "should_reset_env": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator" : ["c-reasoning","multi-steps"]
         },
         {
             "instruction": null,

@@ -4,19 +4,11 @@
     "stages": [
         {
             "instruction": "Hello! Please remember that ref_obj_1 and ref_obj_3 are marked for maintenance.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that ref_obj_1 and ref_obj_3 are marked for maintenance."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "The default cycle rule is to send all object to area1.",
-            "max_step": 1,
-            "expected_behavior": "acknowledge",
-            "complementary_verif": {
-                "judge": "The model understand that the default rule is to send all objects to area1."
-            }
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Launch a cycle. Objects marked for maintenance must go to area2.",
