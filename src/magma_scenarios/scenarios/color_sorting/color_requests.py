@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple
+from typing import Dict, List
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.state.task_state import TaskState
@@ -9,18 +9,29 @@ from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
 from .color_sorting_stages import SortByColorStage, ExactSortByColorStage
 
-constraint_type = ["alternate", "yellow-first", "green-first"]
+constraint_type = ["alternate", "first-color", "second-color"]
+
+def _resolve_attributes_and_colors(state: TaskState) -> tuple[Dict, List[str]]:
+    attributes = state.attributes.copy()
+    colors = attributes.get("known_box_color", attributes.get("box_color", None))
+    if colors is None:
+        raise RuntimeError("Color sorting requests require 'known_box_color' or 'box_color' in state.attributes")
+    if len(colors) != 2:
+        raise RuntimeError(f"Color sorting requests require exactly 2 colors, got {colors}")
+
+    attributes["known_box_color"] = list(colors)
+    return attributes, list(colors)
 
 
-class GreenFirstConstraint(BaseConstraint):
+class FirstColorConstraint(BaseConstraint):
 
     def apply(self, state: TaskState):
-        state.properties["constraint_order"] = "green-first"
+        state.properties["constraint_order"] = "first-color"
 
-class YellowFirstConstraint(BaseConstraint):
+class SecondColorConstraint(BaseConstraint):
 
     def apply(self, state: TaskState):
-        state.properties["constraint_order"] = "yellow-first"
+        state.properties["constraint_order"] = "second-color"
 
 
 class AlternateConstraint(BaseConstraint):
@@ -35,16 +46,19 @@ class GiveOrderConstraint(BaseConstraintRequest):
         super().__init__()
 
     def initialize_constraints(self, state: TaskState):
+        _, colors = _resolve_attributes_and_colors(state)
         t = random.choice(constraint_type)
         if t == "alternate":
             self.constraints = [AlternateConstraint()]
-            self.constraint_msg = "Each time I ask you to sort cubes, you must always alternate between one yellow and one green."
-        elif t == "green-first":
-            self.constraints = [GreenFirstConstraint()]
-            self.constraint_msg = "Each time I ask you to sort cubes, you must always sort all green cubes first."
+            self.constraint_msg = (
+                f"Each time I ask you to sort cubes, you must always alternate between one {colors[0]} and one {colors[1]}."
+            )
+        elif t == "first-color":
+            self.constraints = [FirstColorConstraint()]
+            self.constraint_msg = f"Each time I ask you to sort cubes, you must always sort all {colors[0]} cubes first."
         else:
-            self.constraints = [YellowFirstConstraint()]
-            self.constraint_msg = "Each time I ask you to sort cubes, you must always sort all yellow cubes first."
+            self.constraints = [SecondColorConstraint()]
+            self.constraint_msg = f"Each time I ask you to sort cubes, you must always sort all {colors[1]} cubes first."
 
 
 class AskForCycle(BaseRequest):
@@ -58,44 +72,42 @@ class AskForCycle(BaseRequest):
     def sampling_weight(self, state: TaskState) -> float:
         return 3
 
-    def _sample_color_counts(self) -> Tuple[int, int]:
+    def _sample_color_counts(self, colors: List[str]) -> Dict[str, int]:
         nb = random.randint(1, self.max_cube)
-        all_cubes = ["yellow", "green"] * 3
+        all_cubes = []
+        for color in colors:
+            all_cubes.extend([color] * 3)
         random.shuffle(all_cubes)
 
-        green_count = 0
-        yellow_count = 0
+        counts = {color: 0 for color in colors}
         for cube in all_cubes[:nb]:
-            if cube == "yellow":
-                yellow_count += 1
-            else:
-                green_count += 1
+            counts[cube] += 1
 
-        return green_count, yellow_count
+        return counts
 
-    def _sample_alternating_order(self) -> List[str]:
+    def _sample_alternating_order(self, colors: List[str]) -> List[str]:
         min_nb = 2 if self.max_cube >= 2 else 1
         nb = random.randint(min_nb, self.max_cube)
-        start_color = random.choice(["yellow", "green"])
-        other_color = "green" if start_color == "yellow" else "yellow"
+        start_color = random.choice(colors)
+        other_color = colors[1] if start_color == colors[0] else colors[0]
 
         return [
             start_color if i % 2 == 0 else other_color
             for i in range(nb)
         ]
 
-    def _build_instruction(self, green_count: int, yellow_count: int) -> UserInstruction:
+    def _build_instruction(self, colors: List[str], counts: Dict[str, int]) -> UserInstruction:
         return UserInstruction(
-            f"Please store {yellow_count} yellow cubes and {green_count} green cubes."
+            f"Please store {counts[colors[0]]} {colors[0]} cubes and {counts[colors[1]]} {colors[1]} cubes."
         )
 
     def _build_unordered_stages(
             self,
             instruction: UserInstruction,
-            green_count: int,
-            yellow_count: int,
+            attributes: Dict,
+            counts: Dict[str, int],
         ) -> List[BaseTaskStage]:
-        total = green_count + yellow_count
+        total = sum(counts.values())
         stages = []
         cur_instruction = instruction
         for i in range(total):
@@ -103,9 +115,9 @@ class AskForCycle(BaseRequest):
                 SortByColorStage(
                     cur_instruction,
                     nb_good_place=i + 1,
+                    attributes=attributes,
                     last=(i == total - 1),
-                    max_green=green_count,
-                    max_yellow=yellow_count
+                    max_assignment=counts
                 )
             )
             cur_instruction = EmptyInstruction()
@@ -115,26 +127,24 @@ class AskForCycle(BaseRequest):
     def _build_ordered_stages(
             self,
             instruction: UserInstruction,
+            attributes: Dict,
+            colors: List[str],
             color_order: List[str],
         ) -> List[BaseTaskStage]:
         stages = []
         current_instruction = instruction
-        green_count = 0
-        yellow_count = 0
+        assignment = {color: 0 for color in colors}
 
         for i, color in enumerate(color_order):
-            if color == "green":
-                green_count += 1
-            elif color == "yellow":
-                yellow_count += 1
-            else:
+            if color not in assignment:
                 raise ValueError(f"Unknown color order entry: {color}")
+            assignment[color] += 1
 
             stages.append(
                 ExactSortByColorStage(
                     current_instruction,
-                    nb_green=green_count,
-                    nb_yellow=yellow_count,
+                    attributes=attributes,
+                    assignment=assignment.copy(),
                     last=(i == len(color_order) - 1)
                 )
             )
@@ -143,25 +153,35 @@ class AskForCycle(BaseRequest):
         return stages
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        attributes, colors = _resolve_attributes_and_colors(state)
         rule = state.properties.get("constraint_order", None)
 
         if rule is None:
-            green_count, yellow_count = self._sample_color_counts()
-            instruction = self._build_instruction(green_count, yellow_count)
-            return self._build_unordered_stages(instruction, green_count, yellow_count)
+            counts = self._sample_color_counts(colors)
+            instruction = self._build_instruction(colors, counts)
+            return self._build_unordered_stages(instruction, attributes, counts)
 
         if rule == "alternate":
-            color_order = self._sample_alternating_order()
+            color_order = self._sample_alternating_order(colors)
+        elif rule == "first-color":
+            counts = self._sample_color_counts(colors)
+            color_order = ([colors[0]] * counts[colors[0]]) + ([colors[1]] * counts[colors[1]])
+        elif rule == "second-color":
+            counts = self._sample_color_counts(colors)
+            color_order = ([colors[1]] * counts[colors[1]]) + ([colors[0]] * counts[colors[0]])
         elif rule == "green-first":
-            green_count, yellow_count = self._sample_color_counts()
-            color_order = (["green"] * green_count) + (["yellow"] * yellow_count)
+            counts = self._sample_color_counts(colors)
+            first_color = "green" if "green" in colors else colors[0]
+            second_color = colors[1] if first_color == colors[0] else colors[0]
+            color_order = ([first_color] * counts[first_color]) + ([second_color] * counts[second_color])
         elif rule == "yellow-first":
-            green_count, yellow_count = self._sample_color_counts()
-            color_order = (["yellow"] * yellow_count) + (["green"] * green_count)
+            counts = self._sample_color_counts(colors)
+            first_color = "yellow" if "yellow" in colors else colors[0]
+            second_color = colors[1] if first_color == colors[0] else colors[0]
+            color_order = ([first_color] * counts[first_color]) + ([second_color] * counts[second_color])
         else:
             raise ValueError(f"Unknown constraint_order: {rule}")
 
-        green_count = color_order.count("green")
-        yellow_count = color_order.count("yellow")
-        instruction = self._build_instruction(green_count, yellow_count)
-        return self._build_ordered_stages(instruction, color_order)
+        counts = {color: color_order.count(color) for color in colors}
+        instruction = self._build_instruction(colors, counts)
+        return self._build_ordered_stages(instruction, attributes, colors, color_order)

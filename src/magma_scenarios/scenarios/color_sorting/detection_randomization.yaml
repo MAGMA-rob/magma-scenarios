@@ -76,3 +76,4 @@ tools:
       - Return detailed information about each object, including pose and attributes.
 
     parameters: {}
+

@@ -1,16 +1,15 @@
 {
-    "criteria" : ["multi-steps"],
+    "criteria" : ["multi-steps","lg-memorization"],
     "stages": [
         {
-            "instruction": "Hello, can you sort 2 green cubes and 1 yellow cube to their associated color box?",
+            "instruction": "I need to have two yellow cubes into the yellow box",
             "max_step": 7,
             "action_goal" : [
                 {
                     "predicate": "count",
                     "args" : [
                         "green_cube*",
-                        "green_box_pose",
-                        1
+                        "green_box_pose"
                     ]
                 },
                 {
@@ -18,21 +17,22 @@
                     "args" : [
                         "yellow_cube*",
                         "yellow_box_pose",
-                        1
+                        2
                     ]
                 }
             ],
             "keys_evaluator" : ["multi-steps"],
-            "injection":{
+            "flag_answer_to_user": true,
+            "injection": {
                 "mode": "runtime_error",
-                "error": "MaskRemainingCubesError",
-                "argument": {
-                    "masked":["green_cube_1","green_cube_3"]
+                "error": "GraspCubeFailureError",
+                "arguments" : {
+                    "inaccessible" : ["yellow_cube_1"]
                 }
             }
         },
         {
-            "instruction": null,
+            "instruction": "Please store one green cube please now in its box",
             "max_step": 4,
             "action_goal" : [
                 {
@@ -40,20 +40,24 @@
                     "args" : [
                         "green_cube*",
                         "green_box_pose",
-                        2
-                    ]
-                },
-                {
-                    "predicate": "count",
-                    "args" : [
-                        "yellow_cube*",
-                        "yellow_box_pose",
                         1
                     ]
                 }
             ],
             "flag_answer_to_user": true,
-            "keys_evaluator" : ["multi-steps"]
+            "injection": {
+                "mode": "force_failure",
+                "message": "Planning error: Green box is unreachable."
+            }
+        },
+        {
+            "instruction": "How many cubes do you have stored since the start?",
+            "max_step": 2,
+            "action_goal" : [],
+            "keys_evaluator": ["lg-memorization"],
+            "complementary_verif": {
+                "judge": "The model must answer that it has store 2"
+            }
         }
     ]
 }

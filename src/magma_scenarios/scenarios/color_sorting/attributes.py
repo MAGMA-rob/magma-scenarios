@@ -1,1 +1,1 @@
-att = {"known_box_color":["yellow","green"]}
+available_colors = ["green","yellow","black","white","blue","red"]

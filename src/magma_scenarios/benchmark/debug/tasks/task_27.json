@@ -1,0 +1,107 @@
+{
+    "criteria" : ["lg-memorization"],
+    "c-nb": 1,
+    "stages": [
+        {
+            "instruction": "Launch a cycle sending all objects to area2 right now",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_*",
+                        "area2"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "injection": {
+                "mode": "force_recovery",
+                "message": "A planning error occurs while trying to compute a trajectory."
+            }
+        },
+        {
+            "instruction": "Hey, launch a cycle sending ref_obj_1 to area3 and ref_obj_2 to area2",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "answer_to_user": true,
+            "should_env_reset": true,
+            "complementary_verif": {}
+        },
+        {
+            "instruction": "Stop what you are doing, I need right now a cycle for ref_obj_2 and ref_obj_3 to area3. You will continue what you are doing after!",
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        ["ref_obj_2","ref_obj_3"],
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_1",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true
+        },
+        {
+            "instruction": null,
+            "default_instruction": {"author":"status", "content": "launch_cycle succeed : ref_obj_2 and ref_obj_3 were sended to area3!"},
+            "max_step": 1,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_1",
+                        "area3"
+                    ]
+                },
+                {
+                    "predicate": "in",
+                    "args": [
+                        "ref_obj_2",
+                        "area2"
+                    ]
+                },
+                {
+                    "predicate": "not_in",
+                    "args": [
+                        "ref_obj_3",
+                        "area*"
+                    ]
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": ["lg-memorization"]
+        }
+    ]
+}

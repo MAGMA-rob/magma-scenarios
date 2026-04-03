@@ -9,6 +9,18 @@
     "joint_acc_limit": 0.9,
     "control_timesteps": 0
   },
+  "scenario_variants": [
+    {
+      "all_task_attributes": {"known_box_color": ["red", "yellow"]},
+      "tools_constant": {"colors": ["red", "yellow"]},
+      "env_options": {"colors": ["red", "yellow"]}
+    },
+    {
+      "all_task_attributes": {"known_box_color": ["blue", "white"]},
+      "tools_constant": {"colors": ["blue", "white"]},
+      "env_options": {"colors": ["blue", "white"]}
+    }
+  ],
   "tasks_horizon": {
     "12": [
       "task_0"

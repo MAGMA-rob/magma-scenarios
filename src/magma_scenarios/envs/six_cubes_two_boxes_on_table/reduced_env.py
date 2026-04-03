@@ -47,43 +47,39 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
         )
         self.table_scene.build()
 
-        self.red_cube_1 = actors.build_cube(
-            self.scene,
-            half_size=self.cube_half_size,
-            color=np.array(self.red),
-            name="red_cube_1",
-            body_type="dynamic",
-            initial_pose=sapien.Pose(p=[-0.1, -0.05, self.cube_half_size]),
-        )
+        self.cubes = []
+        self.boxes = {}
 
-        self.red_cube_2 = actors.build_cube(
-            self.scene,
-            half_size=self.cube_half_size,
-            color=np.array(self.red),
-            name="red_cube_2",
-            body_type="dynamic",
-            initial_pose=sapien.Pose(p=[0, -0.05, self.cube_half_size]),
-        )
+        cube_specs = [
+            ("red_cube_1", self.red, [-0.1, -0.05, self.cube_half_size]),
+            ("red_cube_2", self.red, [0.0, -0.05, self.cube_half_size]),
+            ("black_cube_1", self.black, [0.1, 0.05, self.cube_half_size]),
+        ]
+        for cube_name, color, initial_pos in cube_specs:
+            cube = actors.build_cube(
+                self.scene,
+                half_size=self.cube_half_size,
+                color=np.array(color),
+                name=cube_name,
+                body_type="dynamic",
+                initial_pose=sapien.Pose(p=initial_pos),
+            )
+            setattr(self, cube_name, cube)
+            self.cubes.append(cube)
 
-        self.black_cube_1 = actors.build_cube(
-            self.scene,
-            half_size=self.cube_half_size,
-            color=np.array(self.black),
-            name="black_cube_1",
-            body_type="dynamic",
-            initial_pose=sapien.Pose(p=[0.1, 0.05, self.cube_half_size]),
-        )
-
-
-        self.red_box = self.create_box(size=self.size_box, thickness=self.thickness_box, name="red_box", color = self.red)
-        self.black_box = self.create_box(size=self.size_box, thickness=self.thickness_box, name="black_box", color = self.black)
+        self.red_box = self.create_box(size=self.size_box, thickness=self.thickness_box, name="red_box", color=self.red)
+        self.black_box = self.create_box(size=self.size_box, thickness=self.thickness_box, name="black_box", color=self.black)
+        self.boxes = {
+            "red": self.red_box,
+            "black": self.black_box,
+        }
         
 
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
-        cubes = ["red_cube_1", "red_cube_2", "black_cube_1"]
+        cube_names = [cube.name for cube in self.cubes]
         
-        nb_mixed = min(options.get("nb_mixed",0), len(cubes))
+        nb_mixed = min(options.get("nb_mixed",0), len(cube_names))
         with torch.device(self.device):
             # the initialization functions where you as a user place all the objects and initialize their properties
             # are designed to support partial resets, where you generate initial state for a subset of the environments.
@@ -114,11 +110,11 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
 
             
             
-            mix = random.sample(cubes, nb_mixed)
+            mix = random.sample(cube_names, nb_mixed)
             
-            for i, cube_name in enumerate(cubes):
-                if cube_name in mix:
-                    if "black" in cube_name:
+            for cube in self.cubes:
+                if cube.name in mix:
+                    if "black" in cube.name:
                         pos = self.centre_red_box
                     else:
                         pos = self.centre_black_box
@@ -133,18 +129,7 @@ class PartialSixCubesTwoBoxesOnTable(SixCubesTwoBoxesOnTable):
                 xyz = torch.tensor([pos[0], pos[1], self.cube_half_size]).repeat(b, 1)
     
                 obj_pose = Pose.create_from_pq(p=xyz, q=q)  
-                cube = getattr(self, cube_name)
                 cube.set_pose(obj_pose)
 
     def _get_obs_extra(self, info: Dict):
-        # in reality some people hack is_grasped into observations by checking if the gripper can close fully or not
-        obs = dict(
-            red_cube_1=self.red_cube_1.pose.raw_pose,
-            red_cube_2=self.red_cube_2.pose.raw_pose,
-            black_cube_1=self.black_cube_1.pose.raw_pose,
-            red_box_pose=self.red_box.pose.raw_pose,
-            black_box_pose=self.black_box.pose.raw_pose,
-            agent_tcp=self.agent.tcp.pose.raw_pose
-        )
-        return obs
-
+        return super()._get_obs_extra(info)

@@ -14,6 +14,18 @@ import sapien
 
 class ColorDetectionTools(BaseToolsAPI):
 
+    def _get_scene_colors(self, obs: Observation) -> List[str]:
+        colors = obs.add_constants.get("colors", obs.task_attributes.get("known_box_color", None))
+        if colors is None:
+            raise RuntimeError(
+                "ColorDetectionTools requires colors in obs.add_constants['colors'] "
+                "or obs.task_attributes['known_box_color']."
+            )
+        return list(colors)
+
+    def _get_box_pose_names(self, obs: Observation) -> List[str]:
+        return [f"{color}_box_pose" for color in self._get_scene_colors(obs)]
+
     @register_tool(
             description="Return the description and position of all detected object from the table.",
             params_spec={},
@@ -22,29 +34,31 @@ class ColorDetectionTools(BaseToolsAPI):
             ]
     )
     def get_object_state(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
+        colors = self._get_scene_colors(obs)
+        detected_obj = {f"{color}_box": [] for color in colors}
+        detected_obj["table"] = []
 
-        detected_obj = {"green_box":[], "yellow_box":[], "table":[]}
         for obj_name, obj_pose in obs.maniskill_obs['extra'].items():
             if "cube" in obj_name:
-                if is_object_inside_target(obj_pose[env_id],obs.maniskill_obs["extra"]["green_box_pose"][env_id]):
-                    detected_obj["green_box"].append(obj_name)
-                elif is_object_inside_target(obj_pose[env_id],obs.maniskill_obs["extra"]["yellow_box_pose"][env_id]):
-                    detected_obj["yellow_box"].append(obj_name)
+                for color in colors:
+                    if is_object_inside_target(
+                        obj_pose[env_id],
+                        obs.maniskill_obs["extra"][f"{color}_box_pose"][env_id]
+                    ):
+                        detected_obj[f"{color}_box"].append(obj_name)
+                        break
                 else:
                     detected_obj["table"].append(obj_name)
 
         def verifier(new_obs: Dict) -> ToolResult:
             s = "This is the position of existing objects: "
 
-            if len(detected_obj['green_box']) == 0:
-                s += "green_box is empty. "
-            else:
-                s += ",".join(detected_obj["green_box"]) + " are in the green_box. "
-
-            if len(detected_obj['yellow_box']) == 0:
-                s += "yellow_box is empty. "
-            else:
-                s += ",".join(detected_obj['yellow_box']) + " are in the yellow_box. "
+            for color in colors:
+                key = f"{color}_box"
+                if len(detected_obj[key]) == 0:
+                    s += f"{color}_box is empty. "
+                else:
+                    s += ",".join(detected_obj[key]) + f" are in the {color}_box. "
 
             if len(detected_obj['table']) > 0:
                 s += ",".join(detected_obj['table']) + " are not sorted."
@@ -66,16 +80,16 @@ class ColorDetectionTools(BaseToolsAPI):
         obj_name = None
         r = ""
 
-        box_poses = [obs.maniskill_obs["extra"]["green_box_pose"][env_id],
-                     obs.maniskill_obs["extra"]["yellow_box_pose"][env_id]
-                     ]
+        box_poses = [
+            obs.maniskill_obs["extra"][box_pose_name][env_id]
+            for box_pose_name in self._get_box_pose_names(obs)
+        ]
 
         obj_name = params.get("name", None)
         obj_pose = obs.maniskill_obs["extra"].get(obj_name,None)
         if obj_pose != None:
-            if not is_object_inside_target(obj_pose[env_id], box_poses[0]) and \
-                not is_object_inside_target(obj_pose[env_id], box_poses[1]):
-                    poses = compute_grasp_trajectory(self.get_agent(),obj_pose[env_id].cpu().numpy())
+            if all(not is_object_inside_target(obj_pose[env_id], box_pose) for box_pose in box_poses):
+                poses = compute_grasp_trajectory(self.get_agent(),obj_pose[env_id].cpu().numpy())
             else:
                 r=f"{obj_name} is already sorted inside a container. You can not take it."
         else:

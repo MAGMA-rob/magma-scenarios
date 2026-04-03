@@ -16,5 +16,15 @@
       "lg-memorization",
       "recovery"
     ]
+  },
+  {
+    "scenario_name": "Debug",
+    "folder_name": "debug",
+    "criteria": [
+      "c-reasoning",
+      "recovery",
+      "multi-steps",
+      "lg-memorization"
+    ]
   }
 ]

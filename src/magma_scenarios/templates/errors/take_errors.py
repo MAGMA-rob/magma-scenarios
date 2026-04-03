@@ -34,6 +34,6 @@ class GraspFailureError(BaseError):
             )
 
     def get_description(self, arguments: Dict[str, Any] | None) -> str:
-        if arguments is None or arguments.get("innaccessible") is None or len(arguments["innaccessible"] == 0):
+        if arguments is None or arguments.get("innaccessible") is None or len(arguments["innaccessible"]) == 0:
             return "Make some object impossible to take"
         return f"These objects are impossible to take right now: {arguments['innaccessible']}. Try to grasp another objects that also allows to complete the instruction."
