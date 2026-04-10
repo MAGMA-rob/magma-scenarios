@@ -31,10 +31,9 @@ tools:
 
   put_to_box:
     name:
-      - send_object_to_box
+      - put_object_to_box
       - place_to_box
       - drop_in_colored_box
-      - store_object_by_color
       - send_to_box
 
     description:
@@ -63,7 +62,7 @@ tools:
   get_object_state:
     name:
       - get_objects_state
-      - fetch_objects_state
+      - detect_object
       - list_detected_objects
       - read_object_positions
       - query_objects_info
@@ -72,8 +71,6 @@ tools:
       - Return the description and position of all detected objects on the table.
       - Retrieve the list, properties, and positions of all visible objects.
       - Provide the current state of every detected object.
-      - Get the descriptors and coordinates of all objects present.
-      - Return detailed information about each object, including pose and attributes.
 
     parameters: {}
 

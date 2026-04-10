@@ -61,12 +61,14 @@ class CycleRequest(BaseRequest):
         assignement.update(missing_assignment)
         objs = " and ".join(assignement.keys())
         instruction_str = f"Launch a cycle for {objs}."
+        has_c = False
         if base_assignement:
             instruction_str += " And consider "
             for obj, area in base_assignement.items():
                 instruction_str += f"{obj} to {area}"
             instruction_str += " as news default assignment."
-        cycle_instruction = UserInstruction(instruction_str)
+            has_c = True
+        cycle_instruction = UserInstruction(instruction_str, has_constraint=has_c)
 
         if obj_with_forbidden_areas or forbidden_object:
             objs = " and ".join(forbidden_object)
