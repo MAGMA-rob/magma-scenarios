@@ -27,6 +27,11 @@ class CycleRequest(BaseRequest):
         ) -> List[BaseTaskStage]:
         stages = []
 
+        def append_stage(stage: BaseTaskStage) -> None:
+            if len(stages) > 0:
+                stage.linked_to_prev = True
+            stages.append(stage)
+
         assignement = base_assignement.copy()
         missing_assignment = {}
         forbidden_object = []
@@ -79,16 +84,14 @@ class CycleRequest(BaseRequest):
                 memory=[],
                 attributes=state.attributes
             )
-            stages.append(
-                s
-            )
+            append_stage(s)
 
             # TO DO: Random override (to keep rules respect some times)
             cycle_instruction = UserInstruction("Please override these orders just for my cycle")
 
         if missing_assignment:
             objs = " and ".join(missing_assignment.keys())
-            stages.append(MissingInformationStage(
+            append_stage(MissingInformationStage(
                 instruction=cycle_instruction,
                 answer=f"The robot must ask about target areas for {objs}",
                 memory=[],
@@ -99,7 +102,7 @@ class CycleRequest(BaseRequest):
                 ins += f"{o} goes to {a}, "
             cycle_instruction = UserInstruction(ins)
         
-        stages.append(Cycle(
+        append_stage(Cycle(
             assignment=assignement,
             known_areas=all_areas,
             flag_answer=True,
@@ -305,12 +308,17 @@ class CycleByCategoriesRequest(BaseRequest):
             )
 
         stages = []
+
+        def append_stage(stage: BaseTaskStage) -> None:
+            if len(stages) > 0:
+                stage.linked_to_prev = True
+            stages.append(stage)
         current_instruction = self._build_cycle_request_instruction(selected_types)
 
         if empty_types:
             empty_types_str = " and ".join(empty_types)
             verb = "has" if len(empty_types) == 1 else "have"
-            stages.append(
+            append_stage(
                 ForbiddenElemStage(
                     instruction=current_instruction,
                     answer=f"The model must inform that {empty_types_str} {verb} no associated object.",
@@ -337,7 +345,7 @@ class CycleByCategoriesRequest(BaseRequest):
 
         if missing_type_assignment:
             missing_types_str = " and ".join(missing_type_assignment.keys())
-            stages.append(
+            append_stage(
                 MissingInformationStage(
                     instruction=current_instruction,
                     answer=f"The robot must ask about target areas for {missing_types_str}",
@@ -376,7 +384,7 @@ class CycleByCategoriesRequest(BaseRequest):
         #     )
         #     current_instruction = self._build_area_override_instruction()
 
-        stages.append(Cycle(
+        append_stage(Cycle(
             assignment=assignment,
             known_areas=all_areas,
             flag_answer=True,
