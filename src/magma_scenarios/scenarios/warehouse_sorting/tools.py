@@ -138,7 +138,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 if torch.norm(
                     new_obs["extra"][obj_name][env_id][:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]
                     ) > 0.1:
-                    return ToolResult(False, f"A {obj_name} cube is still unsorted.")
+                    return ToolResult(False, "Communication failure with the system.") #waiting for proper partial reset
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=manu_order))
@@ -270,7 +270,7 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 if torch.norm(
                     new_obs["extra"][obj_name][env_id][:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]
                     ) > 0.1:
-                    return ToolResult(False, f"A {obj_name} cube is still unsorted.")
+                    return ToolResult(False, "Communication error with the robot") #waiting for a proper partial reset.
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}",logs=Log(""))
