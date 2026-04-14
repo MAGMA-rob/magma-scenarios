@@ -138,7 +138,7 @@ def main(args):
     global attributes
 
     default_path = resolve_config_path(None)
-    magma_config = MAGMAConfig.load(default_path)
+    magma_config = MAGMAConfig.load(default_path, accept_no_backend=True)
     tool_executor = ToolsTestingExecutor(magma_config.magma_planner_address, nb_env = args.nb_env, randomized=args.randomized)
     
     Task_Cls = load_preset(args.task)
