@@ -8,6 +8,7 @@ import argparse, sys, ast
 from typing import Dict, Any, Optional
 import threading, queue
 from pathlib import Path
+import torch
 
 from .executor import ToolsTestingExecutor
 from .registry_loader import load_preset
@@ -139,10 +140,18 @@ def main(args):
 
     default_path = resolve_config_path(None)
     magma_config = MAGMAConfig.load(default_path, accept_no_backend=True)
+    sim_backend = magma_config.benchmark.get("sim_backend", "auto")
+    if sim_backend in {"auto", "cpu"} and not torch.cuda.is_available() and args.nb_env > 1:
+        print("[TESTER] CUDA unavailable, forcing --nb_env to 1 for CPU simulation.")
+        args.nb_env = 1
+
     tool_executor = ToolsTestingExecutor(magma_config.magma_planner_address, nb_env = args.nb_env, randomized=args.randomized)
     
     Task_Cls = load_preset(args.task)
-    env = tool_executor.initialize(Task_Cls(**args.extra))
+    env = tool_executor.initialize(
+        Task_Cls(**args.extra),
+        sim_backend=sim_backend,
+    )
 
     cmd_queue = queue.Queue()
     
