@@ -204,3 +204,21 @@ class CoffeeCompositeStage(BaseStageComposite):
             return StageState.EXCEEDED
 
         return StageState.ACCEPTABLE
+
+class AskTeamStage(BaseTaskStage):
+
+    acceptance_steps = 1
+    target_steps = 1
+
+    def __init__(self, question : str, verif_prompt : str = "") -> None: # team | liste des prenoms
+        super().__init__([], False, "")
+
+        self.situation = Situation(
+            memory=[],
+            preserved_memory_indices=[],
+            attributes=att,
+            flag_answer_to_user=True,
+            instruction=UserInstruction(question),
+        )
+
+        self.verification_prompt = None

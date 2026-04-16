@@ -11,4 +11,5 @@ TASK_PRESETS = {
     "ConstrainedPreset": "coffee_preset:ConstrainedPreset",
     "MultipleUserPreset": "coffee_preset:MultipleUserPreset",
     "TestComposite": "coffee_preset:TestComposite",
+    "TeamCoffePreset": "coffee_preset:TeamCoffePreset"
 }

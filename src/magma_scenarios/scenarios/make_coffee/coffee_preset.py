@@ -7,8 +7,8 @@ from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
 
 from .simple_tool import MakingCoffeeTool
-from .attributes import att, loaded_capsule_pose, dropped_mug_pose
-from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage
+from .attributes import att, loaded_capsule_pose, dropped_mug_pose, people, teams
+from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage , AskTeamStage
 
 import sapien, torch, random
 from typing import List, Dict, Any
@@ -135,4 +135,34 @@ class MultipleUserPreset(BaseCoffee):
 
         self.approximal_difficulty = "Hard"
 
-        
+class TeamCoffePreset(BaseCoffee):
+    name = "team assinement inside coffe scenario"
+    styles = []
+    approximal_difficulty = "Medium"
+
+
+    def __init__(self, nb_team : int = 2, nb_people_per_team : int = 4) :
+        super().__init__()
+
+        people_coppy = people.copy()
+        teams_coppy = teams.copy()
+
+        random.shuffle(people_coppy)
+        random.shuffle(teams_coppy)
+
+        people_selected = people_coppy[:nb_people_per_team*nb_team]
+        teams_selected = teams_coppy[:nb_team]
+
+        team_dict = {}
+
+        for i,team in enumerate(teams_selected) :
+            start = i*nb_people_per_team
+            end = (i+1)*nb_people_per_team
+            team_dict[team] = people_selected[start:end]
+
+        self.tools_constant["teams"] = team_dict
+
+        self.stages = [
+            AskTeamStage(f"who is in team {teams_selected[0]}",f"The agent must answer that {team_dict[teams_selected[0]]} are in team {teams_selected[0]}"),
+            AskTeamStage(f"which team is {people_selected[0]} in")
+        ]
