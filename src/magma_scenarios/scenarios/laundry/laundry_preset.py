@@ -5,12 +5,30 @@ from typing import List
 import random
 
 from .load_tool import LaunchTool
-from .laundry_stages import WashStage, LoadClotheStage, ContraintWashStage
-from .attributes import all_clothes, all_detergent
+from .laundry_stages import WashStage, LoadClotheStage, ContraintWashStage, RefuseLaundryStage
+from .attributes import all_clothes, all_detergents
 
 from magma_core.base.tasks import BaseTask
 from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import Instruction, UserInstruction
+
+
+class BaseLaundry(BaseTask):
+
+    env_id = "Laundry-v1"
+    Tools_cls = LaunchTool
+
+    def __init__(self,number_of_clothes : int = 3) -> None :
+        super().__init__()
+
+        self.verif_elem = Verification(number_of_clothes)
+        self.instruction = self.verif_elem.build_instruction()
+
+        self.detergents = all_detergents.copy()
+        self.clothes = all_clothes.copy()
+
+        cloth_to_detergent = {cloth : random.choice(self.detergents) for cloth in self.verif_elem.to_clean}
+
 
 class Verification:
 
@@ -24,7 +42,7 @@ class Verification:
     def build_instruction(self) -> Instruction:
         return UserInstruction("Can you clean " + " and ".join(self.to_clean))
 
-class SimplePreset(BaseTask):
+class SimplePreset(BaseLaundry):
     """
     The scene contains clothes and others objects. The aim is to put all dirty clothes into the washing machine, add soap and start a cycle.
 
@@ -32,11 +50,9 @@ class SimplePreset(BaseTask):
     """
 
     name = "Laundry"
-    env_id = "Laundry-v1"
+
 
     randomized_config_path = str(Path(__file__).parent.joinpath("laundry.yaml"))
-
-    Tools_cls = LaunchTool
 
     styles = [
         TaskStyle.LONG_STAGE
@@ -59,38 +75,36 @@ class SimplePreset(BaseTask):
 
         self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
 
-class TeamLaundryPreset(BaseTask):
-    """
-    load clohes
-    select correct detergent by clothes
-    take detergent
-    wash machine
-    """
 
-    env_id = "Laundry-v1"
-    Tools_cls = LaunchTool
-    name = "laundry assignemnt"
+
+class LaundryFromDetergentPreset(BaseLaundry):
+    """
+    input = detergent
+    output = clothes à laver
+    """
+    name = ""
     styles = []
-    approximal_difficulty = "Hard"
-    def __init__(self,number_of_clothes : int = 3):
+    approximal_difficulty = ""
+    def __init__(self,number_of_clothes : int = 3) :
+        super().__init__(number_of_clothes)
+
+        self.target_detergent = random.choices(self.all_detergents)
+
         
-        super().__init__()
 
-        self.verif_elem = Verification(number_of_clothes)
+          
 
-        instruction = self.verif_elem.build_instruction()
 
-        self.detergents = all_detergent.copy()
-        self.clothes = all_clothes.copy()
+class LaundryCompatibleClothesPreset(BaseLaundry):
+    """
+    input = clothes
+    condition = même detergent
+    """
+    pass
 
-        cloth_to_detergent = {cloth : random.choice(self.detergents) for cloth in self.verif_elem.to_clean}
-
-        self.tools_constant["cloth_to_detergent"] = cloth_to_detergent
-        #difference between 'contraint' et 'mem' specialy in the exemple of coffe ConstrainedPreset
-        #how to test the task/preset
-        self.stages = [ContraintWashStage("to wash the clothes you must select the correct detergent and put it inside the wash-machine before using 'wash'.",cloth_to_detergent)]
-        self.stages.append(LoadClotheStage(1,self.verif_elem.to_clean,instruction))
-        for i in range(2, number_of_clothes+1):
-            self.stages.append(LoadClotheStage(i,self.verif_elem.to_clean))
-        self.stages.append(WashStage(cloth_to_detergent))
-
+class LaundryIncompatibleClothesPreset(BaseLaundry):
+    """
+    input = clothes
+    condition = detergents différents → refuse
+    """
+    pass

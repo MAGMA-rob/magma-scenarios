@@ -159,13 +159,15 @@ class LaundryEnv(DefaultEnv):
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""
-        for detergent in self.detergent :
-            obs = {
-                "detergent": ObjectObservation(pose=detergent.pose.raw_pose),
+        
+        obs = {
                 "washing_machine": ObjectObservation(pose=self.machine_actor.pose.raw_pose),
                 "washing_machine_basket": ObjectObservation(pose=self.wash_machine_collision.pose.raw_pose),
                 "agent_tcp": ObjectObservation(pose=self.agent.tcp.pose.raw_pose),
             }
+
+        for detergent in self.detergent :
+            obs[clothe.name] = ObjectObservation(pose=detergent.pose.raw_pose),
         for clothe in self._clothes:
             obs[clothe.name] = ObjectObservation(pose=clothe.pose.raw_pose)
         return obs

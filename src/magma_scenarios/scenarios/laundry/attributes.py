@@ -10,7 +10,7 @@ all_clothes = [
     "cap",
 ]
 
-all_detergent = [
+all_detergents = [
     "OMO",
     "PERSIL",
     "SKIP"

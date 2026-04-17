@@ -46,16 +46,14 @@ class WashStage(BaseTaskStage):
         True, 
         "The goal of this stage is to wash all clothes using the correct detergent for each item")
 
-        self.to_clean = clothes_to_detergent.keys()
+        self.to_clean = list(clothes_to_detergent.keys())
+        self.cloths_to_detergent = clothes_to_detergents
         self.situation = Situation(
-            memory = [
-                "To wash clothes, I need to put them inside the wash-machine, add the correct detergents and then use 'wash'.",
-                "each cloth may require a specific detergent"
-            ],
-            preserved_memory_indices= [0],
+            memory = [],
+            preserved_memory_indices= [],
             attributes={
                 "clothes": list(clothes_to_detergent.keys()),
-                "clothes_to_detergent": all_detergent.copy(),
+                "detergents": all_detergent.copy(),
             },
             instruction= EmptyInstruction(),
             flag_answer_to_user=True
@@ -77,10 +75,29 @@ class WashStage(BaseTaskStage):
 class ContraintWashStage(ConstraintBaseStage):
     def __init__(self,contraint : str, clothes_to_detergent : Dict[ str , str ]) -> None:
 
-        mem = ["you are in charge to wash the clothes.",
-        "to wash the clothes you must select the correct detergent and put it inside the wash-machine before using 'wash'."]
-        mem += [f"{cloth} use {detergent}" for cloth,detergent in clothes_to_detergent.items()]
+        mem = ["you must not mix different detergents in the same wash.",
+                "each cloth requires a specific detergent."]
+        
         super().__init__(contraint,mem,{"detergents": all_detergent})
 
 
 
+class RefuseLaundryStage(BaseTaskStage):
+    acceptance_steps = 0
+    target_steps = 1
+
+    def __init__(self, instruction, verif_prompt : str) -> None:
+        super().__init__([], False, "")
+
+        self.situation = Situation(
+            memory=[],
+            preserved_memory_indices=[],
+            attributes={
+                "all_clothes" : all_clothes.copy(),
+                "all_detergents" : all_detergent.copy()
+            },
+            flag_answer_to_user=False,
+            instruction=UserInstruction(instruction),
+        )
+
+        self.verification_prompt = verif_prompt
