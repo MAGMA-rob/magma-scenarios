@@ -5,8 +5,8 @@ from typing import List
 import random
 
 from .load_tool import LaunchTool
-from .laundry_stages import WashStage, LoadClotheStage
-from .attributes import all_clothes
+from .laundry_stages import WashStage, LoadClotheStage, ContraintWashStage
+from .attributes import all_clothes, all_detergent
 
 from magma_core.base.tasks import BaseTask
 from magma_core.base.tasks_style import TaskStyle
@@ -58,3 +58,39 @@ class SimplePreset(BaseTask):
         self.stages.append(WashStage(self.verif_elem.to_clean))
 
         self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
+
+class TeamLaundryPreset(BaseTask):
+    """
+    load clohes
+    select correct detergent by clothes
+    take detergent
+    wash machine
+    """
+
+    env_id = "Laundry-v1"
+    Tools_cls = LaunchTool
+    name = "laundry assignemnt"
+    styles = []
+    approximal_difficulty = "Hard"
+    def __init__(self,number_of_clothes : int = 3):
+        
+        super().__init__()
+
+        self.verif_elem = Verification(number_of_clothes)
+
+        instruction = self.verif_elem.build_instruction()
+
+        self.detergents = all_detergent.copy()
+        self.clothes = all_clothes.copy()
+
+        cloth_to_detergent = {cloth : random.choice(self.detergents) for cloth in self.verif_elem.to_clean}
+
+        self.tools_constant["cloth_to_detergent"] = cloth_to_detergent
+        #difference between 'contraint' et 'mem' specialy in the exemple of coffe ConstrainedPreset
+        #how to test the task/preset
+        self.stages = [ContraintWashStage("to wash the clothes you must select the correct detergent and put it inside the wash-machine before using 'wash'.",cloth_to_detergent)]
+        self.stages.append(LoadClotheStage(1,self.verif_elem.to_clean,instruction))
+        for i in range(2, number_of_clothes+1):
+            self.stages.append(LoadClotheStage(i,self.verif_elem.to_clean))
+        self.stages.append(WashStage(cloth_to_detergent))
+

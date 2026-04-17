@@ -3,11 +3,11 @@ from typing import List, Dict
 import torch
 
 from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.base.stage import BaseTaskStage
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage
 from magma_core.base.data_structures import Situation, EmptyInstruction, UserInstruction, Instruction, Log
 from magma_core.base.goals import At, AtLeastCountAt
 
-from .attributes import all_clothes
+from .attributes import all_clothes, all_detergent
 
 class LoadClotheStage(BaseTaskStage):
     """
@@ -41,18 +41,21 @@ class WashStage(BaseTaskStage):
     target_steps = 3
     acceptance_steps = 1
 
-    def __init__(self, clothes : List[str]) -> None:
-        super().__init__([At("detergent","washing_machine_basket")],True, "The goal of this stage is to finally start the washing machine with the detergent inside")
-        self.to_clean = clothes
+    def __init__(self, clothes_to_detergent : Dict[ str , str ] ) -> None:
+        super().__init__([AtLeastCountAt(list(clothes_to_detergent.keys()),"washing_machine_basket",len(clothes_to_detergent.keys()))],
+        True, 
+        "The goal of this stage is to wash all clothes using the correct detergent for each item")
+
+        self.to_clean = clothes_to_detergent.keys()
         self.situation = Situation(
             memory = [
-                "To wash clothes, I need to put them inside the wash-machine, add detergents and then use 'wash'.",
-                "Detergent must always be put last in the wash-machine"
+                "To wash clothes, I need to put them inside the wash-machine, add the correct detergents and then use 'wash'.",
+                "each cloth may require a specific detergent"
             ],
             preserved_memory_indices= [0],
             attributes={
-                "clothes": all_clothes.copy(),
-                "additionals": ["detergent"],
+                "clothes": list(clothes_to_detergent.keys()),
+                "clothes_to_detergent": all_detergent.copy(),
             },
             instruction= EmptyInstruction(),
             flag_answer_to_user=True
@@ -70,3 +73,14 @@ class WashStage(BaseTaskStage):
                 return -1
         
         return 1
+
+class ContraintWashStage(ConstraintBaseStage):
+    def __init__(self,contraint : str, clothes_to_detergent : Dict[ str , str ]) -> None:
+
+        mem = ["you are in charge to wash the clothes.",
+        "to wash the clothes you must select the correct detergent and put it inside the wash-machine before using 'wash'."]
+        mem += [f"{cloth} use {detergent}" for cloth,detergent in clothes_to_detergent.items()]
+        super().__init__(contraint,mem,{"detergents": all_detergent})
+
+
+

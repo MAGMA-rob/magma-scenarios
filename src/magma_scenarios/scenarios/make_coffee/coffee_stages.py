@@ -1,4 +1,4 @@
-from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, BaseStageComposite
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, BaseStageComposite, AskingBaseStage
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.data_structures import StageState, UserInstruction, EmptyInstruction, Log, Situation
 from magma_core.base.goals import BaseGoal
@@ -205,20 +205,26 @@ class CoffeeCompositeStage(BaseStageComposite):
 
         return StageState.ACCEPTABLE
 
-class AskTeamStage(BaseTaskStage):
+class AskTeamStage(AskingBaseStage):
 
-    acceptance_steps = 1
-    target_steps = 1
+    acceptance_steps = 0
+    target_steps = 2
 
-    def __init__(self, question : str, verif_prompt : str = "") -> None: # team | liste des prenoms
-        super().__init__([], False, "")
-
-        self.situation = Situation(
+    def __init__(self, requested_team : str, member_list : List[str]) -> None: 
+        super().__init__(
+            question=f"who is in team {requested_team}",
+            answer=f"{member_list} are in team {requested_team}",
             memory=[],
-            preserved_memory_indices=[],
             attributes=att,
-            flag_answer_to_user=True,
-            instruction=UserInstruction(question),
+            linked_to_prev=True
         )
 
-        self.verification_prompt = None
+## ask team stage version person stage
+
+class CallRegistryStage(BaseTaskStage):
+
+    acceptance_steps = 0
+    target_steps = 1
+
+    def __init__(self):
+        pass

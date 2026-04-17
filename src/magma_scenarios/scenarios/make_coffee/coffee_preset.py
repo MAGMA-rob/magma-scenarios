@@ -138,8 +138,6 @@ class MultipleUserPreset(BaseCoffee):
 class TeamCoffePreset(BaseCoffee):
     name = "team assinement inside coffe scenario"
     styles = []
-    approximal_difficulty = "Medium"
-
 
     def __init__(self, nb_team : int = 2, nb_people_per_team : int = 4) :
         super().__init__()
@@ -155,14 +153,27 @@ class TeamCoffePreset(BaseCoffee):
 
         team_dict = {}
 
-        for i,team in enumerate(teams_selected) :
+        for i,team in enumerate(teams_selected) :    #a verifier
             start = i*nb_people_per_team
             end = (i+1)*nb_people_per_team
             team_dict[team] = people_selected[start:end]
 
+        random_team = random.choice(teams_selected)
+        random_people = random.choice(people_selected)
+        team_associate = next((k for k,v in team_dict.items() if random_people in v),None)
+
+        preference_coffe = {person : random.choice(att["coffee_pod"]) for members in team_dict.keys() for person in members}
+
         self.tools_constant["teams"] = team_dict
 
-        self.stages = [
-            AskTeamStage(f"who is in team {teams_selected[0]}",f"The agent must answer that {team_dict[teams_selected[0]]} are in team {teams_selected[0]}"),
-            AskTeamStage(f"which team is {people_selected[0]} in")
-        ]
+        self.stages = [ConstraintCoffeeStage("you will need identify team member and serve coffee accordingly")]
+        self.stages.append(AskTeamStage(f"who is in team {random_team}",f"The agent must answer that {team_dict[random_team]} are in team {random_team}"))
+        self.stages.append(AskTeamStage(f"which team is {random_people} in",f"The agent must answer that {random_people} is in team {team_associate}"))
+        for team_member in team_dict[random_team] :
+            self.stages.append(MakeOneCoffeStage(
+                instruction = random.choice(named_instructions).format(name = team_member),
+                capsule = preference_coffe[team_member],
+                add_memory = [],
+                flag_answer = True
+            ))
+        self.approximal_difficulty = "Hard"

@@ -115,7 +115,6 @@ class LaunchTool(BaseToolsAPI):
 
         The machine must contains the detergent.
         This function emits a log with the list of items in the machine."""
-
         def verifier(new_obs: dict):
             extra = new_obs["extra"]
             if is_object_inside_target(extra["detergent"]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):

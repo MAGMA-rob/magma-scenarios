@@ -9,3 +9,9 @@ all_clothes = [
     "panties",
     "cap",
 ]
+
+all_detergent = [
+    "OMO",
+    "PERSIL",
+    "SKIP"
+]
