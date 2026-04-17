@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Optional
 from collections import OrderedDict
 import torch
 import copy
@@ -28,6 +28,22 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         super().__init__(nb_env, planner_endpoint=planner_endpoint, ollama_worker=None, nb_randomization=int(randomized))
 
         self._eval_envs : Dict[int,ToolInfos] = {}
+
+    def _find_next_non_text_stage(self, start_stage_id: int) -> Optional[int]:
+        """
+        Return the next non text-only stage id starting from ``start_stage_id``.
+        If all remaining stages are text-only, return None.
+        """
+        nb_stages = self.task_ref.get_nb_total_stage()
+        stage_id = start_stage_id
+
+        while stage_id < nb_stages:
+            if not self.task_ref.is_stage_text_only(stage_id):
+                return stage_id
+            print(f"[EXECUTOR] Skip Stage {stage_id}")
+            stage_id += 1
+
+        return None
    
     ################ public function
 
@@ -39,6 +55,14 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
         """
         out = []
         stage_id = self._eval_envs[0].current_task_stage
+        last_stage_id = self.task_ref.get_nb_total_stage() - 1
+
+        if self.task_ref.is_stage_text_only(stage_id):
+            if stage_id != last_stage_id:
+                raise RuntimeError(f"Unexpected text-only current stage {stage_id} in testing executor")
+            print("FINISHED TASK")
+            return [1] * self.nb_env
+
         env_ids = list(range(self.nb_env))
         env_verif = self.task_ref.verif_stage_env_completion(stage_id, obs, env_ids=env_ids).cpu().tolist()
         st = self.env.get_state_dict().copy()
@@ -61,23 +85,26 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                 self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
 
         if all([score == 1 for score in out]):
-            if stage_id != self.task_ref.get_nb_total_stage()-1:
-                new_id = stage_id+1  
+            if stage_id != last_stage_id:
+                new_id = self._find_next_non_text_stage(stage_id + 1)
                 self._pass_to_the_next_stage(stage_id, env_ids, st)
 
-                while self.task_ref.is_stage_text_only(new_id):
-                    print(f"[EXECUTOR] Skip Stage {new_id}")
-                    new_id+=1
+                if new_id is None:
+                    for i in range(self.nb_env):
+                        self._eval_envs[i].current_task_stage = last_stage_id
+                        self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
+                        self._eval_envs[i].error_state = {}
+                    print("FINISHED TASK")
+                else:
+                    situation = self.get_init_situation(new_id)
+                    print(f"NEXT STAGE : {new_id} with instruction {situation.instruction.get_content()}")
 
-                situation = self.get_init_situation(new_id)
-                print(f"NEXT STAGE : {new_id} with instruction {situation.instruction.get_content()}")
-
-                for i in range(self.nb_env):
-                    # Specific modifications
-                    self._eval_envs[i].current_task_stage = new_id
-                    self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
-                    # A new stage must rebuild its own active error profile.
-                    self._eval_envs[i].error_state = {}
+                    for i in range(self.nb_env):
+                        # Specific modifications
+                        self._eval_envs[i].current_task_stage = new_id
+                        self._eval_envs[i].stage_log_start_idx = len(self._eval_envs[i].logs)
+                        # A new stage must rebuild its own active error profile.
+                        self._eval_envs[i].error_state = {}
             else:
                 print("FINISHED TASK")
 
@@ -116,10 +143,11 @@ class ToolsTestingExecutor(ToolsBaseExecutor):
                 logs = []
                 composite_progress = {}
                 active_stage_error_state = {}
-
-                while self.task_ref.is_stage_text_only(stage_id):
-                    print(f"[EXECUTOR] Skip Stage {stage_id}")
-                    stage_id+=1
+                next_stage_id = self._find_next_non_text_stage(stage_id)
+                if next_stage_id is None:
+                    stage_id = self.task_ref.get_nb_total_stage() - 1
+                else:
+                    stage_id = next_stage_id
             
             if func_name:
                 tool_infos = self._compute_single_tool(
