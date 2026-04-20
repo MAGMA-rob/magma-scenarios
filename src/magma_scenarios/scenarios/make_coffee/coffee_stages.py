@@ -212,19 +212,26 @@ class AskTeamStage(AskingBaseStage):
 
     def __init__(self, requested_team : str, member_list : List[str]) -> None: 
         super().__init__(
-            question=f"who is in team {requested_team}",
+            question=f"who is in team {requested_team} ?",
             answer=f"{member_list} are in team {requested_team}",
             memory=[],
             attributes=att,
-            linked_to_prev=True
+            linked_to_prev=True,
+            allow_tools_before_answer=True
         )
 
 ## ask team stage version person stage
-
-class CallRegistryStage(BaseTaskStage):
+class  AskPersonStage(AskingBaseStage):
 
     acceptance_steps = 0
-    target_steps = 1
+    target_steps = 0
 
-    def __init__(self):
-        pass
+    def __init__(self,requested_person : str, team_associated : str) -> None:
+        super().__init__(
+            question = f"what team {requested_person} belongs to ?",
+            answer=f"{requested_person} belongs to {team_associated}",
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+            allow_tools_before_answer=True
+        )

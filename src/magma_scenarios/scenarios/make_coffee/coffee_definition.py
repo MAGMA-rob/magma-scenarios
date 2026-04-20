@@ -17,7 +17,7 @@ people_name = [
     "Philippe", "Hector", "Michael", "Leo",
     "Marta", "Alexis", "Zhiang", "Donald",
     "Tim", "Theo", "Emma", "Camille", "Solene",
-    "Alexandra", "Angela", "Merlin", "Yanis"
+    "Alexandra", "Angela", "Merlin", "Yanis" , "abdelbasset"
 ]
 
 class SimpleDefinition(TaskDefinition):

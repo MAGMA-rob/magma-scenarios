@@ -11,7 +11,7 @@ all_clothes = [
 ]
 
 all_detergents = [
-    "OMO",
-    "PERSIL",
-    "SKIP"
+    "detergent_OMO",
+    "detergent_PERSIL",
+    "detergent_SKIP"
 ]

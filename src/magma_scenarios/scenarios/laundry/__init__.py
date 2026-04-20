@@ -7,5 +7,6 @@ TASK_DEFINITIONS = {}
 
 TASK_PRESETS = {
     "SimplePreset": "laundry_preset:SimplePreset",
-    "TeamLaundryPreset": "laundry_preset:TeamLaundryPreset"
+    "LaundryFromDetergentPreset": "laundry_preset:LaundryFromDetergentPreset",
+    "LaundryCompatibleClothesPreset": "laundry_preset:LaundryCompatibleClothesPreset"
 }

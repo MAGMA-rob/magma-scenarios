@@ -119,7 +119,7 @@ class LaundryEnv(DefaultEnv):
             ),
         ]
         
-        self.detergent = [create_soap(self.scene, name="OMO"),create_soap(self.scene, name="SKIP"),create_soap(self.scene, name="PERSIL")]
+        self._detergents = [create_soap(self.scene, name="detergent_OMO"),create_soap(self.scene, name="detergent_SKIP"),create_soap(self.scene, name="detergent_PERSIL")]
 
         self.machine_actor = create_wash_machine(self.scene)
         self.wash_machine_collision = self.create_box(
@@ -153,9 +153,9 @@ class LaundryEnv(DefaultEnv):
         self.machine_actor.set_qpos(qpos)
 
         # set soap position
-        gap = -0.1
-        for i in range(len(self.detergent)) :
-            self.detergent[i].set_pose(sapien.Pose(p=[0, -0.3 + gap*i, 0.02], q=euler2quat(0,90,0)))
+        gap = 0.1
+        for i in range(len(self._detergents)) :
+            self._detergents[i].set_pose(sapien.Pose(p=[0, -0.3 + gap*i, 0.02], q=euler2quat(0,90,0)))
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""
@@ -166,8 +166,8 @@ class LaundryEnv(DefaultEnv):
                 "agent_tcp": ObjectObservation(pose=self.agent.tcp.pose.raw_pose),
             }
 
-        for detergent in self.detergent :
-            obs[clothe.name] = ObjectObservation(pose=detergent.pose.raw_pose),
+        for detergent in self._detergents :
+            obs[detergent.name] = ObjectObservation(pose=detergent.pose.raw_pose)
         for clothe in self._clothes:
             obs[clothe.name] = ObjectObservation(pose=clothe.pose.raw_pose)
         return obs

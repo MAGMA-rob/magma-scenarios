@@ -8,7 +8,7 @@ from magma_core.base.data_structures import UserInstruction, EmptyInstruction, L
 
 from .simple_tool import MakingCoffeeTool
 from .attributes import att, loaded_capsule_pose, dropped_mug_pose, people, teams
-from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage , AskTeamStage
+from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage , AskTeamStage, AskPersonStage
 
 import sapien, torch, random
 from typing import List, Dict, Any
@@ -148,7 +148,7 @@ class TeamCoffePreset(BaseCoffee):
         random.shuffle(people_coppy)
         random.shuffle(teams_coppy)
 
-        people_selected = people_coppy[:nb_people_per_team*nb_team]
+        selected_people = people_coppy[:nb_people_per_team*nb_team]
         teams_selected = teams_coppy[:nb_team]
 
         team_dict = {}
@@ -156,19 +156,22 @@ class TeamCoffePreset(BaseCoffee):
         for i,team in enumerate(teams_selected) :    #a verifier
             start = i*nb_people_per_team
             end = (i+1)*nb_people_per_team
-            team_dict[team] = people_selected[start:end]
+            team_dict[team] = selected_people[start:end]
 
         random_team = random.choice(teams_selected)
-        random_people = random.choice(people_selected)
-        team_associate = next((k for k,v in team_dict.items() if random_people in v),None)
+        assigned_members = team_dict[random_team]
 
-        preference_coffe = {person : random.choice(att["coffee_pod"]) for members in team_dict.keys() for person in members}
+        random_person = random.choice(selected_people)
+        assigned_team = next((k for k,v in team_dict.items() if random_person in v),None)
+
+        preference_coffe = {person : random.choice(att["coffee_pod"]) for members in team_dict.values() for person in members}
 
         self.tools_constant["teams"] = team_dict
 
-        self.stages = [ConstraintCoffeeStage("you will need identify team member and serve coffee accordingly")]
-        self.stages.append(AskTeamStage(f"who is in team {random_team}",f"The agent must answer that {team_dict[random_team]} are in team {random_team}"))
-        self.stages.append(AskTeamStage(f"which team is {random_people} in",f"The agent must answer that {random_people} is in team {team_associate}"))
+        self.stages = [ConstraintCoffeeStage(",".join(f"{person} like {coffee}" for person,coffee in preference_coffe.items()))]
+        self.stages.append(AskTeamStage(random_team,assigned_members))
+        if assigned_team is not None :
+            self.stages.append(AskPersonStage(random_person,assigned_team))
         for team_member in team_dict[random_team] :
             self.stages.append(MakeOneCoffeStage(
                 instruction = random.choice(named_instructions).format(name = team_member),
@@ -177,3 +180,4 @@ class TeamCoffePreset(BaseCoffee):
                 flag_answer = True
             ))
         self.approximal_difficulty = "Hard"
+
