@@ -9,7 +9,7 @@ from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 from magma_core.base.data_structures import Log
 from magma_scenarios.envs.laundry.observation import ObjectObservation
-
+from magma_scenarios.scenarios.laundry.attributes import all_detergents
 from typing import Dict, List
 import sapien, torch
 
@@ -81,7 +81,7 @@ class LaunchTool(BaseToolsAPI):
             return ToolExecution(
                 poses=[], verifier=None, reason="No clothes in gripper."
             )
-
+        
         poses = [sapien.Pose(agent_tcp_position[:3].cpu().numpy() + (0, 0, 0.1), (0, 1, 0, 0))]
         poses.extend(compute_drop_trajectory(
             self.get_agent(),
@@ -118,21 +118,27 @@ class LaunchTool(BaseToolsAPI):
 
         def verifier(new_obs: dict):
             extra = new_obs["extra"]
-            if is_object_inside_target(extra["detergent"]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
-
-                cleaned_items = []
-                for obj_name in extra:
-                    if obj_name == "detergent" or obj_name== "washing_machine_basket" or obj_name == "agent_tcp":
-                        continue
-                    if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
-                        cleaned_items.append(obj_name)
-
-                if len(cleaned_items) == 0:
-                    return ToolResult(False, reason="There is no clothes in the machine!")
-
-                s = ",".join(cleaned_items)
-                return ToolResult(True, reason=f"You have washed {s}",logs=Log(content=cleaned_items))
-            else:
+            used_detergent = []
+            for detergent in all_detergents : 
+                if is_object_inside_target(extra[detergent]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
+                    used_detergent.append(detergent)
+                    
+            if len(used_detergent) == 0:
                 return ToolResult(False, reason="No detergent in machine.")
+
+            cleaned_items = []
+            for obj_name in extra:
+                if obj_name in all_detergents or obj_name in ["washing_machine_basket" ,"agent_tcp"]:
+                    continue
+                if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
+                    cleaned_items.append(obj_name)
+
+            if len(cleaned_items) == 0:
+                        return ToolResult(False, reason="There is no clothes in the machine!")
+
+            s = ",".join(cleaned_items)
+            return ToolResult(True, reason=f"You have washed {s}",logs=Log(content={"clothes" : cleaned_items,"detergent" : used_detergent}))
+
+            
 
         return ToolExecution(["OK"], verifier)

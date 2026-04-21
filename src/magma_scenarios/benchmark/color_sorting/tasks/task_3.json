@@ -9,7 +9,8 @@
                     "predicate": "count",
                     "args" : [
                         "green_cube*",
-                        "green_box_pose"
+                        "green_box_pose",
+                        0
                     ]
                 },
                 {
@@ -44,7 +45,6 @@
                     ]
                 }
             ],
-            "flag_answer_to_user": true,
             "injection": {
                 "mode": "force_failure",
                 "message": "Planning error: Green box is unreachable."
@@ -53,7 +53,8 @@
         {
             "instruction": "How many cubes do you have stored since the start?",
             "max_step": 2,
-            "action_goal" : [],
+            "expected_behavior":"answer",
+            "allows_tools": true,
             "keys_evaluator": ["lg-memorization"],
             "complementary_verif": {
                 "judge": "The model must answer that it has store 2"

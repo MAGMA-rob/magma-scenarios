@@ -4,7 +4,9 @@
     "folder_name": "color_sorting",
     "criteria": [
       "multi-steps",
-      "c-reasoning"
+      "c-reasoning",
+      "lg-memorization",
+      "recovery"
     ]
   },
   {

@@ -1,4 +1,4 @@
-from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, BaseStageComposite
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, BaseStageComposite, AskingBaseStage
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.data_structures import StageState, UserInstruction, EmptyInstruction, Log, Situation
 from magma_core.base.goals import BaseGoal
@@ -204,3 +204,34 @@ class CoffeeCompositeStage(BaseStageComposite):
             return StageState.EXCEEDED
 
         return StageState.ACCEPTABLE
+
+class AskTeamStage(AskingBaseStage):
+
+    acceptance_steps = 0
+    target_steps = 2
+
+    def __init__(self, requested_team : str, member_list : List[str]) -> None: 
+        super().__init__(
+            question=f"who is in team {requested_team} ?",
+            answer=f"{member_list} are in team {requested_team}",
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+            allow_tools_before_answer=True
+        )
+
+## ask team stage version person stage
+class  AskPersonStage(AskingBaseStage):
+
+    acceptance_steps = 0
+    target_steps = 0
+
+    def __init__(self,requested_person : str, team_associated : str) -> None:
+        super().__init__(
+            question = f"what team {requested_person} belongs to ?",
+            answer=f"{requested_person} belongs to {team_associated}",
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+            allow_tools_before_answer=True
+        )

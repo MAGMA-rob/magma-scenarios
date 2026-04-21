@@ -236,3 +236,5 @@ class CoffeePreferenceConstraints(RelationAssignmentConstraint):
             coffee: str
         ) -> None:
         super().__init__(name, coffee, "coffee_preference", None, "coffee_pod")
+
+

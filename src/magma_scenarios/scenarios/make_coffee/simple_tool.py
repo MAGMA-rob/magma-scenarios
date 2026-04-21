@@ -43,7 +43,7 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
     @register_tool(
-            description="Load a coffee capsule inside the coffee maker.",
+            description="Load a coffee capsule inside the coffee maker. You can select the type of capsule.",
             params_spec={
                 "name": {"description": "The name of the capsule to take.", "type": str}
             }
@@ -95,7 +95,7 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
     @register_tool(
-            description="Place a mug on the coffee maker.",
+            description="Place a mug into the coffee maker.",
             params_spec={}
     )
     def place_mug(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
@@ -137,3 +137,47 @@ class MakingCoffeeTool(BaseToolsAPI):
             return ToolResult(ok,reason,logs=Log(""))
   
         return ToolExecution(poses=poses, verifier=verifier, reason="")
+
+
+    @register_tool(
+        description = "Fetch peoples name from a known team",
+        params_spec = {"team" : {
+                "description" : "name of the team",
+                "type" : str 
+            }
+            }
+        )
+    def people_from_team(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
+        team_name = params.get("team",None)
+        teams = obs.add_constants.get("teams",{})
+        result = teams.get(team_name,None)
+        def verifier(new_obs: Dict)-> ToolResult:
+            #check if the people belongs to the team
+            if result is None :
+                return ToolResult(False,f"team {team_name} doesn't exist",logs=Log(""))
+            return ToolResult(True,f"people in {team_name} : {result}",logs=Log(""))
+
+        return ToolExecution(poses=["OK"], verifier=verifier, reason="")
+                    
+
+    @register_tool(
+        description = "Get the person team's name",
+        params_spec= {"person" : {
+                "description" : "name of the person",
+                "type" : str
+            }}
+        )
+    def team_from_people(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
+        people = params.get("person",None)
+        teams = obs.add_constants.get("teams",{})
+        result = None
+        for teams, team_members in teams.items() :
+            if people in team_members :
+                result = teams
+                break
+        def verifier(new_obs:Dict)-> ToolResult:
+            if result is None :
+                return ToolResult(False,f"person doesn't exist")
+            return ToolResult(True,f"{people} in team {result}")
+
+        return ToolExecution(poses = ["OK"], verifier = verifier, reason="") 
