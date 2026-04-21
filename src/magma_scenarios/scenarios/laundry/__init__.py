@@ -6,7 +6,6 @@ SCENARIO_NAME = "laundry"
 TASK_DEFINITIONS = {}
 
 TASK_PRESETS = {
-    "SimplePreset": "laundry_preset:SimplePreset",
     "LaundryFromDetergentPreset": "laundry_preset:LaundryFromDetergentPreset",
     "LaundryCompatibleClothesPreset": "laundry_preset:LaundryCompatibleClothesPreset"
 }

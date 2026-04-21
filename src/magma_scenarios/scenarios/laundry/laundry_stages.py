@@ -42,7 +42,7 @@ class WashStage(BaseTaskStage):
     acceptance_steps = 1
 
     def __init__(self, target_detergent : str , target_clothes : list ) -> None:
-        super().__init__([At(target_clothes[0],"wash_mashine_basket")],
+        super().__init__([],
         True, 
         "The goal of this stage is to wash all clothes using the correct detergent for each item")
 
@@ -84,7 +84,10 @@ class ContraintWashStage(ConstraintBaseStage):
         mem = ["you must not mix different detergents in the same wash.",
                 "each cloth requires a specific detergent."]
         
-        super().__init__(contraint,mem,{"detergents": all_detergents})
+        super().__init__(contraint,mem,{
+                "clothes": all_clothes.copy(),
+                "detergents": all_detergents.copy(),
+            },)
 
 
 

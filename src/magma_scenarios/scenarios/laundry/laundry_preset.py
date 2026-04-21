@@ -24,10 +24,10 @@ class BaseLaundry(BaseTask):
         self.verif_elem = Verification(number_of_clothes)
         self.instruction = self.verif_elem.build_instruction()
 
-        self.detergents = all_detergents.copy()
+        self.all_detergents = all_detergents.copy()
         self.clothes = all_clothes.copy()
 
-        self.cloth_to_detergent = {cloth : random.choice(self.detergents) for cloth in self.verif_elem.to_clean}
+        self.cloth_to_detergent = {cloth : random.choice(self.all_detergents) for cloth in self.verif_elem.to_clean} # tous les sampler
 
 
 class Verification:
@@ -42,53 +42,19 @@ class Verification:
     def build_instruction(self) -> Instruction:
         return UserInstruction("Can you clean " + " and ".join(self.to_clean))
 
-class SimplePreset(BaseLaundry):
-    """
-    The scene contains clothes and others objects. The aim is to put all dirty clothes into the washing machine, add soap and start a cycle.
-
-    DIfficulty range from medium to hard.
-    """
-
-    name = "Laundry"
-
-
-    randomized_config_path = str(Path(__file__).parent.joinpath("laundry.yaml"))
-
-    styles = [
-        TaskStyle.LONG_STAGE
-    ]
-
-    def __init__(self, number_of_clothes : int = 1):
-        """
-        You can modify the number_of_clothes to augment the number of clothes to put in the machine.
-         < 3 is Medium but > 3 and < 8 is Hard.
-        """
-        super().__init__()
-        self.verif_elem = Verification(number_of_clothes)
-
-        instruction = self.verif_elem.build_instruction()
-
-        self.stages = [LoadClotheStage(1,self.verif_elem.to_clean,instruction)]
-        for i in range(2, number_of_clothes+1):
-            self.stages.append(LoadClotheStage(i,self.verif_elem.to_clean))
-        self.stages.append(WashStage(self.verif_elem.to_clean))
-
-        self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
-
-
-
 class LaundryFromDetergentPreset(BaseLaundry):
     """
     input = detergent
     output = clothes à laver
     """
-    name = ""
-    styles = []
-    approximal_difficulty = ""
+    name = "Laundry from detergent"
+    styles = [  TaskStyle.LONG_STAGE,
+                TaskStyle.CONSTRAINED]
+
     def __init__(self,number_of_clothes : int = 3) :
         super().__init__(number_of_clothes)
 
-        self.target_detergent = random.choice(all_detergents)
+        self.target_detergent = random.choice(self.all_detergents)
         self.target_clothes = [cloth for cloth, detergent in self.cloth_to_detergent.items() if detergent == self.target_detergent]
         desc = ",".join(f"{cloth} uses {detergent} detergent" for cloth, detergent in self.cloth_to_detergent.items())
         instruction = UserInstruction(f"Wash all clothes that can be washed with {self.target_detergent}")
@@ -98,19 +64,22 @@ class LaundryFromDetergentPreset(BaseLaundry):
             self.stages.append(LoadClotheStage(i,self.target_clothes))
         self.stages.append(WashStage(self.target_detergent, self.target_clothes))
 
+        self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
+
 
 class LaundryCompatibleClothesPreset(BaseLaundry):
     """
     input = clothes
     condition = même detergent
     """
-    name = ""
-    styles = []
-    approximal_difficulty = ""
+    name = "Laundry compatible clothes"
+    styles = [ TaskStyle.LONG_STAGE,
+               TaskStyle.CONSTRAINED]
+
     def __init__(self,number_of_clothes : int = 3) :
         super().__init__(number_of_clothes)
 
-        self.target_detergent = random.choice(all_detergents)
+        self.target_detergent = random.choice(self.all_detergents)
         self.target_clothes = [cloth for cloth, detergent in self.cloth_to_detergent.items() if detergent == self.target_detergent]
         desc = ",".join(f"{cloth} uses {detergent} detergent" for cloth, detergent in self.cloth_to_detergent.items())
         instruction = UserInstruction("Please wash the following clothes: " + ", ".join(f"{cloth}" for cloth in self.target_clothes ))
@@ -120,6 +89,8 @@ class LaundryCompatibleClothesPreset(BaseLaundry):
             self.stages.append(LoadClotheStage(i,self.target_clothes))
         self.stages.append(WashStage(self.target_detergent, self.target_clothes))
 
+        self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
+
     
 
 class LaundryIncompatibleClothesPreset(BaseLaundry):
@@ -127,4 +98,16 @@ class LaundryIncompatibleClothesPreset(BaseLaundry):
     input = clothes
     condition = detergents différents → refuse
     """
-    pass
+    def __init__(self,number_of_clothes : int = 3) :
+        super().__init__(number_of_clothes)
+
+        self.target_detergent = random.choice(self.all_detergents)
+        self.target_clothes = [cloth for cloth, detergent in self.cloth_to_detergent.items() if detergent == self.target_detergent]
+        self.intrusion_clothes = [cloth for cloth,detergent in self.cloth_to_detergent.items() if detergent != self.target_detergent]
+        self.intrusion_cloth = random.choice(self.intrusion_clothes)
+        self.target_clothes.append(self.intrusion_cloth)
+
+        desc = ','.join(f"{cloth} use {detergent} dtergent" for cloth, detergent in self.cloth_to_detergent.items())
+        
+        instruction_which_must_fail = "please wash the following clothes :" + ",".join(f"{cloth}" for cloth in self.target_clothes)
+        instruction_which_must_succeed = UserInstruction("")

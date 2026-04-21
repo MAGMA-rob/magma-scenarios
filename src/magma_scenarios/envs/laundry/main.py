@@ -153,9 +153,9 @@ class LaundryEnv(DefaultEnv):
         self.machine_actor.set_qpos(qpos)
 
         # set soap position
-        gap = 0.1
+        gap = -0.2
         for i in range(len(self._detergents)) :
-            self._detergents[i].set_pose(sapien.Pose(p=[0, -0.3 + gap*i, 0.02], q=euler2quat(0,90,0)))
+            self._detergents[i].set_pose(sapien.Pose(p=[0, -0.3 + gap*i, 0.02], q=euler2quat(0,0,0)))
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""
