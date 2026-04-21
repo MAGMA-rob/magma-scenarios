@@ -6,19 +6,12 @@ from magma_core.base.tasks import TaskDefinition
 from magma_core.base.state import TaskState
 
 from .simple_tool import MakingCoffeeTool
-from .attributes import att, loaded_capsule_pose, dropped_mug_pose
+from .attributes import att, loaded_capsule_pose, dropped_mug_pose, people
 from .coffee_request import GiveCoffeePreference, AskCoffeeRequest, AskCoffeePerUser
 
 from importlib import resources
 import sapien
 
-people_name = [
-    "Arthur", "Matthieu", "Florent", "Ariane",
-    "Philippe", "Hector", "Michael", "Leo",
-    "Marta", "Alexis", "Zhiang", "Donald",
-    "Tim", "Theo", "Emma", "Camille", "Solene",
-    "Alexandra", "Angela", "Merlin", "Yanis" , "abdelbasset"
-]
 
 class SimpleDefinition(TaskDefinition):
     env_id = "MakeCoffee-v1"
@@ -26,9 +19,9 @@ class SimpleDefinition(TaskDefinition):
     Tools_cls = MakingCoffeeTool
 
     active_requests = [
-        GiveCoffeePreference(people_name),
+        GiveCoffeePreference(people),
         AskCoffeeRequest(),
-        AskCoffeePerUser(people_name, force_order=True)
+        AskCoffeePerUser(people, force_order=True)
     ]
 
     def __init__(self) -> None:  

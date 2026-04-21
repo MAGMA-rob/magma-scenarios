@@ -10,9 +10,10 @@ from .simple_tool import MakingCoffeeTool
 from .attributes import att, loaded_capsule_pose, dropped_mug_pose, people, teams
 from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage , AskTeamStage, AskPersonStage
 
-import sapien, torch, random
+import sapien, random
 from typing import List, Dict, Any
 from importlib import resources
+from collections import defaultdict
 
 
 named_instructions = [
@@ -148,12 +149,18 @@ class TeamCoffePreset(BaseCoffee):
         random.shuffle(people_coppy)
         random.shuffle(teams_coppy)
 
+        if nb_team > len(teams_coppy):
+            raise TypeError(f"Only {len(teams_coppy)} exists but you asked for {nb_team}")
+        if nb_people_per_team * nb_team > len(people_coppy):
+            raise TypeError(f"You asked for {nb_people_per_team} for {nb_team} but only {len(people_coppy)} \
+                            people names exists ({nb_people_per_team*nb_team})")
+
         selected_people = people_coppy[:nb_people_per_team*nb_team]
         teams_selected = teams_coppy[:nb_team]
 
         team_dict = {}
 
-        for i,team in enumerate(teams_selected) :    #a verifier
+        for i,team in enumerate(teams_selected) :
             start = i*nb_people_per_team
             end = (i+1)*nb_people_per_team
             team_dict[team] = selected_people[start:end]
@@ -164,18 +171,31 @@ class TeamCoffePreset(BaseCoffee):
         random_person = random.choice(selected_people)
         assigned_team = next((k for k,v in team_dict.items() if random_person in v),None)
 
-        preference_coffe = {person : random.choice(att["coffee_pod"]) for members in team_dict.values() for person in members}
+        preference_coffee = {}
+        coffee_pref = defaultdict(list)
+        for members in team_dict.values():
+            for person in members:
+                c = random.choice(att["coffee_pod"])
+                preference_coffee[person] = c
+                coffee_pref[c].append(person)
 
         self.tools_constant["teams"] = team_dict
+        coffee_sentence = "Hello, please remember that "
+        for i, (c, names) in enumerate(coffee_pref.items()):
+            coffee_sentence += ", ".join(names) + f" like their coffee {c}"
+            if i < len(coffee_pref)-1:
+                coffee_sentence += " and "
+            else:
+                coffee_sentence += "."
 
-        self.stages = [ConstraintCoffeeStage(",".join(f"{person} like {coffee}" for person,coffee in preference_coffe.items()))]
+        self.stages = [ConstraintCoffeeStage(coffee_sentence)]
         self.stages.append(AskTeamStage(random_team,assigned_members))
         if assigned_team is not None :
             self.stages.append(AskPersonStage(random_person,assigned_team))
         for team_member in team_dict[random_team] :
             self.stages.append(MakeOneCoffeStage(
                 instruction = random.choice(named_instructions).format(name = team_member),
-                capsule = preference_coffe[team_member],
+                capsule = preference_coffee[team_member],
                 add_memory = [],
                 flag_answer = True
             ))

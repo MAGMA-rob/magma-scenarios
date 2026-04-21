@@ -43,7 +43,7 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
     @register_tool(
-            description="Load a coffee capsule inside the coffee maker.",
+            description="Load a coffee capsule inside the coffee maker. You can select the type of capsule.",
             params_spec={
                 "name": {"description": "The name of the capsule to take.", "type": str}
             }
@@ -95,7 +95,7 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
     @register_tool(
-            description="Place a mug on the coffee maker.",
+            description="Place a mug into the coffee maker.",
             params_spec={}
     )
     def place_mug(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
@@ -140,7 +140,7 @@ class MakingCoffeeTool(BaseToolsAPI):
 
 
     @register_tool(
-        description = "get people from a known team",
+        description = "Fetch peoples name from a known team",
         params_spec = {"team" : {
                 "description" : "name of the team",
                 "type" : str 
@@ -161,14 +161,14 @@ class MakingCoffeeTool(BaseToolsAPI):
                     
 
     @register_tool(
-        description = "get the peopl team's name",
-        params_spec= {"people" : {
+        description = "Get the person team's name",
+        params_spec= {"person" : {
                 "description" : "name of the person",
                 "type" : str
             }}
         )
     def team_from_people(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
-        people = params.get("people",None)
+        people = params.get("person",None)
         teams = obs.add_constants.get("teams",{})
         result = None
         for teams, team_members in teams.items() :
