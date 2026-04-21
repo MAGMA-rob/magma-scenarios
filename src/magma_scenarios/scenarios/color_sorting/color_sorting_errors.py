@@ -110,7 +110,7 @@ class GraspCubeFailureError(GraspFailureError):
 
         if len(remaining) <= 1:
             return {
-                "innaccessible" : [],
+                "inaccessible" : [],
                 "colors": colors,
             }
         
@@ -121,6 +121,6 @@ class GraspCubeFailureError(GraspFailureError):
         
         impossible_to_grasp = random.sample(remaining,k=nb)
         return {
-            "innaccessible" : impossible_to_grasp,
+            "inaccessible" : impossible_to_grasp,
             "colors": colors,
         }

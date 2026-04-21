@@ -14,6 +14,7 @@ class MaskedObjectError(BaseError):
     """
 
     recovery_extra_steps = 0
+    required_key = ["masked"]
 
     def __init__(self, tool_execution_target_key : str = "target_name") -> None:
         super().__init__()
