@@ -22,7 +22,7 @@ class MakingCoffeeTool(BaseToolsAPI):
             return (btn_translation > button_STROKE_LIMIT)
 
     @register_tool(
-            description="Press the start button of the coffee maker.",
+            description="Press the start button on the coffee maker to launch the brewing cycle once the mug and capsule are in place.",
             params_spec={}
     )
     def press_button(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
@@ -43,9 +43,12 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
     @register_tool(
-            description="Load a coffee capsule inside the coffee maker. You can select the type of capsule.",
+            description="Insert the requested coffee capsule flavor into the coffee maker so the machine can brew the correct drink.",
             params_spec={
-                "name": {"description": "The name of the capsule to take.", "type": str}
+                "name": {
+                    "description": "Flavor or identifier of the capsule to insert into the coffee maker.",
+                    "type": str,
+                }
             }
     )
     def load_capsule(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
@@ -95,7 +98,7 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
     @register_tool(
-            description="Place a mug into the coffee maker.",
+            description="Place the mug in the coffee maker, under the coffee outlet, so the brewed drink is dispensed into it.",
             params_spec={}
     )
     def place_mug(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
@@ -140,9 +143,9 @@ class MakingCoffeeTool(BaseToolsAPI):
 
 
     @register_tool(
-        description = "Fetch peoples name from a known team",
+        description = "Look up the registered members of a known team in the coffee scenario registry.",
         params_spec = {"team" : {
-                "description" : "name of the team",
+                "description" : "Name of the team whose registered members should be retrieved.",
                 "type" : str 
             }
             }
@@ -161,9 +164,9 @@ class MakingCoffeeTool(BaseToolsAPI):
                     
 
     @register_tool(
-        description = "Get the person team's name",
+        description = "Look up which registered team a person belongs to in the coffee scenario registry.",
         params_spec= {"person" : {
-                "description" : "name of the person",
+                "description" : "Name of the person whose registered team should be retrieved.",
                 "type" : str
             }}
         )
@@ -177,7 +180,7 @@ class MakingCoffeeTool(BaseToolsAPI):
                 break
         def verifier(new_obs:Dict)-> ToolResult:
             if result is None :
-                return ToolResult(False,f"person doesn't exist")
+                return ToolResult(False,f"person doesn't exist in the registry")
             return ToolResult(True,f"{people} in team {result}")
 
         return ToolExecution(poses = ["OK"], verifier = verifier, reason="") 

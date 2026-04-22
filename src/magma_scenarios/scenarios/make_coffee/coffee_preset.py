@@ -2,6 +2,8 @@
 # Copyright (c) 2026, Loan Bernat
 # Arthur TANNEAU
 
+from pathlib import Path
+
 from magma_core.base.tasks import BaseTask
 from magma_core.base.tasks_style import TaskStyle
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
@@ -12,8 +14,9 @@ from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffe
 
 import sapien, random
 from typing import List, Dict, Any
-from importlib import resources
 from collections import defaultdict
+
+RANDOMIZED_CONFIG_PATH = str(Path(__file__).resolve().parent / "make_coffee_cfg.yaml")
 
 
 named_instructions = [
@@ -28,7 +31,7 @@ named_instructions = [
 class BaseCoffee(BaseTask):
     env_id = "MakeCoffee-v1"
 
-    randomized_config_path = str(resources.files(__package__).joinpath("make_coffee_cfg.yaml"))
+    randomized_config_path = RANDOMIZED_CONFIG_PATH
 
     tools_constant = {"loaded_capsule_pose": loaded_capsule_pose, "dropped_mug_pose" : dropped_mug_pose, "base_pose" : sapien.Pose(p = [-0.1,0,0.4],q = [0,1,0,0])}
 
@@ -62,6 +65,8 @@ class ConstrainedPreset(BaseCoffee):
 
     name = "Make Coffee under constraint"
 
+    randomized_config_path = "" # we let like this because we hardcode coffee in arguments
+
     def __init__(
             self,
             instruction_which_must_fail : str = "Hello! Can you make me a black coffee please",
@@ -87,54 +92,6 @@ class ConstrainedPreset(BaseCoffee):
         else:
             self.approximal_difficulty = "Medium"
 
-
-class MultipleUserPreset(BaseCoffee):
-    """
-    This task allow to define multiple user and their preference on coffee. 
-    Then it will generate random instruction using the names you provide.
-
-    Difficulty Hard
-    """
-
-    styles = [
-        TaskStyle.LONG_STAGE,
-        TaskStyle.CONSTRAINED
-    ]
-
-    name = "Multiple user ask for coffee"
-
-    def __init__(self, nb_of_coffee : int = 2, names_preference : Dict = {"Diana":"black","Frederic":"milky"}) -> None:
-        """
-        You can initialize diverse names and their preference in the names_preference dict. You can put a name as key and a coffee preference as value.
-        You can also set the nb_of_coffee that will be asked to complete the task.
-        The task is considered as hard for nb_of_coffee >= 2.
-        """
-        super().__init__()
-        s = "Hey here are some preferences from me and my friends : "
-        i = len(names_preference)
-        if i == 0:
-            raise ValueError("You need to pass at least one name and one preference")
-        cpt = 1
-        for name, coffee in names_preference.items():
-            s += f"{name} like its coffee {coffee}"
-            cpt+=1
-            if cpt != i:
-                s+= ", "
-            else:
-                s+="."
-        self.stages = [ConstraintCoffeeStage(s)]
-        people = list(names_preference.keys())
-        for i in range(nb_of_coffee):
-            self.stages.append(
-                MakeOneCoffeStage(
-                    instruction=random.choice(named_instructions).format(name=people[i]),
-                    capsule=names_preference[people[i]],
-                    add_memory=[],
-                    flag_answer= True
-                )
-            )
-
-        self.approximal_difficulty = "Hard"
 
 class TeamCoffePreset(BaseCoffee):
     name = "team assinement inside coffe scenario"
@@ -200,4 +157,3 @@ class TeamCoffePreset(BaseCoffee):
                 flag_answer = True
             ))
         self.approximal_difficulty = "Hard"
-
