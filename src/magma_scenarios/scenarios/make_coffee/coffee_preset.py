@@ -6,14 +6,19 @@ from pathlib import Path
 
 from magma_core.base.tasks import BaseTask
 from magma_core.base.tasks_style import TaskStyle
-from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
 
 from .simple_tool import MakingCoffeeTool
-from .attributes import att, loaded_capsule_pose, dropped_mug_pose, people, teams
-from .coffee_stages import MakeOneCoffeStage, ConstraintCoffeeStage, RefuseCoffee, CoffeeCompositeStage , AskTeamStage, AskPersonStage
+from .attributes import att, loaded_capsule_pose, dropped_mug_pose, build_people_assignment
+from .coffee_stages import (
+    MakeOneCoffeStage,
+    ConstraintCoffeeStage,
+    RefuseCoffee,
+    CoffeeCompositeStage,
+    AskPeopleInTeamStage,
+)
 
 import sapien, random
-from typing import List, Dict, Any
+from typing import List
 from collections import defaultdict
 
 RANDOMIZED_CONFIG_PATH = str(Path(__file__).resolve().parent / "make_coffee_cfg.yaml")
@@ -100,33 +105,10 @@ class TeamCoffePreset(BaseCoffee):
     def __init__(self, nb_team : int = 2, nb_people_per_team : int = 4) :
         super().__init__()
 
-        people_coppy = people.copy()
-        teams_coppy = teams.copy()
+        team_dict = build_people_assignment(nb_team, nb_people_per_team)
 
-        random.shuffle(people_coppy)
-        random.shuffle(teams_coppy)
-
-        if nb_team > len(teams_coppy):
-            raise TypeError(f"Only {len(teams_coppy)} exists but you asked for {nb_team}")
-        if nb_people_per_team * nb_team > len(people_coppy):
-            raise TypeError(f"You asked for {nb_people_per_team} for {nb_team} but only {len(people_coppy)} \
-                            people names exists ({nb_people_per_team*nb_team})")
-
-        selected_people = people_coppy[:nb_people_per_team*nb_team]
-        teams_selected = teams_coppy[:nb_team]
-
-        team_dict = {}
-
-        for i,team in enumerate(teams_selected) :
-            start = i*nb_people_per_team
-            end = (i+1)*nb_people_per_team
-            team_dict[team] = selected_people[start:end]
-
-        random_team = random.choice(teams_selected)
+        random_team = random.choice(list(team_dict.keys()))
         assigned_members = team_dict[random_team]
-
-        random_person = random.choice(selected_people)
-        assigned_team = next((k for k,v in team_dict.items() if random_person in v),None)
 
         preference_coffee = {}
         coffee_pref = defaultdict(list)
@@ -146,9 +128,7 @@ class TeamCoffePreset(BaseCoffee):
                 coffee_sentence += "."
 
         self.stages = [ConstraintCoffeeStage(coffee_sentence)]
-        self.stages.append(AskTeamStage(random_team,assigned_members))
-        if assigned_team is not None :
-            self.stages.append(AskPersonStage(random_person,assigned_team))
+        self.stages.append(AskPeopleInTeamStage(random_team, assigned_members))
         for team_member in team_dict[random_team] :
             self.stages.append(MakeOneCoffeStage(
                 instruction = random.choice(named_instructions).format(name = team_member),
