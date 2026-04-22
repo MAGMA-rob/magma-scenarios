@@ -4,50 +4,101 @@
 tools:
   press_button:
     name:
-      - toggle_button
-      - button_press
-      - button_toggle
-      - push_button
+      - start_coffee_cycle
+      - press_coffee_start_button
+      - launch_brewing_cycle
+      - trigger_coffee_machine
     description:
-      - "Toggle the button."
-      - "Press the button."
-      - "Change the state of the button."
-      - "Interact with the button."
+      - "Press the start button on the coffee maker to launch the brewing cycle."
+      - "Start the coffee machine cycle by pressing its brew button."
+      - "Trigger the coffee maker so it begins preparing the drink."
+      - "Use the start button to launch the coffee preparation cycle."
   place_mug:
     name:
-      - drop_mug
-      - put_mug_in_machine
-      - place_cup
-      - place_mug
+      - position_mug_in_machine
+      - place_mug_under_spout
+      - put_cup_in_coffee_maker
+      - place_coffee_mug
     description:
-      - "Drop a mug on the coffee maker."
-      - "Put a vessel in front of the coffee maker."
-      - "Place a cup in glass or paper for coffee."
+      - "Place the mug in the coffee maker under the outlet so coffee can be poured into it."
+      - "Position a mug in the machine where the brewed coffee will be dispensed."
+      - "Put the cup under the coffee spout inside the coffee maker."
+      - "Set the mug in the coffee machine at the serving position for brewing."
   load_capsule:
     name:
-      - load_capsule
-      - place_capsule
-      - load_coffee
-      - load_pod
+      - insert_capsule
+      - load_requested_pod
+      - put_capsule_in_machine
+      - insert_coffee_pod
     description:
-      - "Load a capsule in the coffee maker."
-      - "Place a capsule on the coffee maker."
-      - "Load some coffee."
+      - "Insert the requested coffee capsule flavor into the coffee maker."
+      - "Load the correct coffee pod into the machine so it can brew the right drink."
+      - "Place the selected capsule inside the coffee maker before starting the cycle."
+      - "Insert the pod matching the desired coffee taste into the machine."
     parameters:
       name:
-        name:  # parameter name variations
+        name:
           - name
-          - capsule
-          - id
-          - capsule_id
+          - capsule_name
+          - pod_flavor
+          - requested_capsule
         description:
-          - "Name of the capsule type."
-          - "Capsule type"
-          - "Capsule id"
-          - "Capsule identifier"
+          - "Flavor or identifier of the coffee capsule to insert."
+          - "Requested capsule flavor for the drink."
+          - "Name of the coffee pod to load into the machine."
+          - "Selected capsule type for brewing."
+  people_from_team:
+    name:
+      - get_team_members
+      - lookup_team_registry
+      - find_people_from_team
+      - retrieve_team_members
+    description:
+      - "Look up the registered members of a known team in the coffee scenario registry."
+      - "Return the people recorded for a given team in the team registry."
+      - "Retrieve the list of registered team members for a known team."
+      - "Find which people belong to the specified team in the registry."
+    parameters:
+      team:
+        name:
+          - team
+          - team_name
+          - registry_team
+          - group_name
+        description:
+          - "Name of the team whose registered members should be returned."
+          - "Team identifier used to query the registry."
+          - "Known team name to look up in the registry."
+          - "Name of the group for which members must be retrieved."
+  team_from_people:
+    name:
+      - get_person_team
+      - lookup_team_from_person
+      - find_registered_team
+      - retrieve_team_for_person
+    description:
+      - "Look up which registered team a person belongs to in the coffee scenario registry."
+      - "Return the team associated with a known person in the registry."
+      - "Find the registered team membership for a given person."
+      - "Retrieve the team name for the specified person from the registry."
+    parameters:
+      person:
+        name:
+          - person
+          - person_name
+          - registry_person
+          - member_name
+        description:
+          - "Name of the person whose registered team should be returned."
+          - "Person identifier used to query the team registry."
+          - "Known person name to look up in the registry."
+          - "Member name for which the team must be retrieved."
 
 attributes: 
   coffee_pod:
     - ["black", "milky", "white"]
-    - ["black_capsule", "milky_capsule", "white_capsule"]
-    - ["black_coffee", "with_milk", "white_cream_coffee"]
+    - ["Espresso", "Latte", "Flat White"]
+    - ["Americano", "Cappuccino", "Flat White"]
+    - ["Ristretto", "Latte", "Flat White"]
+    - ["Strong", "Smooth", "Light"]
+    - ["Dark", "Balanced", "Delicate"]
