@@ -61,8 +61,13 @@
                 }
             ],
             "injection": {
-                "mode": "force_failure",
-                "message": "Planning error: Green box is unreachable."
+                "mode": "runtime_error",
+                "error": "MaskRemainingCubesError",
+                "arguments": {
+                    "masked": [
+                        "green_cube_1", "green_cube_3"
+                    ]
+                }
             }
         },
         {
@@ -74,7 +79,7 @@
                 "lg-memorization"
             ],
             "complementary_verif": {
-                "judge": "The model must answer that it has store 2"
+                "judge": "The model must answer that it has stored 3"
             }
         }
     ]
