@@ -1,0 +1,95 @@
+{
+  "criteria": ["c-reasoning", "multi-steps"],
+  "stages": [
+    {
+      "instruction": "DISCO team only drinks black coffee, no exceptions.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "GEPETTO team usually drinks milky. However Thomas is curious and always wants to try whatever Rodriguez just had.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "There is no capsule limit.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "What team does Anderson belong to?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answers that Anderson belongs to the DISCO team."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "Rodriguez feels adventurous today and wants a black coffee. Serve him.",
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "place_mug"},
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps"]
+    },
+    {
+      "instruction": "Now serve Thomas.",
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "place_mug"},
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["c-reasoning", "multi-steps"],
+      "should_reset_env" : true
+    },
+
+    {
+      "instruction": "Only white capsules are left.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Rodriguez wants his usual today. Can you serve him?",
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "place_mug"},
+            {"function": "load_capsule", "content": "white"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": [ "c-reasoning"]
+    },
+    {
+      "instruction": "Now serve Thomas.",
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "place_mug"},
+            {"function": "load_capsule", "content": "white"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "Serve Clark.",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model refuses to serve Clark because only white capsules are available and DISCO team only drinks black."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    }
+  ]
+}

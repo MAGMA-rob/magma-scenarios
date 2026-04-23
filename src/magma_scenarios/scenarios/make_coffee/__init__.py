@@ -10,5 +10,7 @@ TASK_DEFINITIONS = {
 TASK_PRESETS = {
     "ConstrainedPreset": "coffee_preset:ConstrainedPreset",
     "TestComposite": "coffee_preset:TestComposite",
-    "TeamCoffePreset": "coffee_preset:TeamCoffePreset"
+    "TeamCoffePreset": "coffee_preset:TeamCoffePreset",
+
+    "SimpBench": "benchmark:CoffeeBenchmark"
 }

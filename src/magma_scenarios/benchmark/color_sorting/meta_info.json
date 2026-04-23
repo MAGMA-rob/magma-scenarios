@@ -52,20 +52,20 @@
     }
   ],
   "tasks_horizon": {
-    "12": [
-      "task_0"
-    ],
     "19": [
       "task_2"
     ],
-    "16": [
-      "task_3"
+    "12": [
+      "task_0"
+    ],
+    "13": [
+      "task_4"
     ],
     "10": [
       "task_1"
     ],
-    "17": [
-      "task_4"
+    "15": [
+      "task_3"
     ]
   },
   "criteria": {
@@ -76,11 +76,11 @@
   },
   "criteria_tasks": {
     "multi-steps": [
-      "task_0.json",
       "task_2.json",
-      "task_3.json",
+      "task_0.json",
+      "task_4.json",
       "task_1.json",
-      "task_4.json"
+      "task_3.json"
     ],
     "c-reasoning": [
       "task_2.json",

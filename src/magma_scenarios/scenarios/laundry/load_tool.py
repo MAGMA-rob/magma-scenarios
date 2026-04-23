@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
+from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, ToolErrorSupport
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
@@ -12,6 +12,8 @@ from magma_scenarios.envs.laundry.observation import ObjectObservation
 from magma_scenarios.scenarios.laundry.attributes import all_detergents
 from typing import Dict, List
 import sapien, torch
+
+from .laundry_errors import GraspClothesFailureError
 
 LaundryExtraState = dict[str, ObjectObservation]
 
@@ -27,7 +29,10 @@ class LaunchTool(BaseToolsAPI):
                     "type": str,
                     "description": "Name of the object to grab.",
                 }
-            }
+            },
+            errors=[
+                ToolErrorSupport(GraspClothesFailureError, pre=True, post=False)
+            ]
     )
     def take(self, obs: Observation, env_id: int, params: dict) -> ToolExecution:
         """Go fetch an object by its name."""
@@ -58,7 +63,7 @@ class LaunchTool(BaseToolsAPI):
                     False, f"You failed to take the object {name}. You can retry."
                 )
 
-        return ToolExecution(poses, verifier=verifier)
+        return ToolExecution(poses, verifier=verifier, context={"target_name":name})
 
     @register_tool(
             description="Put the held clothes into the washing machine.",

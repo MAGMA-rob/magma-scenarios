@@ -10,37 +10,37 @@
     "control_timesteps": 0
   },
   "criteria": {
-    "c-reasoning": 2,
+    "lg-memorization": 1,
     "recovery": 3,
-    "multi-steps": 1,
-    "lg-memorization": 1
+    "c-reasoning": 2,
+    "multi-steps": 1
   },
   "criteria_tasks": {
-    "c-reasoning": [
-      "task_28.json",
-      "task_26.json"
+    "lg-memorization": [
+      "task_27.json"
     ],
     "recovery": [
-      "task_28.json",
+      "task_27.json",
       "task_26.json",
-      "task_27.json"
+      "task_28.json"
+    ],
+    "c-reasoning": [
+      "task_26.json",
+      "task_28.json"
     ],
     "multi-steps": [
       "task_26.json"
-    ],
-    "lg-memorization": [
-      "task_27.json"
     ]
   },
   "tasks_horizon": {
-    "4": [
-      "task_28"
+    "6": [
+      "task_27"
     ],
     "8": [
       "task_26"
     ],
-    "6": [
-      "task_27"
+    "4": [
+      "task_28"
     ]
   }
 }

@@ -1,0 +1,52 @@
+{
+  "scenario_name": "Make_coffee_Benchmark",
+  "scenario_id": "MCoffy_v1",
+  "scenario_description": "The goal is to evaluate the model capacity to serve coffees respecting team preferences, capsule availability constraints, and team membership reasoning via tools.",
+  "associate_task": "make_coffe.SimpBench",
+  "options_mplib": {
+    "robot": "panda_v2",
+    "join_vel_limit": 0.9,
+    "join_acc_limit": 0.9,
+    "control_timesteps": 0
+  },
+  "tasks_horizon": {
+    "22": [
+      "task_2"
+    ],
+    "10": [
+      "task_0"
+    ],
+    "20": [
+      "task_4"
+    ],
+    "13": [
+      "task_5"
+    ],
+    "16": [
+      "task_1"
+    ],
+    "27": [
+      "task_3"
+    ]
+  },
+  "criteria": {
+    "c-reasoning": 4,
+    "multi-steps": 6
+  },
+  "criteria_tasks": {
+    "c-reasoning": [
+      "task_2.json",
+      "task_4.json",
+      "task_5.json",
+      "task_3.json"
+    ],
+    "multi-steps": [
+      "task_2.json",
+      "task_0.json",
+      "task_4.json",
+      "task_5.json",
+      "task_1.json",
+      "task_3.json"
+    ]
+  }
+}
