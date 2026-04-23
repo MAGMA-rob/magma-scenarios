@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,30 +19,33 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Launch a cleaning cycle in area1.",
@@ -47,23 +53,29 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_3"],
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_3"
+                        ],
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "ref_obj_1 is not marked as maintenance anymore",
@@ -75,23 +87,29 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_1"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_1"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_3",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "To end the day, let's do a maintenance cycle to area2.",
@@ -99,23 +117,29 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

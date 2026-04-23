@@ -7,7 +7,7 @@ all_clothes = [
     "socks",
     "boxer",
     "panties",
-    "cap",
+    "cap"
 ]
 
 all_detergents = [

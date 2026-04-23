@@ -1,5 +1,8 @@
 {
-    "criteria" : ["lg-memorization","multi-steps"],
+    "criteria": [
+        "lg-memorization",
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "Launch a cycle sending all objects to area3.",
@@ -7,14 +10,14 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "should_env_reset" : true
+            "should_env_reset": true
         },
         {
             "instruction": "Robot, I need your help. Please interupt what you are doing and put just one ref_obj_2 in area1.",
@@ -22,15 +25,21 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area1"
+                    }
                 }
             ],
-            "complementary_verif": {"logs":["empty"]},
-            "keys_evaluator" : ["multi-steps"],
-            "should_env_reset" : true
+            "complementary_verif": {
+                "logs": [
+                    "empty"
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "should_env_reset": true
         },
         {
             "instruction": "Okay thanks, you can continue your previous task",
@@ -38,14 +47,16 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

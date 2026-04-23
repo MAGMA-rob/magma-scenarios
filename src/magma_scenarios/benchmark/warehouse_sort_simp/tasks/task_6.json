@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "stages": [
         {
             "instruction": "Keep in memory that ref_obj_1 and ref_obj_2 are metallic",
@@ -11,24 +13,24 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {}

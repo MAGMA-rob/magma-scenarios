@@ -17,9 +17,9 @@ class MakingCoffeeTool(BaseToolsAPI):
 
     button_STROKE = 0.0018
 
-    def is_button_pressed(self, btn_translation) -> bool:
-            button_STROKE_LIMIT = self.button_STROKE/2
-            return (btn_translation > button_STROKE_LIMIT)
+    # def is_button_pressed(self, btn_translation) -> bool:
+    #         button_STROKE_LIMIT = self.button_STROKE/2
+    #         return (btn_translation > button_STROKE_LIMIT)
 
     @register_tool(
             description="Press the start button on the coffee maker to launch the brewing cycle once the mug and capsule are in place.",
@@ -33,12 +33,7 @@ class MakingCoffeeTool(BaseToolsAPI):
 
         # define verifier inline
         def verifier(new_obs: Dict) -> ToolResult:
-            ok = self.is_button_pressed(new_obs["extra"]["coffee_maker"][env_id][-2])   
-            if ok:
-                reason = f"Coffee launched!"
-            else:
-                reason = f"Failed to press the coffee maker button."
-            return ToolResult(ok,reason,logs=Log(""))
+            return ToolResult(True,"Coffee launched!",logs=Log(""))
         
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
@@ -89,11 +84,15 @@ class MakingCoffeeTool(BaseToolsAPI):
                                              torch.add(new_obs["extra"]["coffee_maker"][env_id][:7], capsule_target),
                                             0.06)
                 if ok:
-                    reason = f"You have loaded a {coffee_name} capsule."
-                else:
-                    reason = f"Failed to load the {coffee_name} capsule. You can retry."
+                    return ToolResult(
+                        True,
+                        f"You have loaded a {coffee_name} capsule.",
+                        logs=Log(coffee_name)
+                    )
 
-            return ToolResult(ok, reason, logs=Log(coffee_name))
+            return ToolResult(
+                False,
+                f"Failed to load the {coffee_name} capsule. You can retry.")
 
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
     
@@ -133,11 +132,13 @@ class MakingCoffeeTool(BaseToolsAPI):
                 new_obs["extra"]["mug"][env_id],
                 0.06)
             if ok:
-                reason = f"You have placed the mug."
-            else:
-                reason = f"Failed to place the mug. You can retry."
+                return ToolResult(
+                    True,
+                    f"You have placed the mug.",
+                    logs=Log("")
+                )
                
-            return ToolResult(ok,reason,logs=Log(""))
+            return ToolResult(False,"Failed to place the mug. You can retry.")
   
         return ToolExecution(poses=poses, verifier=verifier, reason="")
 

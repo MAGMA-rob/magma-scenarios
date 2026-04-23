@@ -1,0 +1,80 @@
+{
+  "criteria": ["multi-steps"],
+  "stages": [
+
+    {
+      "instruction": "GEPETTO team prefer black coffee. They accept milky but refuse white.",
+      "expected_behavior": "acknowledge"
+    },
+
+    {
+      "instruction": "RIS team don't realy have preference, in the most case they just take what the other took.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "there is no limited coffee.",
+      "expected_behavior": "acknowledge"
+    },
+
+    {
+      "instruction": "what team Rodriguez belogs to ",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answers that Mattieu belogs to GEPETTO team."
+      }
+    },
+
+    {
+      "instruction": "Serve him a coffee.",
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps"]
+    },
+
+    {
+      "instruction": "who is in RAP team",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answer that RAP contains Lopez, Perez, Williams, Jackson."
+      }
+    },
+    {
+      "instruction": "Now prepare for Hector and florent.",
+      "max_step": 5,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"},
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env" : true
+    },
+
+
+    {
+      "instruction": "You have only white capsules left.",
+      "expected_behavior": "acknowledge"
+    },
+
+    {
+      "instruction": "Serve Rodriguez a coffee.",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model refuses because only white coffee is available and Matthieu does not accept it."
+      }
+    }
+
+  ]
+}

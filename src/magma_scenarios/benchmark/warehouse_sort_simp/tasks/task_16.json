@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,10 +18,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {}

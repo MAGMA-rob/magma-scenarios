@@ -1,0 +1,198 @@
+{
+    "criteria": [
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Wash the white clothes.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "shirt",
+                        "socks"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "socks"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "socks",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "shirt",
+                                "socks",
+                                "panties"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "should_reset_env": true
+        },
+        {
+            "instruction": "Actually cap is white, not colored, wash it.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "cap"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "shirt",
+                            "socks",
+                            "panties",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "cap"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "c-reasoning"
+            ],
+            "should_reset_env": true
+        }
+    ]
+}

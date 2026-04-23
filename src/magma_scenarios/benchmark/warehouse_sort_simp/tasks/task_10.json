@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -12,23 +15,28 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "should_env_reset" : true,
+            "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Ok good, wait for future instructions.",
@@ -38,10 +46,18 @@
             "instruction": "Hello robot, some changment about assignment. You can add this novel area area4 to your system and it will be used to store ref_obj_1. With witch area was it assigned before?",
             "max_step": 2,
             "complementary_verif": {
-                "logs": [{"action":"ADD","content":"area4"}],
+                "logs": [
+                    {
+                        "action": "ADD",
+                        "content": "area4"
+                    }
+                ],
                 "judge": "The model add area4 and answer that ref_obj_1 was previously associated with area2"
             },
-            "keys_evaluator" : ["lg-memorization","c-reasoning"]
+            "keys_evaluator": [
+                "lg-memorization",
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Ok can I remove area2 or it is still associated with some objects?",
@@ -56,28 +72,31 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area4"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area4"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["lg-memorization","c-reasoning"]
+            "keys_evaluator": [
+                "lg-memorization",
+                "c-reasoning"
+            ]
         }
     ]
 }

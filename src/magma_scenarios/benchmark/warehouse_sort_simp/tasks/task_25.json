@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "c-nb": 1,
     "stages": [
         {
@@ -12,10 +14,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -31,21 +33,26 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator": ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         }
     ]
 }

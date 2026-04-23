@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "stages": [
         {
             "instruction": "Today, all objects must go to area1!",
@@ -11,10 +13,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {}

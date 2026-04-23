@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,24 +18,24 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {}

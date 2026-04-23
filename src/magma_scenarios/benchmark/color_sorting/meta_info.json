@@ -58,26 +58,30 @@
     "19": [
       "task_2"
     ],
-    "16": [
+    "14": [
+      "task_5"
+    ],
+    "15": [
       "task_3"
     ],
     "10": [
       "task_1"
     ],
-    "17": [
+    "13": [
       "task_4"
     ]
   },
   "criteria": {
-    "multi-steps": 5,
+    "multi-steps": 6,
     "c-reasoning": 2,
-    "lg-memorization": 1,
+    "lg-memorization": 2,
     "recovery": 1
   },
   "criteria_tasks": {
     "multi-steps": [
       "task_0.json",
       "task_2.json",
+      "task_5.json",
       "task_3.json",
       "task_1.json",
       "task_4.json"
@@ -87,6 +91,7 @@
       "task_1.json"
     ],
     "lg-memorization": [
+      "task_5.json",
       "task_3.json"
     ],
     "recovery": [

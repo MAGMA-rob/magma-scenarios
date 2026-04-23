@@ -10,6 +10,22 @@
     ]
   },
   {
+    "scenario_name": "Make_coffee_Benchmark",
+    "folder_name": "make_coffee",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning"
+    ]
+  },
+  {
+    "scenario_name": "Laundry_Benchmark",
+    "folder_name": "laundry",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning"
+    ]
+  },
+  {
     "scenario_name": "Warehouse_Sorting_Simp",
     "folder_name": "warehouse_sort_simp",
     "criteria": [

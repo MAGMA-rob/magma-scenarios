@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Literal
 import random
 from collections import defaultdict
 
@@ -7,10 +7,20 @@ from magma_core.base.user_request import BaseRequest, BaseConstraintRequest
 from magma_core.base.state import TaskState
 from magma_core.base.data_structures import UserInstruction
 
-from .coffee_stages import MakeOneCoffeStage, CoffeeCompositeStage
+from .coffee_stages import (
+    MakeOneCoffeStage,
+    CoffeeCompositeStage,
+    AskPeopleInTeamStage,
+    AskTeamsForPeopleStage,
+    AskTeamCoffeePreferencesStage,
+)
 
 from magma_scenarios.templates.stages import MissingInformationStage
-from magma_scenarios.templates.constraints import RelationAssignmentConstraint
+
+from .coffee_constraints import (
+    CoffeePreferenceConstraint,
+    TeamCoffeePreferenceConstraint,
+)
 
 class AskCoffeeRequest(BaseRequest):
 
@@ -75,7 +85,7 @@ class GiveCoffeePreference(BaseConstraintRequest):
         for name, pod in zip(names,coffees):
             assignment[pod].append(name)
             self.constraints.append(
-                CoffeePreferenceConstraints(
+                CoffeePreferenceConstraint(
                     name,pod
                 )
             )
@@ -86,6 +96,74 @@ class GiveCoffeePreference(BaseConstraintRequest):
             if i != len(assignment)-1:
                 self.constraint_msg += ", "
         self.constraint_msg += "."
+
+
+class GiveTeamCoffeePreference(BaseConstraintRequest):
+
+    def __init__(
+            self,
+            team_assignment: Dict[str, List[str]],
+            max_team_assignment: int = 2,
+            mode: Literal["override", "default"] = "override",
+        ) -> None:
+        super().__init__()
+        self.team_assignment = team_assignment
+        self.max_team_assignment = max_team_assignment
+        self.mode = mode
+
+    def _get_eligible_teams(self, state: TaskState) -> List[str]:
+        if self.mode == "override":
+            return [
+                team_name
+                for team_name, members in self.team_assignment.items()
+                if len(members) > 0
+            ]
+
+        preferences = state.relations.get("coffee_preference", {})
+        return [
+            team_name
+            for team_name, members in self.team_assignment.items()
+            if len(members) > 0 and any(member not in preferences for member in members)
+        ]
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("coffee_pod", [])) == 0:
+            return 0
+        return 1 if len(self._get_eligible_teams(state)) > 0 else 0
+
+    def initialize_constraints(self, state: TaskState):
+        self.constraints = []
+
+        eligible_teams = self._get_eligible_teams(state)
+        if len(eligible_teams) == 0:
+            raise RuntimeError(f"Failed to sample a team in {self.__class__.__name__}")
+
+        coffees = state.attributes.get("coffee_pod", [])
+        if len(coffees) == 0:
+            raise RuntimeError("Empty coffee pod")
+
+        nb_team = random.randint(1, min(self.max_team_assignment, len(eligible_teams)))
+        selected_teams = random.sample(eligible_teams, k=nb_team)
+        selected_coffees = random.choices(coffees, k=nb_team)
+
+        msg_parts = []
+        for team_name, coffee in zip(selected_teams, selected_coffees):
+            self.constraints.append(
+                TeamCoffeePreferenceConstraint(
+                    team_name=team_name,
+                    team_members=self.team_assignment[team_name],
+                    coffee=coffee,
+                    mode=self.mode,
+                )
+            )
+            if self.mode == "override":
+                msg_parts.append(f"everyone in team {team_name} likes {coffee} coffee")
+            else:
+                msg_parts.append(
+                    f"by default, members of team {team_name} like {coffee} coffee if they do not already have a known preference"
+                )
+
+        self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
 
 class AskCoffeePerUser(BaseRequest):
 
@@ -225,16 +303,125 @@ class AskCoffeePerUser(BaseRequest):
         stages.append(CoffeeCompositeStage(dict(number)))
 
         return stages
-
-### CONSTRAINTS
-
-class CoffeePreferenceConstraints(RelationAssignmentConstraint):
     
+class AskPeopleTeam(BaseRequest):
+
+    def __init__(self, team_assignment : Dict[str, List[str]], max_nb : int = 2) -> None:
+        super().__init__()
+        self.max_nb = max_nb
+        self.team_assignment = team_assignment
+        self.people_to_team: Dict[str, str] = {}
+
+        for team_name, members in team_assignment.items():
+            for member in members:
+                if member in self.people_to_team:
+                    raise ValueError(f"{member} is assigned to multiple teams")
+                self.people_to_team[member] = team_name
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1 if len(self.people_to_team) > 0 else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        if len(self.people_to_team) == 0:
+            raise RuntimeError("Failed to sample a person because the team assignment is empty")
+
+        nb = random.randint(1, min(self.max_nb, len(self.people_to_team)))
+        names = random.sample(list(self.people_to_team.keys()), nb)
+        teams = [self.people_to_team[name] for name in names]
+
+        return [AskTeamsForPeopleStage(names, teams)]
+
+
+class AskPeopleInTeam(BaseRequest):
+
+    def __init__(self, team_assignment : Dict[str, List[str]]) -> None:
+        super().__init__()
+        self.team_assignment = team_assignment
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1 if any(len(members) > 0 for members in self.team_assignment.values()) else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        non_empty_teams = [
+            team_name
+            for team_name, members in self.team_assignment.items()
+            if len(members) > 0
+        ]
+        if len(non_empty_teams) == 0:
+            raise RuntimeError("Failed to sample a team because the team assignment is empty")
+
+        team_name = random.choice(non_empty_teams)
+        members = self.team_assignment[team_name]
+
+        return [AskPeopleInTeamStage(team_name, members)]
+
+
+class AskCoffeePreferenceInTeam(BaseRequest):
+
     def __init__(
             self,
-            name: str,
-            coffee: str
+            team_assignment: Dict[str, List[str]],
+            allowed_focus: List[str] | None = None,
         ) -> None:
-        super().__init__(name, coffee, "coffee_preference", None, "coffee_pod")
+        super().__init__()
+        self.team_assignment = team_assignment
+        self.allowed_focus = allowed_focus
 
+    def _get_available_focus(
+            self,
+            state: TaskState,
+            team_members: List[str],
+        ) -> List[str]:
+        preferences: Dict[str, str] = state.relations.get("coffee_preference", {})
+        coffee_pods = state.attributes.get("coffee_pod", [])
 
+        if self.allowed_focus is None:
+            candidate_focus = ["all", *coffee_pods, "unknown"]
+        else:
+            candidate_focus = self.allowed_focus
+
+        available_focus = []
+        for focus in candidate_focus:
+            if focus == "all":
+                available_focus.append(focus)
+            elif focus == "unknown":
+                if any(name not in preferences for name in team_members):
+                    available_focus.append(focus)
+            elif any(preferences.get(name) == focus for name in team_members):
+                available_focus.append(focus)
+
+        if len(available_focus) == 0:
+            return ["all"]
+        return available_focus
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1 if any(len(members) > 0 for members in self.team_assignment.values()) else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        non_empty_teams = [
+            team_name
+            for team_name, members in self.team_assignment.items()
+            if len(members) > 0
+        ]
+        if len(non_empty_teams) == 0:
+            raise RuntimeError("Failed to sample a team because the team assignment is empty")
+
+        team_name = random.choice(non_empty_teams)
+        team_members = self.team_assignment[team_name]
+        preferences = state.relations.get("coffee_preference", {})
+        known_preferences = {
+            name: preferences[name]
+            for name in team_members
+            if name in preferences
+        }
+
+        focus = random.choice(self._get_available_focus(state, team_members))
+
+        return [
+            AskTeamCoffeePreferencesStage(
+                requested_team=team_name,
+                team_members=team_members,
+                known_preferences=known_preferences,
+                focus=focus,
+            )
+        ]

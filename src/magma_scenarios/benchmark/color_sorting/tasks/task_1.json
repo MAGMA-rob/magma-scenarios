@@ -1,5 +1,8 @@
 {
-    "criteria" : ["multi-steps","c-reasoning"],
+    "criteria": [
+        "multi-steps",
+        "c-reasoning"
+    ],
     "stages": [
         {
             "instruction": "Hello, the rule is to always sort all green cubes before yellow ones, right?",
@@ -8,50 +11,55 @@
         {
             "instruction": "Ok perfect, I need 1 green cubes and 1 yellow cube to their associated color box?",
             "max_step": 4,
-            "action_goal" : [
+            "action_goal": [
                 {
                     "predicate": "count",
-                    "args" : [
-                        "green_cube*",
-                        "green_box_pose",
-                        1
-                    ]
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
                 },
                 {
                     "predicate": "count",
-                    "args" : [
-                        "yellow_cube*",
-                        "yellow_box_pose",
-                        0
-                    ]
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 0
+                    }
                 }
             ],
-            "keys_evaluator" : ["multi-steps","c-reasoning"]
+            "keys_evaluator": [
+                "multi-steps",
+                "c-reasoning"
+            ]
         },
         {
             "instruction": null,
             "max_step": 4,
-            "action_goal" : [
+            "action_goal": [
                 {
                     "predicate": "count",
-                    "args" : [
-                        "green_cube*",
-                        "green_box_pose",
-                        1
-                    ]
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
                 },
                 {
                     "predicate": "count",
-                    "args" : [
-                        "yellow_cube*",
-                        "yellow_box_pose",
-                        1
-                    ]
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 1
+                    }
                 }
             ],
             "flag_answer_to_user": true,
             "should_reset": true,
-            "keys_evaluator" : ["multi-steps"]
+            "keys_evaluator": [
+                "multi-steps"
+            ]
         }
     ]
 }
