@@ -119,7 +119,26 @@ class LaundryEnv(DefaultEnv):
             ),
         ]
         
-        self._detergents = [create_soap(self.scene, name="detergent_OMO"),create_soap(self.scene, name="detergent_SKIP"),create_soap(self.scene, name="detergent_PERSIL")]
+        self._detergents = [
+            actors.build_cube(
+                self.scene,
+                0.02,
+                color=RED,
+                name="detergent_SKIP",
+            ),
+            actors.build_cube(
+                self.scene,
+                0.02,
+                color=BLUE_JEAN,
+                name="detergent_OMO",
+            ),
+            actors.build_cube(
+                self.scene,
+                0.02,
+                color=BLACK,
+                name="detergent_PERSIL",
+            ),
+        ]
 
         self.machine_actor = create_wash_machine(self.scene)
         self.wash_machine_collision = self.create_box(
@@ -155,7 +174,7 @@ class LaundryEnv(DefaultEnv):
         # set soap position
         gap = -0.2
         for i in range(len(self._detergents)) :
-            self._detergents[i].set_pose(sapien.Pose(p=[0, -0.3 + gap*i, 0.02], q=euler2quat(0,0,0)))
+            self._detergents[i].set_pose(sapien.Pose(p=[0+ gap*i, -0.3, 0.02], q=euler2quat(0,0,0)))
 
     def _get_obs_extra(self, info: dict) -> dict[str, ObjectObservation]:
         """The observations contains position of all objects in the scene."""
