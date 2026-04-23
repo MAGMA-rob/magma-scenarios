@@ -1,7 +1,8 @@
 from pathlib import Path
 from magma_core.base.tasks import BaseBenchmarkTask
 from .simple_tool import MakingCoffeeTool
-from .attributes import att, people, teams
+from .attributes import att, people, teams, loaded_capsule_pose, dropped_mug_pose
+import sapien
 
 class CoffeeBenchmark(BaseBenchmarkTask):
     """
