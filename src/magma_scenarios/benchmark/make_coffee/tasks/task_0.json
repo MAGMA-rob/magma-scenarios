@@ -1,44 +1,39 @@
 {
-    "criteria": ["multi-steps"],
+    "criteria": [
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "The GEPETTO team prefer black coffee, can drink milky, but dislike white.",
             "expected_behavior": "acknowledge"
         },
-                {
-            "instruction": "You have two black coffee, six milky, and five white.",
-            "expected_behavior": "acknowledge"
-        },
         {
-        "instruction" : "serve Thomas a coffy",
-        "max_step": 4,
-        "complementary_verif": {
-            "logs": [
-                [
-                {"function": "place_mug"},
-                {"function": "load_capsule", "content": "black"},
-                {"function": "press_button"}
+            "instruction": "serve Thomas a white coffee",
+            "max_step": 4,
+            "complementary_verif": {
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "white"
+                                }
+                            ]
+                        }
+                    }
                 ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
             ]
-        },
-        "keys_evaluator": ["multi-steps"]
-    },
-    {
-        "instruction" : "Mitchell and Williams want the same coffee. Serve them.",
-        "max_step": 4,
-        "complementary_verif": {
-            "logs": [
-            [
-                {"function": "load_capsule", "content": "milky"},
-                {"function": "press_button"},
-                {"function": "load_capsule", "content": "milky"},
-                {"function": "press_button"}
-            ]
-            ]
-        },
-        "keys_evaluator": ["multi-steps"]
-    }    
-
-
+        }
     ]
 }

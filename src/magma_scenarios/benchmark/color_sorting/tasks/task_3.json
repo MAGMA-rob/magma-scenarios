@@ -1,48 +1,55 @@
 {
-    "criteria" : ["multi-steps","lg-memorization"],
+    "criteria": [
+        "multi-steps",
+        "lg-memorization"
+    ],
     "stages": [
         {
             "instruction": "I need to have two yellow cubes into the yellow box",
             "max_step": 7,
-            "action_goal" : [
+            "action_goal": [
                 {
                     "predicate": "count",
-                    "args" : [
-                        "green_cube*",
-                        "green_box_pose",
-                        0
-                    ]
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 0
+                    }
                 },
                 {
                     "predicate": "count",
-                    "args" : [
-                        "yellow_cube*",
-                        "yellow_box_pose",
-                        2
-                    ]
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 2
+                    }
                 }
             ],
-            "keys_evaluator" : ["multi-steps"],
+            "keys_evaluator": [
+                "multi-steps"
+            ],
             "flag_answer_to_user": true,
             "injection": {
                 "mode": "runtime_error",
                 "error": "GraspCubeFailureError",
-                "arguments" : {
-                    "inaccessible" : ["yellow_cube_1"]
+                "arguments": {
+                    "inaccessible": [
+                        "yellow_cube_1"
+                    ]
                 }
             }
         },
         {
             "instruction": "Please store one green cube please now in its box",
             "max_step": 4,
-            "action_goal" : [
+            "action_goal": [
                 {
                     "predicate": "count",
-                    "args" : [
-                        "green_cube*",
-                        "green_box_pose",
-                        1
-                    ]
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
                 }
             ],
             "injection": {
@@ -53,9 +60,11 @@
         {
             "instruction": "How many cubes do you have stored since the start?",
             "max_step": 2,
-            "expected_behavior":"answer",
+            "expected_behavior": "answer",
             "allows_tools": true,
-            "keys_evaluator": ["lg-memorization"],
+            "keys_evaluator": [
+                "lg-memorization"
+            ],
             "complementary_verif": {
                 "judge": "The model must answer that it has store 2"
             }

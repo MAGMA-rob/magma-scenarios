@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,10 +19,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -28,7 +31,9 @@
             "injection": {
                 "mode": "force_recovery"
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "I need to have all obj_ref_2 to area2 right now",
@@ -43,7 +48,9 @@
             "complementary_verif": {
                 "judge": "The model must answer that area1 or/and area3 can be used."
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Okay send them all to area3 instead",
@@ -51,14 +58,16 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         }
     ]
 }

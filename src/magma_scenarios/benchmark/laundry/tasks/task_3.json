@@ -1,90 +1,173 @@
 {
-  "criteria": ["multi-steps", "c-reasoning"],
-  "stages": [
-    {
-      "instruction": "Rule: delicate clothes (blouse, panties) must be washed with PERSIL. Everyday clothes (shirt, jeans, pants, short) use OMO. Sports/accessories (socks, boxer, cap) use SKIP.",
-      "expected_behavior": "acknowledge"
-    },
-    {
-      "instruction": "Actually  pants, short are not sports, move them to the SKIP group.",
-      "expected_behavior": "acknowledge"
-    },
-    {
-      "instruction": "Wash the delicate clothes.",
-      "max_step": 5,
-      "action_goal": [
+    "criteria": [
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
         {
-          "predicate": "in",
-          "args": [["blouse", "panties"], "washing_machine_basket"]
+            "instruction": "Rule: delicate clothes (blouse, panties) must be washed with PERSIL. Everyday clothes (shirt, jeans, pants, short) use OMO. Sports/accessories (socks, boxer, cap) use SKIP.",
+            "expected_behavior": "acknowledge"
         },
         {
-          "predicate": "not_in",
-          "args": [["shirt", "jeans", "pants", "short", "socks", "boxer", "cap"], "washing_machine_basket"]
-        }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["blouse", "panties"], "detergent": "detergent_SKIP"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps"],
-      "should_reset_env" : true
-    },
-    {
-      "instruction": "Wash the OMO group.",
-      "max_step": 6,
-      "action_goal": [
-        {
-          "predicate": "in",
-          "args": [["shirt", "jeans"], "washing_machine_basket"]
+            "instruction": "Actually  pants, short are not sports, move them to the SKIP group.",
+            "expected_behavior": "acknowledge"
         },
         {
-          "predicate": "not_in",
-          "args": [["blouse", "panties", "cap", "pants", "short", "socks", "boxer"], "washing_machine_basket"]
-        }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["shirt", "jeans"], "detergent": "detergent_OMO"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps", "c-reasoning"],
-      "should_reset_env" : true
-    },
-
-    {
-      "instruction": "Wash short and boxer.",
-      "max_step": 6,
-      "action_goal": [
-        {
-          "predicate": "in",
-          "args": [["boxer","short"], "washing_machine_basket"]
+            "instruction": "Wash the delicate clothes.",
+            "max_step": 5,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "blouse",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "jeans",
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "cap"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "blouse",
+                                "panties"
+                            ],
+                            "detergent": "detergent_SKIP"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "should_reset_env": true
         },
         {
-          "predicate": "not_in",
-          "args": [["blouse", "panties", "shirt", "jeans", "pants", "socks","cap"], "washing_machine_basket"]
+            "instruction": "Wash the OMO group.",
+            "max_step": 6,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "jeans"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "blouse",
+                            "panties",
+                            "cap",
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "shirt",
+                                "jeans"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "should_reset_env": true
+        },
+        {
+            "instruction": "Wash short and boxer.",
+            "max_step": 6,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "boxer",
+                            "short"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "blouse",
+                            "panties",
+                            "shirt",
+                            "jeans",
+                            "pants",
+                            "socks",
+                            "cap"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "boxer",
+                                "short"
+                            ],
+                            "detergent": "detergent_SKIP"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction": "Can you wash the blouse with OMO instead of PERSIL?",
+            "expected_behavior": "answer",
+            "complementary_verif": {
+                "judge": "The model refuses because blouse is a delicate cloth and must be washed with PERSIL only."
+            },
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["boxer","short"], "detergent": "detergent_SKIP"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps"]
-    },
-    {
-      "instruction": "Can you wash the blouse with OMO instead of PERSIL?",
-      "expected_behavior": "answer",
-      "complementary_verif": {
-        "judge": "The model refuses because blouse is a delicate cloth and must be washed with PERSIL only."
-      },
-      "keys_evaluator": ["c-reasoning"]
-    }
-  ]
+    ]
 }

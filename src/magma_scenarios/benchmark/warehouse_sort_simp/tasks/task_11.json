@@ -1,5 +1,9 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization","multi-steps"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization",
+        "multi-steps"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -12,29 +16,42 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "should_env_reset" : true,
+            "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Ok I want you to add area5 and make it the default area for ref_obj_3 ok?",
             "max_step": 1,
             "complementary_verif": {
-                "logs": [{"action":"ADD","content":["target_areas","area5"]}]
+                "logs": [
+                    {
+                        "action": "ADD",
+                        "content": [
+                            "target_areas",
+                            "area5"
+                        ]
+                    }
+                ]
             },
             "answer_to_user": true
         },
@@ -44,21 +61,27 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area5"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area5"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["lg-memorization","c-reasoning"],
+            "keys_evaluator": [
+                "lg-memorization",
+                "c-reasoning"
+            ],
             "should_env_reset": true,
             "answer_to_user": true
         },
@@ -67,12 +90,46 @@
             "max_step": 2,
             "complementary_verif": {
                 "logs": [
-                    [{"action":"REMOVE","content":["target_areas","area2"]},{"action":"REMOVE","content":["target_areas","area3"]}],
-                    [{"action":"REMOVE","content":["target_areas","area3"]},{"action":"REMOVE","content":["target_areas","area2"]}]
+                    [
+                        {
+                            "action": "REMOVE",
+                            "content": [
+                                "target_areas",
+                                "area2"
+                            ]
+                        },
+                        {
+                            "action": "REMOVE",
+                            "content": [
+                                "target_areas",
+                                "area3"
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "action": "REMOVE",
+                            "content": [
+                                "target_areas",
+                                "area3"
+                            ]
+                        },
+                        {
+                            "action": "REMOVE",
+                            "content": [
+                                "target_areas",
+                                "area2"
+                            ]
+                        }
+                    ]
                 ],
                 "judge": "The model removes area2 and area3"
             },
-            "keys_evaluator" : ["lg-memorization","c-reasoning","multi-steps"]
+            "keys_evaluator": [
+                "lg-memorization",
+                "c-reasoning",
+                "multi-steps"
+            ]
         },
         {
             "instruction": "Hey! Time to launch a novel cycle!",
@@ -80,21 +137,27 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area5"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area5"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["lg-memorization","c-reasoning"]
+            "keys_evaluator": [
+                "lg-memorization",
+                "c-reasoning"
+            ]
         }
     ]
 }

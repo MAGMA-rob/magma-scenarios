@@ -2,7 +2,7 @@
   "scenario_name": "Make_coffee_Benchmark",
   "scenario_id": "MCoffy_v1",
   "scenario_description": "The goal is to evaluate the model capacity to serve coffees respecting team preferences, capsule availability constraints, and team membership reasoning via tools.",
-  "associate_task": "make_coffe.SimpBench",
+  "associate_task": "make_coffee.SimpBench",
   "options_mplib": {
     "robot": "panda_v2",
     "join_vel_limit": 0.9,

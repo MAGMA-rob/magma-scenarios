@@ -1,5 +1,7 @@
 {
-    "criteria" : ["c-reasoning"],
+    "criteria": [
+        "c-reasoning"
+    ],
     "stages": [
         {
             "instruction": "If any user ask to put object in area2. Inform him that it's depreciated, and ask for a confirmation before executing the cycle.",
@@ -11,7 +13,9 @@
             "complementary_verif": {
                 "judge": "The model informs the user that area2 is depreciated and ask for a confirmation to use area2."
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Oh okay. Use area3 instead.",
@@ -19,28 +23,31 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         }
     ]
 }

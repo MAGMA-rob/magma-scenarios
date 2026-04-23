@@ -1,5 +1,7 @@
 {
-    "criteria" : ["lg-memorization"],
+    "criteria": [
+        "lg-memorization"
+    ],
     "c-nb": 1,
     "stages": [
         {
@@ -8,10 +10,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -27,24 +29,25 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_3",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "answer_to_user": true,
@@ -57,17 +60,21 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_3"],
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_1",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -75,33 +82,39 @@
         },
         {
             "instruction": null,
-            "default_instruction": {"author":"status", "content": "launch_cycle succeed : ref_obj_2 and ref_obj_3 were sended to area3!"},
+            "default_instruction": {
+                "author": "status",
+                "content": "launch_cycle succeed : ref_obj_2 and ref_obj_3 were sended to area3!"
+            },
             "max_step": 1,
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_3",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator": ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

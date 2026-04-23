@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "c-nb": 1,
     "stages": [
         {
@@ -12,29 +15,30 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_reset_env": true,
-            "answer_to_user" : true
+            "answer_to_user": true
         },
         {
             "instruction": "Hello, can you launch a cycle for all objects to area2?",
@@ -42,7 +46,9 @@
             "complementary_verif": {
                 "judge": "The model informs the user that area2 must not be used and refuses to launch a cycle.."
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Why?",
@@ -50,7 +56,9 @@
             "complementary_verif": {
                 "judge": "The model must answer that it is because it has an order in its memory to not use area2."
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Okay, so use area1 instead",
@@ -58,15 +66,17 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_reset_env": true,
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

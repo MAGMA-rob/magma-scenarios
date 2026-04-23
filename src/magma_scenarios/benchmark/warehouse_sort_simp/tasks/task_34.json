@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,16 +19,18 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "area1 is back, you can reuse it normally!",
@@ -37,10 +42,10 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -57,17 +62,20 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_3","ref_obj_1"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_3",
+                            "ref_obj_1"
+                        ],
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -77,7 +85,9 @@
                 "mode": "force_recovery",
                 "message": "A planning error occurs while trying to compute a trajectory."
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "What are your current sorting rules?",
@@ -85,7 +95,9 @@
             "complementary_verif": {
                 "judge": "The model answer that ref_obj_1 and ref_obj_3 goes to area1 and ref_obj_2 goes to area3."
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

@@ -1,5 +1,9 @@
 {
-    "criteria" : ["c-reasoning","multi-steps","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "multi-steps",
+        "lg-memorization"
+    ],
     "c-nb": 2,
     "stages": [
         {
@@ -16,54 +20,68 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
-            "keys_evaluator" : ["c-reasoning","multi-steps"]
+            "keys_evaluator": [
+                "c-reasoning",
+                "multi-steps"
+            ]
         },
         {
             "instruction": null,
-            "default_instruction": {"author":"status","content":"You have successfully sorted ref_obj_1 and ref_obj_3 to area3"},
+            "default_instruction": {
+                "author": "status",
+                "content": "You have successfully sorted ref_obj_1 and ref_obj_3 to area3"
+            },
             "max_step": 1,
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        ["ref_obj_3","ref_obj_1"],
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_3",
+                            "ref_obj_1"
+                        ],
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["lg-memorization","multi-steps"]
+            "keys_evaluator": [
+                "lg-memorization",
+                "multi-steps"
+            ]
         },
         {
             "instruction": "Which objects are not marked as maintenance?",
@@ -72,7 +90,9 @@
             "complementary_verif": {
                 "judge": "The model answer that ref_obj_2 is not marked for maintenance."
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }
