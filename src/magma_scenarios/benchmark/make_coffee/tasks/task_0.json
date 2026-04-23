@@ -1,0 +1,44 @@
+{
+    "criteria": ["multi-steps"],
+    "stages": [
+        {
+            "instruction": "The GEPETTO team prefer black coffee, can drink milky, but dislike white.",
+            "expected_behavior": "acknowledge"
+        },
+                {
+            "instruction": "You have two black coffee, six milky, and five white.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+        "instruction" : "serve Thomas a coffy",
+        "max_step": 4,
+        "complementary_verif": {
+            "logs": [
+                [
+                {"function": "place_mug"},
+                {"function": "load_capsule", "content": "black"},
+                {"function": "press_button"}
+                ]
+            ]
+        },
+        "keys_evaluator": ["multi-steps"]
+    },
+    {
+        "instruction" : "Mitchell and Williams want the same coffee. Serve them.",
+        "max_step": 4,
+        "complementary_verif": {
+            "logs": [
+            [
+                {"function": "load_capsule", "content": "milky"},
+                {"function": "press_button"},
+                {"function": "load_capsule", "content": "milky"},
+                {"function": "press_button"}
+            ]
+            ]
+        },
+        "keys_evaluator": ["multi-steps"]
+    }    
+
+
+    ]
+}
