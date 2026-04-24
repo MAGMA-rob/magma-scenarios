@@ -206,6 +206,8 @@ class AskLaundryRequest(BaseRequest):
                     ordered_instruction if index == 0 else None,
                 )
             )
+            if index != len(groups)-1:
+                stages[-1].situation.flag_answer_to_user = False
         return stages
 
 

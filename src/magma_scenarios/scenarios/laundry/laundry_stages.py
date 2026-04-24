@@ -48,7 +48,7 @@ class WashStage(BaseTaskStage):
     def __init__(self, target_detergent : str , target_clothes : list ) -> None:
         super().__init__([],
         True, 
-        "The goal of this stage is to wash all clothes using the correct detergent for each item")
+        f"The goal of this stage is to put the target detergent {target_detergent} into the washing machine then launch the cycle")
 
         self.to_clean = target_clothes
         self.target_detergent = target_detergent
