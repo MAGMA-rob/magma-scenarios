@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization"
+    ],
     "stages": [
         {
             "instruction": "Today, the sorting rule is: all objects to area1!",
@@ -11,16 +14,18 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area1"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Hey, for all future cycle, obj_ref_1 must go to area2.",
@@ -32,23 +37,30 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_3","ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_3",
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1"],
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1"
+                        ],
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Launch a cycle according to the default assignment of each objects. Except for obj_ref_3, send it to area2!",
@@ -56,23 +68,30 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_3"],
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_3"
+                        ],
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Hey, the default target for obj_ref_2 is now area3",
@@ -84,30 +103,38 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_3"],
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_3"
+                        ],
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1"],
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1"
+                        ],
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2"],
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2"
+                        ],
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         }
     ]
 }

@@ -1,5 +1,9 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization","multi-steps"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization",
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "ref_obj_1 and ref_obj_2 are classified as Category A, ref_obj_3 is category B. Right?",
@@ -15,54 +19,68 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_2",
-                        "area1"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area1"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_3",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
-            "keys_evaluator" : ["c-reasoning","multi-steps"]
+            "keys_evaluator": [
+                "c-reasoning",
+                "multi-steps"
+            ]
         },
         {
             "instruction": null,
-            "default_instruction": {"author":"status","content":"ref_obj_1 and ref_obj_2 sended to area1 with success"},
+            "default_instruction": {
+                "author": "status",
+                "content": "ref_obj_1 and ref_obj_2 sended to area1 with success"
+            },
             "max_step": 1,
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_1"],
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_1"
+                        ],
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "keys_evaluator" : ["c-reasoning","multi-steps"]
+            "keys_evaluator": [
+                "c-reasoning",
+                "multi-steps"
+            ]
         },
         {
             "instruction": "From now, Category A objects are going to area3",
@@ -74,17 +92,20 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_2"],
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_2"
+                        ],
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -93,7 +114,9 @@
             "injection": {
                 "mode": "force_recovery"
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Hello, where category B object must be sorted?",
@@ -101,7 +124,9 @@
             "complementary_verif": {
                 "judge": "The model answer that objects Category B are going to area2"
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Ok launch a cycle only for category B",
@@ -109,17 +134,21 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_1"],
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_1"
+                        ],
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {}

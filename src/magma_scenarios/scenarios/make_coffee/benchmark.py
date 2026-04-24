@@ -1,4 +1,6 @@
 from pathlib import Path
+import sapien
+
 from magma_core.base.tasks import BaseBenchmarkTask
 from .simple_tool import MakingCoffeeTool
 from .attributes import att, people, teams, loaded_capsule_pose, dropped_mug_pose
@@ -11,10 +13,9 @@ class CoffeeBenchmark(BaseBenchmarkTask):
     """
 
     name: str = "Benchmark Coffee Making"
-    env_id: str = "CoffeeMakerTable"  
+    env_id: str = "MakeCoffee-v1"  
 
     Tools_cls = MakingCoffeeTool 
-
 
     env_options = {}
 
@@ -28,9 +29,7 @@ class CoffeeBenchmark(BaseBenchmarkTask):
         "base_pose" : sapien.Pose(p = [-0.1,0,0.4],q = [0,1,0,0])
     }
 
-    all_task_attributes = {
-        "coffee_pod" : att.values()
-    }
+    all_task_attributes = att
 
 
 """

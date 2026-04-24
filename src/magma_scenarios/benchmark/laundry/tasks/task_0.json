@@ -1,36 +1,60 @@
 {
-    "criteria": ["multi-steps"],
+    "criteria": [
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "here is the clothes-detergents assignement to respect detergent OMO for shirt,blouse,jeans. Detergent Persil for pants short socks. Detergent SKIP for  boxer, paties and cap ",
             "expected_behavior": "acknowledge"
         },
         {
-        "instruction" : "Wash all clothes can be washed with OMO detergent",
-        "max_step": 8,
-        "action_goal":[
-            {
-                "predicate": "in",
-                "args": [
-                    ["shirt","blouse","jeans"],
-                    "washing_muchine_basket"
+            "instruction": "Wash all clothes can be washed with OMO detergent",
+            "max_step": 8,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "blouse",
+                            "jeans"
+                        ],
+                        "location": "washing_muchine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "cap"
+                        ],
+                        "locations": "washing_muchine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "shirt",
+                                "blouse",
+                                "jeans"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
                 ]
             },
-            {
-                "predicate": "not_in",
-                "arg": [
-                    ["pants","short","socks","boxer","panties","cap"],
-                    "washing_muchine_basket"
-                ]
-            }
-        ],
-        "complementary_verif":{
-            "logs": [{
-                "content":{"clothes": ["shirt","blouse","jeans"],"detergent":"detergent_OMO"}
-            }]
-        },
-        "keys_evaluator": ["multi-steps"]
-    }
-
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
     ]
 }

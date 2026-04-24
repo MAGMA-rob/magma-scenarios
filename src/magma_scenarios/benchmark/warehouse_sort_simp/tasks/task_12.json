@@ -1,5 +1,8 @@
 {
-    "criteria" : ["c-reasoning","multi-steps"],
+    "criteria": [
+        "c-reasoning",
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "Hello! I want you to remove area1 and launch a cycle sending all objects to area3. But consider area3 as the default assignment for them. You can do it?",
@@ -7,14 +10,16 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area3"
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["multi-steps"],
+            "keys_evaluator": [
+                "multi-steps"
+            ],
             "should_env_reset": true
         },
         {
@@ -23,7 +28,9 @@
             "complementary_verif": {
                 "judge": "The model must inform that area1 is not existing anymore"
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Oh okay, then use default assignment for ref_obj_3 and launch the cycle anyways",
@@ -31,28 +38,31 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area2"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area2"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_3",
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         }
     ]
 }

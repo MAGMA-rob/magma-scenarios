@@ -205,33 +205,171 @@ class CoffeeCompositeStage(BaseStageComposite):
 
         return StageState.ACCEPTABLE
 
-class AskTeamStage(AskingBaseStage):
+def _join_sentence_parts(values: List[str]) -> str:
+    if len(values) == 0:
+        return ""
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+class AskPeopleInTeamStage(AskingBaseStage):
 
     acceptance_steps = 0
     target_steps = 2
 
     def __init__(self, requested_team : str, member_list : List[str]) -> None: 
+        if len(member_list) == 0:
+            raise ValueError("member_list must not be empty")
+        members = _join_sentence_parts(member_list)
+        be_verb = "is" if len(member_list) == 1 else "are"
         super().__init__(
-            question=f"who is in team {requested_team} ?",
-            answer=f"{member_list} are in team {requested_team}",
+            question=f"Who is in team {requested_team}?",
+            answer=f"{members} {be_verb} in team {requested_team}.",
             memory=[],
             attributes=att,
             linked_to_prev=True,
             allow_tools_before_answer=True
         )
 
-## ask team stage version person stage
-class  AskPersonStage(AskingBaseStage):
+
+class AskTeamsForPeopleStage(AskingBaseStage):
 
     acceptance_steps = 0
-    target_steps = 0
 
-    def __init__(self,requested_person : str, team_associated : str) -> None:
+    def __init__(self, requested_people : List[str], teams_associated : List[str]) -> None:
+        if len(requested_people) != len(teams_associated):
+            raise ValueError(
+                "requested_people and teams_associated must have the same length"
+            )
+        if len(requested_people) == 0:
+            raise ValueError("requested_people must not be empty")
+
+        if len(requested_people) == 1:
+            question = f"What team does {requested_people[0]} belong to?"
+        else:
+            question = f"In which teams are {_join_sentence_parts(requested_people)}?"
+
+        answer_parts = [
+            f"{person} is in team {team}"
+            for person, team in zip(requested_people, teams_associated)
+        ]
         super().__init__(
-            question = f"what team {requested_person} belongs to ?",
-            answer=f"{requested_person} belongs to {team_associated}",
+            question=question,
+            answer=_join_sentence_parts(answer_parts) + ".",
             memory=[],
             attributes=att,
             linked_to_prev=True,
             allow_tools_before_answer=True
         )
+        self.target_steps = len(requested_people) + 1
+
+
+class AskTeamCoffeePreferencesStage(AskingBaseStage):
+
+    acceptance_steps = 0
+    target_steps = 2
+
+    def __init__(
+            self,
+            requested_team: str,
+            team_members: List[str],
+            known_preferences: Dict[str, str],
+            focus: str = "all"
+        ) -> None:
+        if len(team_members) == 0:
+            raise ValueError("team_members must not be empty")
+
+        question = self._build_question(requested_team, focus)
+        answer = self._build_answer(requested_team, team_members, known_preferences, focus)
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+            allow_tools_before_answer=True,
+            allowed_tools=["people_from_team"],
+        )
+
+    def _build_question(self, requested_team: str, focus: str) -> str:
+        if focus == "all":
+            return f"What are the coffee preferences of the members of team {requested_team}?"
+        if focus == "unknown":
+            return f"Which members of team {requested_team} do not have a known coffee preference?"
+        return f"Which members of team {requested_team} like {focus} coffee?"
+
+    def _build_answer(
+            self,
+            requested_team: str,
+            team_members: List[str],
+            known_preferences: Dict[str, str],
+            focus: str,
+        ) -> str:
+        if focus == "all":
+            return self._build_full_preference_answer(requested_team, team_members, known_preferences)
+        if focus == "unknown":
+            return self._build_unknown_preference_answer(requested_team, team_members, known_preferences)
+        return self._build_filtered_preference_answer(requested_team, team_members, known_preferences, focus)
+
+    def _build_full_preference_answer(
+            self,
+            requested_team: str,
+            team_members: List[str],
+            known_preferences: Dict[str, str],
+        ) -> str:
+        parts = [
+            f"{name} likes {known_preferences[name]} coffee"
+            for name in team_members
+            if name in known_preferences
+        ]
+        unknown_people = [name for name in team_members if name not in known_preferences]
+
+        if len(unknown_people) == len(team_members):
+            return f"No member of team {requested_team} has a known coffee preference."
+
+        if len(unknown_people) == 1:
+            parts.append(f"{unknown_people[0]} does not have any known coffee preference")
+        elif len(unknown_people) > 1:
+            parts.append(
+                f"{_join_sentence_parts(unknown_people)} do not have any known coffee preference"
+            )
+
+        return f"In team {requested_team}, {_join_sentence_parts(parts)}."
+
+    def _build_unknown_preference_answer(
+            self,
+            requested_team: str,
+            team_members: List[str],
+            known_preferences: Dict[str, str],
+        ) -> str:
+        unknown_people = [name for name in team_members if name not in known_preferences]
+        if len(unknown_people) == 0:
+            return f"All members of team {requested_team} have a known coffee preference."
+        if len(unknown_people) == 1:
+            return f"{unknown_people[0]} does not have any known coffee preference in team {requested_team}."
+        return (
+            f"{_join_sentence_parts(unknown_people)} do not have any known coffee preference "
+            f"in team {requested_team}."
+        )
+
+    def _build_filtered_preference_answer(
+            self,
+            requested_team: str,
+            team_members: List[str],
+            known_preferences: Dict[str, str],
+            focus: str,
+        ) -> str:
+        matching_people = [
+            name
+            for name in team_members
+            if known_preferences.get(name) == focus
+        ]
+        if len(matching_people) == 0:
+            return f"No member of team {requested_team} has a known preference for {focus} coffee."
+        if len(matching_people) == 1:
+            return f"{matching_people[0]} likes {focus} coffee in team {requested_team}."
+        return f"{_join_sentence_parts(matching_people)} like {focus} coffee in team {requested_team}."

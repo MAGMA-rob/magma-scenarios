@@ -5,6 +5,7 @@ SCENARIO_NAME = "make_coffee"
 
 TASK_DEFINITIONS = {
     "SimpleDefinition": "coffee_definition:SimpleDefinition",
+    "TeamDefinition": "coffee_definition:TeamDefinition",
 }
 
 TASK_PRESETS = {

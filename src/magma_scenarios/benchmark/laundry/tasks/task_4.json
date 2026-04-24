@@ -1,103 +1,207 @@
 {
-  "criteria": ["multi-steps", "c-reasoning"],
-  "stages": [
-    {
-      "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
-      "expected_behavior": "acknowledge"
-    },
-    {
-      "instruction": "Wash the white clothes.",
-      "max_step": 8,
-      "action_goal": [
+    "criteria": [
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
         {
-          "predicate": "in",
-          "args": [["shirt", "socks", "panties"], "washing_machine_basket"]
+            "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
+            "expected_behavior": "acknowledge"
         },
         {
-          "predicate": "not_in",
-          "args": [["jeans", "blouse", "cap", "pants", "short", "boxer"], "washing_machine_basket"]
-        }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["shirt", "socks", "panties"], "detergent": "detergent_OMO"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps"],
-      "should_reset_env" : true
-    },
-
-    {
-      "instruction": "Actually cap is white, not colored, wash it.",
-      "max_step": 4,
-      "action_goal": [
-        {
-          "predicate": "in",
-          "args": [["cap"], "washing_machine_basket"]
+            "instruction": "Wash the white clothes.",
+            "max_step": 8,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "socks",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "shirt",
+                                "socks",
+                                "panties"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "should_reset_env": true
         },
         {
-          "predicate": "not_in",
-          "args": [["jeans", "blouse", "shirt", "socks", "panties", "pants", "short", "boxer"], "washing_machine_basket"]
-        }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["cap"], "detergent": "detergent_OMO"}
-          }
-        ]
-      },
-      "keys_evaluator": ["c-reasoning"],
-      "should_reset_env" : true
-    },
-
-    {
-      "instruction": "Wash the colored clothes.",
-      "max_step": 6,
-      "action_goal": [
-        {
-          "predicate": "in",
-          "args": [["jeans", "blouse"], "washing_machine_basket"]
+            "instruction": "Actually cap is white, not colored, wash it.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "cap"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "shirt",
+                            "socks",
+                            "panties",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "cap"
+                            ],
+                            "detergent": "detergent_OMO"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "c-reasoning"
+            ],
+            "should_reset_env": true
         },
         {
-          "predicate": "not_in",
-          "args": [["shirt", "socks", "panties", "cap", "pants", "short", "boxer"], "washing_machine_basket"]
-        }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["jeans", "blouse"], "detergent": "detergent_PERSIL"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps", "c-reasoning"],
-            "should_reset_env" : true
-    },
-
-    {
-      "instruction": "Wash everything the boxer.",
-      "max_step": 5,
-      "action_goal": [
-        {
-          "predicate": "in",
-          "args": [["boxer"], "washing_machine_basket"]
+            "instruction": "Wash the colored clothes.",
+            "max_step": 6,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "socks",
+                            "panties",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "jeans",
+                                "blouse"
+                            ],
+                            "detergent": "detergent_PERSIL"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "should_reset_env": true
         },
         {
-          "predicate": "not_in",
-          "args": [["shirt", "socks", "panties", "cap", "jeans", "blouse","pants", "short"], "washing_machine_basket"]
+            "instruction": "Wash everything the boxer.",
+            "max_step": 5,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "boxer"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "socks",
+                            "panties",
+                            "cap",
+                            "jeans",
+                            "blouse",
+                            "pants",
+                            "short"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "boxer"
+                            ],
+                            "detergent": "detergent_SKIP"
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
         }
-      ],
-      "complementary_verif": {
-        "logs": [
-          {
-            "content": {"clothes": ["boxer"], "detergent": "detergent_SKIP"}
-          }
-        ]
-      },
-      "keys_evaluator": ["multi-steps"]
-    }
-  ]
+    ]
 }

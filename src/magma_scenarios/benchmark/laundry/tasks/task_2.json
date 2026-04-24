@@ -1,5 +1,7 @@
 {
-    "criteria": ["multi-steps"],
+    "criteria": [
+        "multi-steps"
+    ],
     "stages": [
         {
             "instruction": "here is the clothes-detergents assignement to respect detergent OMO for jeans,pants,short,socks,boxer,shirt,blouse and the rest use SKIP ",
@@ -7,34 +9,55 @@
         },
         {
             "instruction": "oups! I was mistaken the rest with Persil ",
-            "expected_behavior": "acknowledge"    
+            "expected_behavior": "acknowledge"
         },
         {
-        "instruction" : "Wash all clothes can be washed with Persil detergent",
-        "max_step": 6,
-        "action_goal":[
-            {
-                "predicate": "in",
-                "args": [
-                    ["paties", "cap"],
-                    "washing_muchine_basket"
+            "instruction": "Wash all clothes can be washed with Persil detergent",
+            "max_step": 6,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "paties",
+                            "cap"
+                        ],
+                        "location": "washing_muchine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "shirt",
+                            "blouse",
+                            "jeans"
+                        ],
+                        "locations": "washing_muchine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "paties",
+                                "cap"
+                            ],
+                            "detergent": "detergent_SKIP"
+                        }
+                    }
                 ]
             },
-            {
-                "predicate": "not_in",
-                "arg": [
-                    ["pants","short","socks","boxer","shirt","blouse","jeans"],
-                    "washing_muchine_basket"
-                ]
-            }
-        ],
-        "complementary_verif":{
-            "logs": [{
-                "content":{"clothes": ["paties", "cap"],"detergent":"detergent_SKIP"}
-            }]
-        },
-        "keys_evaluator": ["multi-steps"]
-    }
-
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
     ]
 }

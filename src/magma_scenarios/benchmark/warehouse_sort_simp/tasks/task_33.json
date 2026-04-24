@@ -1,12 +1,24 @@
 {
-    "criteria" : ["c-reasoning","lg-memorization","multi-steps"],
+    "criteria": [
+        "c-reasoning",
+        "lg-memorization",
+        "multi-steps"
+    ],
     "c-nb": 2,
     "stages": [
         {
             "instruction": "Please remove area2 and consider area3 the default for all objects",
             "max_step": 1,
             "complementary_verif": {
-                "logs" : [{"action":"REMOVE","content":["target_areas","area2"]}]
+                "logs": [
+                    {
+                        "action": "REMOVE",
+                        "content": [
+                            "target_areas",
+                            "area2"
+                        ]
+                    }
+                ]
             }
         },
         {
@@ -15,38 +27,76 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_1","ref_obj_3"],
-                        "area3"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_1",
+                            "ref_obj_3"
+                        ],
+                        "location": "area3"
+                    }
                 },
                 {
                     "predicate": "not_in",
-                    "args": [
-                        "ref_obj_2",
-                        "area*"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "locations": "area*",
+                        "strict": false
+                    }
                 }
             ],
             "complementary_verif": {},
             "answer_to_user": true,
             "should_env_reset": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Can you add area4 and area5?",
             "max_step": 2,
             "complementary_verif": {
                 "logs": [
-                    [{"action":"ADD","content":["target_areas","area5"]},{"action":"ADD","content":["target_areas","area4"]}],
-                    [{"action":"ADD","content":["target_areas","area4"]},{"action":"ADD","content":["target_areas","area5"]}]
+                    [
+                        {
+                            "action": "ADD",
+                            "content": [
+                                "target_areas",
+                                "area5"
+                            ]
+                        },
+                        {
+                            "action": "ADD",
+                            "content": [
+                                "target_areas",
+                                "area4"
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "action": "ADD",
+                            "content": [
+                                "target_areas",
+                                "area4"
+                            ]
+                        },
+                        {
+                            "action": "ADD",
+                            "content": [
+                                "target_areas",
+                                "area5"
+                            ]
+                        }
+                    ]
                 ]
             },
-            "keys_evaluator" : ["multi-steps"]
+            "keys_evaluator": [
+                "multi-steps"
+            ]
         },
         {
             "instruction": "Okay, area4 is for ref_obj_1 and area5 is for ref_obj_2 and ref_obj_3.",
-            "expected_behavior":"acknowledge"
+            "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Okay launch a cycle now",
@@ -54,17 +104,20 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_3"],
-                        "area5"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area5"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area4"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area4"
+                    }
                 }
             ],
             "complementary_verif": {},
@@ -73,7 +126,9 @@
             "injection": {
                 "mode": "force_recovery"
             },
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Hi, do you know where to sort ref_obj_3?",
@@ -81,7 +136,9 @@
             "complementary_verif": {
                 "judge": "The model must answer that ref_obj_3 is going to area5."
             },
-            "keys_evaluator" : ["lg-memorization"]
+            "keys_evaluator": [
+                "lg-memorization"
+            ]
         },
         {
             "instruction": "Can you launch a cycle for all objects to their default area?",
@@ -89,29 +146,42 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        ["ref_obj_2","ref_obj_3"],
-                        "area5"
-                    ]
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area5"
+                    }
                 },
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_1",
-                        "area4"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area4"
+                    }
                 }
             ],
             "complementary_verif": {},
             "should_env_reset": true,
             "answer_to_user": true,
-            "keys_evaluator" : ["c-reasoning"]
+            "keys_evaluator": [
+                "c-reasoning"
+            ]
         },
         {
             "instruction": "Finally we won't use anymore area4 you can delete it. All objects previously associated to it goes to area5 now",
             "max_step": 1,
             "complementary_verif": {
-                "logs" : [{"action":"REMOVE","content":["target_areas","area5"]}]
+                "logs": [
+                    {
+                        "action": "REMOVE",
+                        "content": [
+                            "target_areas",
+                            "area5"
+                        ]
+                    }
+                ]
             }
         },
         {
@@ -120,17 +190,20 @@
             "action_goal": [
                 {
                     "predicate": "in",
-                    "args": [
-                        "ref_obj_*",
-                        "area5"
-                    ]
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area5"
+                    }
                 }
             ],
             "complementary_verif": {},
             "injection": {
                 "mode": "force_recovery"
             },
-            "keys_evaluator" : ["c-reasoning","lg-memorization"]
+            "keys_evaluator": [
+                "c-reasoning",
+                "lg-memorization"
+            ]
         }
     ]
 }
