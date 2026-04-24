@@ -23,7 +23,6 @@ class GraspFailureError(BaseError):
 
     def apply_pre_exec(self, tool_execution: ToolExecution, arguments: Dict[str, Any]):
         inaccessible = arguments.get("inaccessible",None)
-        print(inaccessible)
         if inaccessible is None or len(inaccessible)==0:
             return
         target_name = tool_execution.context.get("target_name", None)

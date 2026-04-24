@@ -3,7 +3,9 @@
 
 SCENARIO_NAME = "laundry"
 
-TASK_DEFINITIONS = {}
+TASK_DEFINITIONS = {
+    "MainDefinition": "laundry_def:LaundryDefinition",
+}
 
 TASK_PRESETS = {
     "LaundryFromDetergentPreset": "laundry_preset:LaundryFromDetergentPreset",

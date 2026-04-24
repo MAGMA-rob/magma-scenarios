@@ -8,6 +8,7 @@ from magma_core.base.data_structures import Situation, EmptyInstruction, UserIns
 from magma_core.base.goals import At, AtLeastCountAt
 
 from .attributes import all_clothes, all_detergents
+from .laundry_errors import GraspClothesFailureError
 
 class LoadClotheStage(BaseTaskStage):
     """
@@ -19,6 +20,9 @@ class LoadClotheStage(BaseTaskStage):
 
     def __init__(self, n : int, clothes_to_load : List[str], instruction : Instruction = EmptyInstruction()) -> None:       
         super().__init__([AtLeastCountAt(clothes_to_load,"washing_machine_basket",n)],False, f"The goal of this stage is to have {n} clothes from the list {clothes_to_load} in the washing machine")
+        self.possible_errors = [
+            GraspClothesFailureError(clothes_to_load)
+        ]
         self.situation = Situation(
             memory = [
                 "To wash clothes, I need to put them inside the wash-machine, add detergents and then use 'wash'.",
@@ -44,7 +48,7 @@ class WashStage(BaseTaskStage):
     def __init__(self, target_detergent : str , target_clothes : list ) -> None:
         super().__init__([],
         True, 
-        "The goal of this stage is to wash all clothes using the correct detergent for each item")
+        f"The goal of this stage is to put the target detergent {target_detergent} into the washing machine then launch the cycle")
 
         self.to_clean = target_clothes
         self.target_detergent = target_detergent

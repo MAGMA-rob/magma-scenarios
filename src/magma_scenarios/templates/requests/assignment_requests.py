@@ -1,53 +1,111 @@
-from typing import Type, Dict, Any, List
+from typing import Callable, Dict, List, Optional, Tuple
 import random
 from collections import defaultdict
 
 from magma_core.base.state.task_state import TaskState
 from magma_core.base.user_request import BaseConstraintRequest
+from magma_core.base.constraints import BaseConstraint
 
 from ..constraints import RelationAssignmentConstraint
 
-class GiveObjectAssignmentRequest(BaseConstraintRequest):
+ConstraintBuilder = Callable[[str, str], BaseConstraint]
+AssignmentMessageBuilder = Callable[[str, List[Tuple[str, str]]], str]
+
+
+class GiveRelationAssignmentRequest(BaseConstraintRequest):
+    """Sample direct source-to-target relation rules from task-state attributes."""
+
+    def __init__(
+            self,
+            relation_key: str,
+            source_attribute_key: str,
+            target_attribute_key: str,
+            max_simultaneous_change: int = 1,
+            empty_relation_sampling_weight: float = 3,
+            intro_message: str = "Hey, here are some rules: ",
+            assignment_template: str = "{source} goes to {target}",
+            constraint_builder: Optional[ConstraintBuilder] = None,
+            constraint_message_builder: Optional[AssignmentMessageBuilder] = None,
+        ) -> None:
+        super().__init__()
+        self.relation_key = relation_key
+        self.source_attribute_key = source_attribute_key
+        self.target_attribute_key = target_attribute_key
+        self.max_change = max_simultaneous_change
+        self.empty_relation_sampling_weight = empty_relation_sampling_weight
+        self.intro_message = intro_message
+        self.assignment_template = assignment_template
+        self.constraint_builder = constraint_builder
+        self.constraint_message_builder = constraint_message_builder
+
+    def _build_constraint(self, source_value: str, target_value: str) -> BaseConstraint:
+        if self.constraint_builder is not None:
+            return self.constraint_builder(source_value, target_value)
+        return RelationAssignmentConstraint(
+            source_value=source_value,
+            target_value=target_value,
+            relation_key=self.relation_key,
+            source_attribute_key=self.source_attribute_key,
+            target_attribute_key=self.target_attribute_key,
+        )
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.relations.get(self.relation_key, {})) < 1:
+            return self.empty_relation_sampling_weight
+        return 1
+
+    def initialize_constraints(self, state: TaskState):
+        self.constraints = []
+        all_sources = state.attributes.get(self.source_attribute_key, []).copy()
+        all_targets = state.attributes.get(self.target_attribute_key, [])
+
+        if len(all_sources) <= 0 or len(all_targets) <= 0:
+            raise RuntimeError(
+                f"Failed to build the stage from {self.__class__.__name__} "
+                f"due to empty {self.source_attribute_key} or {self.target_attribute_key}"
+            )
+
+        max_val = min(self.max_change, len(all_sources))
+        nb_change = random.randint(1, max_val)
+
+        random.shuffle(all_sources)
+        selected_targets = random.choices(all_targets, k=nb_change)
+        assignments: List[Tuple[str, str]] = []
+        for i in range(nb_change):
+            source_value = all_sources[i]
+            target_value = selected_targets[i]
+            assignments.append((source_value, target_value))
+            self.constraints.append(
+                self._build_constraint(source_value, target_value)
+            )
+
+        if self.constraint_message_builder is not None:
+            self.constraint_msg = self.constraint_message_builder(self.intro_message, assignments)
+            return
+
+        self.constraint_msg = self.intro_message
+        for i, (source_value, target_value) in enumerate(assignments):
+            self.constraint_msg += self.assignment_template.format(
+                source=source_value,
+                target=target_value,
+            )
+            if i < len(assignments) - 1:
+                self.constraint_msg += ", "
+        self.constraint_msg += "."
+
+
+class GiveObjectAssignmentRequest(GiveRelationAssignmentRequest):
     """Sample direct object-to-area rules and expose them as one constraint request."""
 
     def __init__(self, max_simultaneous_change : int = 1):
-        super().__init__()
-        self.max_change = max_simultaneous_change
-
-    def sampling_weight(self, state: TaskState) -> float:
-        if len(state.relations.get("object_area",{})) < 1:
-            return 3 # if no assignment, probability to sample this request increase.
-        return 1
-    
-    def initialize_constraints(self, state: TaskState):
-        self.constraints = []
-        all_objects = state.attributes.get("objects", []).copy()
-        all_areas = state.attributes.get("target_areas", [])
-
-        if len(all_objects) <= 0 or len(all_areas) <=0:
-            raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
-        
-        max_val = min(self.max_change,len(all_objects))
-        nb_change = random.randint(1,max_val)
-
-        random.shuffle(all_objects)
-        selected_areas = random.choices(all_areas, k=nb_change)
-
-        self.constraint_msg = "Hey, here are some sorting rules: "
-        for i in range(nb_change):
-            self.constraints.append(
-                RelationAssignmentConstraint(
-                    source_value=all_objects[i],
-                    target_value=selected_areas[i],
-                    relation_key="object_area",
-                    source_attribute_key="objects",
-                    target_attribute_key="target_areas",
-                )
-            )
-            self.constraint_msg += f"{all_objects[i]} goes to {selected_areas[i]}"
-            if i < nb_change -1:
-                self.constraint_msg += ","
-        self.constraint_msg += "."
+        super().__init__(
+            relation_key="object_area",
+            source_attribute_key="objects",
+            target_attribute_key="target_areas",
+            max_simultaneous_change=max_simultaneous_change,
+            intro_message="Hey, here are some sorting rules: ",
+            assignment_template="{source} goes to {target}",
+        )
 
 class GiveObjectCategoryRequest(BaseConstraintRequest):
     """Sample object-to-category updates for sorting tasks."""

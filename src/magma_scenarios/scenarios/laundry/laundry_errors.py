@@ -1,11 +1,9 @@
 import random
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 from magma_core.base.data_structures import Observation
-from magma_core.base.data_structures.tools import ToolResult
 from magma_core.utils.env_utils import is_object_inside_target
-from magma_scenarios.templates.errors import MaskedObjectError, GraspFailureError
-from torch import rand
+from magma_scenarios.templates.errors import GraspFailureError
 from .attributes import all_detergents, all_clothes
 
 
@@ -27,19 +25,21 @@ def _get_unwashed_clothes(obs: Observation, env_id: int) -> List[str]:
 class GraspClothesFailureError(GraspFailureError):
     recovery_extra_steps = 1
 
-    def __init__(self,max_impossible= 1) -> None:
+    def __init__(self, all_requested_objects : List[str] = [], max_impossible = 2) -> None:
         super().__init__()
         self.max_nb = max_impossible
+        self.all_requested_objects = all_requested_objects
 
-    def initialize(self, obs: Observation, env_id: int) -> Dict[str, Any]:
+    def initialize(self, obs: Observation, env_id: int) -> Dict[str, Any]:        
         remaining = _get_unwashed_clothes(obs,env_id)
-        if len(remaining) <= 1:
+        can_be_masked = [r for r in remaining if r in self.all_requested_objects]
+        if len(can_be_masked) <= 1:
             return {
                 "inaccessible" : [],
             }
 
-        if len(remaining) == 2:
+        if len(can_be_masked) == 2:
             nb = 1
         else:
-            nb = random.randint(1,self.max_nb) 
-        return {"inaccessible" : random.sample(remaining,k=nb)}
+            nb = random.randint(1,self.max_nb)
+        return {"inaccessible" : random.sample(can_be_masked,k=nb)}
