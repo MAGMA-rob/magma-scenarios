@@ -15,15 +15,26 @@
     },
     {
       "instruction": "Serve Hill and Mitchell.",
-      "max_step": 7,
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+            {"function": "place_mug"},
+            {"function": "load_capsule", "content": "black"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps", "c-reasoning"]
+    },
+        {
+      "instruction": null,
+      "max_step": 4,
       "complementary_verif": {
         "logs": [
           [
             {"function": "place_mug"},
             {"function": "load_capsule", "content": "white"},
-            {"function": "press_button"},
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
             {"function": "press_button"}
           ]
         ]

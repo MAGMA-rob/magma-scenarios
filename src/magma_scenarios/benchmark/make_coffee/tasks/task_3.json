@@ -7,20 +7,34 @@
     },
     {
       "instruction": "Serve Hill and Smith.",
-      "max_step": 8,
+      "max_step": 4,
       "complementary_verif": {
         "logs": [
           [
             {"function": "place_mug"},
             {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "should_reset_env" : true
+    },
+        {
+      "instruction": null,
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
+
             {"function": "place_mug"},
             {"function": "load_capsule", "content": "milky"},
             {"function": "press_button"}
           ]
         ]
       },
-      "keys_evaluator": ["multi-steps", "c-reasoning"]
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "should_reset_env" : true
     },
     {
       "instruction": "Actually Smith is not here today, serve Anderson instead.",
@@ -38,41 +52,6 @@
       "should_reset_env" : true
     },
 
-    {
-      "instruction": "Only black capsules are left.",
-      "expected_behavior": "acknowledge"
-    },
-    {
-      "instruction": "Serve Jones and Roberts.",
-      "max_step": 8,
-      "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"},
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["multi-steps", "c-reasoning"]
-    },
-    {
-      "instruction": "Clark just arrived and wants the same as Jones.",
-      "max_step": 4,
-      "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["c-reasoning"]
-    },
     {
       "instruction": "Wright also wants a coffee but only milky is left now.",
       "expected_behavior": "answer",

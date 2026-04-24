@@ -13,14 +13,15 @@
         },
         {
             "instruction": "Wash all clothes can be washed with Persil detergent",
-            "max_step": 6,
+            "max_step": 8,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
                             "paties",
-                            "cap"
+                            "cap",
+                            "detergent_PERSIL"
                         ],
                         "location": "washing_muchine_basket"
                     }
@@ -35,7 +36,9 @@
                             "boxer",
                             "shirt",
                             "blouse",
-                            "jeans"
+                            "jeans",                            
+                            "detergent_SKIP",
+                            "detergent_OMO"
                         ],
                         "locations": "washing_muchine_basket",
                         "strict": false
@@ -50,7 +53,7 @@
                                 "paties",
                                 "cap"
                             ],
-                            "detergent": "detergent_SKIP"
+                            "detergent": "detergent_PERSIL"
                         }
                     }
                 ]

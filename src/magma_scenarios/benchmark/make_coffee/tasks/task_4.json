@@ -15,13 +15,25 @@
     },
     {
       "instruction": "Serve all RAP team members except Williams and Jackson",
-      "max_step": 8,
+      "max_step": 4,
       "complementary_verif": {
         "logs": [
           [
             {"function": "place_mug"},
             {"function": "load_capsule", "content": "milky"},
-            {"function": "press_button"},
+            {"function": "press_button"}
+          ]
+        ]
+      },
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "should_reset_env" : true
+    },
+        {
+      "instruction": null,
+      "max_step": 4,
+      "complementary_verif": {
+        "logs": [
+          [
             {"function": "place_mug"},
             {"function": "load_capsule", "content": "milky"},
             {"function": "press_button"}
@@ -37,32 +49,16 @@
       "expected_behavior": "acknowledge"
     },
     {
-      "instruction": "What team does Scott belong to?",
+      "instruction": "What team does Perez belong to?",
       "expected_behavior": "answer",
       "complementary_verif": {
-        "judge": "The model answers that Scott belongs to the MAC team."
+        "judge": "The model answers that Perez belongs to the RAP team."
       },
       "keys_evaluator": ["c-reasoning"]
     },
+
     {
-      "instruction": "Serve Scott and Lewis.",
-      "max_step": 7,
-      "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"},
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["multi-steps", "c-reasoning"]
-    },
-    {
-      "instruction": "Can you serve Perez too?",
+      "instruction": "Can you serve him?",
       "expected_behavior": "answer",
       "complementary_verif": {
         "judge": "The model refuses because Perez is in RAP team which only drinks milky, and only black capsules are available."

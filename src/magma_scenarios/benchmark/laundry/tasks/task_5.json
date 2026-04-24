@@ -9,16 +9,16 @@
             "expected_behavior": "acknowledge"
         },
         {
-            "instruction": "Wash the outerwear except cap.",
-            "max_step": 7,
+            "instruction": "Wash the outerwear except cap and jeans",
+            "max_step": 8,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
                             "pants",
-                            "short"
+                            "short",
+                            "detergent_SKIP"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -29,10 +29,13 @@
                         "obj_name": [
                             "socks",
                             "boxer",
+                            "jeans",
                             "panties",
                             "shirt",
                             "blouse",
-                            "cap"
+                            "cap",
+                            "detergent_OMO",
+                            "detergent_PERSIL"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
@@ -70,13 +73,14 @@
         },
         {
             "instruction": "Wash the delicate first and after the cap",
-            "max_step": 4,
+            "max_step": 6,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "blouse"
+                            "blouse",
+                            "detergent_OMO"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -92,7 +96,9 @@
                             "jeans",
                             "pants",
                             "short",
-                            "cap"
+                            "cap",
+                            "detergent_SKIP",
+                            "detergent_PERSIL"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
@@ -118,13 +124,14 @@
         },
         {
             "instruction": null,
-            "max_step": 4,
+            "max_step": 6,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "cap"
+                            "cap",
+                            "detergent_SKIP"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -140,7 +147,9 @@
                             "jeans",
                             "pants",
                             "short",
-                            "blouse"
+                            "blouse",
+                            "detergent_OMO",
+                            "detergent_PERSIL"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false

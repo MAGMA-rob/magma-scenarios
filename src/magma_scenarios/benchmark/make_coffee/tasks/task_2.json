@@ -10,10 +10,6 @@
       "expected_behavior": "acknowledge"
     },
     {
-      "instruction": "There is no capsule limit.",
-      "expected_behavior": "acknowledge"
-    },
-    {
       "instruction": "What team does Anderson belong to?",
       "expected_behavior": "answer",
       "complementary_verif": {
@@ -33,7 +29,8 @@
           ]
         ]
       },
-      "keys_evaluator": ["multi-steps"]
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env" : true
     },
     {
       "instruction": "Now serve Thomas.",
@@ -67,7 +64,8 @@
           ]
         ]
       },
-      "keys_evaluator": [ "c-reasoning"]
+      "keys_evaluator": [ "c-reasoning"],
+      "should_reset_env" : true
     },
     {
       "instruction": "Now serve Thomas.",
@@ -80,14 +78,6 @@
             {"function": "press_button"}
           ]
         ]
-      },
-      "keys_evaluator": ["c-reasoning"]
-    },
-    {
-      "instruction": "Serve Clark.",
-      "expected_behavior": "answer",
-      "complementary_verif": {
-        "judge": "The model refuses to serve Clark because only white capsules are available and DISCO team only drinks black."
       },
       "keys_evaluator": ["c-reasoning"]
     }

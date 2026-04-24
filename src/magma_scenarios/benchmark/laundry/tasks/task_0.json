@@ -9,7 +9,7 @@
         },
         {
             "instruction": "Wash all clothes can be washed with OMO detergent",
-            "max_step": 8,
+            "max_step": 10,
             "action_goal": [
                 {
                     "predicate": "in",
@@ -17,7 +17,8 @@
                         "obj_name": [
                             "shirt",
                             "blouse",
-                            "jeans"
+                            "jeans",
+                            "detergent_OMO"
                         ],
                         "location": "washing_muchine_basket"
                     }
@@ -31,7 +32,9 @@
                             "socks",
                             "boxer",
                             "panties",
-                            "cap"
+                            "cap",
+                            "detergent_SKIP",
+                            "detergent_PERSIL"
                         ],
                         "locations": "washing_muchine_basket",
                         "strict": false
