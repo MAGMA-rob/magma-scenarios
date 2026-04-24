@@ -1,4 +1,5 @@
 from .assignment_requests import (
+    GiveRelationAssignmentRequest,
     GiveObjectAssignmentRequest,
     GiveObjectCategoryRequest,
     GiveCategoryAssignmentRequest
@@ -9,5 +10,5 @@ from .attributes_request import (
     RemoveValueToListRequest
 )
 
-__all__ = ["GiveObjectAssignmentRequest","GiveObjectCategoryRequest","GiveCategoryAssignmentRequest", 
+__all__ = ["GiveRelationAssignmentRequest","GiveObjectAssignmentRequest","GiveObjectCategoryRequest","GiveCategoryAssignmentRequest", 
            "AddValueToListRequest", "RemoveValueToListRequest"]
