@@ -31,7 +31,7 @@ class AddValueToListRequest(BaseAttributesModifRequest):
         random.shuffle(all_keys)
         for key in all_keys:
             possible_values = [x for x in self.attributes[key] if x not in state_attributes[key]]
-            if len(possible_values) > 0:
+            if len(possible_values) > 1:
                 return key, random.choice(possible_values)
         return None
     

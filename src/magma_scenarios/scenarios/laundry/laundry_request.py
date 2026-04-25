@@ -284,16 +284,11 @@ class AskDirectLaundryRequest(BaseRequest):
         return 0.5
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
-        detergents = sorted(set(relations.values()))
         clothes = state.attributes.get("clothes", [])
-
-        if len(detergents) == 0:
-            raise RuntimeError("Failed to sample a detergent")
         
         nb_clothes = random.randint(1, min(self.max_clothes, len(clothes)))
 
-        selected_detergent = random.choice(detergents)
+        selected_detergent = random.choice(state.attributes["detergents"])
         selected_clothes = random.sample(clothes, k=nb_clothes)
 
         return _build_wash_stages(

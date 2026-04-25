@@ -170,6 +170,8 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.relations.get("type_area",{})) < 1:
             return 3 # if no assignment, probability to sample this request increase.
+        if len(state.relations.get("type_area",{})) > 3:
+            return 0 # AVoiding too much category
         return 1
 
     def initialize_constraints(self, state: TaskState):
