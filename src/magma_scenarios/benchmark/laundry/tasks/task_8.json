@@ -1,0 +1,69 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "Rule: delicate clothes (blouse, panties) use PERSIL. Everyday clothes (shirt, jeans, pants, short) use OMO. Sports/accessories (socks, boxer, cap) use SKIP.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Can you wash blouse and socks together?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model refuses because blouse requires PERSIL and socks requires SKIP, they cannot be washed together."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "Ok wash me blouse and panties then.",
+      "max_step": 3,
+      "action_goal": [
+        {
+          "predicate": "in",
+          "arguments": {"obj_name": ["panties"], "location": "washing_machine_basket"}
+        },
+        {
+          "predicate": "not_in",
+          "arguments": {"obj_name": ["shirt", "jeans", "pants", "short", "socks", "boxer", "cap","detergent_OMO", "detergent_SKIP"], "locations": "washing_machine_basket",
+                        "strict": false}
+        }
+      ],
+      "complementary_verif": {},
+      "keys_evaluator": ["multi-steps"],
+      "injection": {
+        "mode": "runtime_error",
+        "error": "GraspClothesFailureError",
+        "arguments": {
+          "inaccessible": ["blouse","detergent_PERSIL"]
+        }
+      }
+    },
+    {
+      "instruction": null,
+      "max_step": 6,
+      "action_goal": [
+        {
+          "predicate": "in",
+          "arguments": {"obj_name": ["blouse", "panties", "detergent_PERSIL"], "location": "washing_machine_basket"}
+        },
+        {
+          "predicate": "not_in",
+          "arguments": {"obj_name": ["shirt", "jeans", "pants", "short", "socks", "boxer", "cap","detergent_OMO", "detergent_SKIP"], "locations": "washing_machine_basket",
+                        "strict": false}
+        }
+      ],
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"clothes": ["blouse", "panties"], "detergent": "detergent_PERSIL"}
+          }
+        ]
+      },
+        "injection": {
+        "mode": "force_recovery",
+        "message": "Planning error: washing machine failed to start, retry please."
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}

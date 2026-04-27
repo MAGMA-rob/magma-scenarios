@@ -10,10 +10,6 @@
       "expected_behavior": "acknowledge"
     },
     {
-      "instruction": "There is no capsule limit.",
-      "expected_behavior": "acknowledge"
-    },
-    {
       "instruction": "What team does Anderson belong to?",
       "expected_behavior": "answer",
       "complementary_verif": {
@@ -25,28 +21,53 @@
       "instruction": "Rodriguez feels adventurous today and wants a black coffee. Serve him.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["multi-steps"]
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env" : true
     },
     {
       "instruction": "Now serve Thomas.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["c-reasoning", "multi-steps"],
       "should_reset_env" : true
     },
@@ -59,36 +80,53 @@
       "instruction": "Rodriguez wants his usual today. Can you serve him?",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "white"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": [ "c-reasoning"]
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "white"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
+      "keys_evaluator": [ "c-reasoning"],
+      "should_reset_env" : true
     },
     {
       "instruction": "Now serve Thomas.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "white"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["c-reasoning"]
-    },
-    {
-      "instruction": "Serve Clark.",
-      "expected_behavior": "answer",
-      "complementary_verif": {
-        "judge": "The model refuses to serve Clark because only white capsules are available and DISCO team only drinks black."
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "white"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["c-reasoning"]
     }
   ]

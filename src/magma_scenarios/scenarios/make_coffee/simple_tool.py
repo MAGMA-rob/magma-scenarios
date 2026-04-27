@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+from magma_core.base.data_structures.tools import ToolErrorSupport
 from magma_core.base.tools import BaseToolsAPI, register_tool
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.data_structures import Log, ToolExecution, ToolResult, Observation
 
 from magma_scenarios.utils import compute_press_trajectory, compute_grasp_drop_trajectory, sapien_to_tensor
-
+from .coffee_errors import GraspCapsuleFailureError
 from typing import Dict, List
 import sapien, torch
 
@@ -44,7 +45,8 @@ class MakingCoffeeTool(BaseToolsAPI):
                     "description": "Flavor or identifier of the capsule to insert into the coffee maker.",
                     "type": str,
                 }
-            }
+            },
+            errors=[ToolErrorSupport(GraspCapsuleFailureError,pre = True, post = False)]
     )
     def load_capsule(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """load a capsule in the coffee maker"""
