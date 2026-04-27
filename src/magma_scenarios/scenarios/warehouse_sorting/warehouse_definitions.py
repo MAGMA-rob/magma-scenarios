@@ -6,7 +6,7 @@ from magma_scenarios.templates.requests import (
     GiveObjectCategoryRequest
 )
 
-from .requests import (
+from .warehouse_requests import (
     MoveOneObjectRequest,
     CycleRequest,
     CycleWithPermanentRulesRequest,
@@ -49,7 +49,6 @@ known_category = [
     "Type X4", "Type J5", "Type 98", "Type 05",
     "Group A", "Group B", "Group C",
     "Waste Group", "Mechanical Group", "Support Pieces"
-    ""
 ]
 
 class SortingCategoryDefinition(TaskDefinition):
@@ -57,9 +56,8 @@ class SortingCategoryDefinition(TaskDefinition):
     active_requests = [
         AddAreas(AREAS),
         RemoveAreas(),
-        MoveOneObjectRequest(),
-        GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleByCategoriesRequest(),
+        CycleRequest(),
         GiveObjectCategoryRequest(known_category, max_object_assignment=3),
         GiveCategoryAssignmentRequest(known_category, max_categories_assignment=3)
     ]

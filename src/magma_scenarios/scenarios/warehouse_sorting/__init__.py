@@ -4,8 +4,8 @@
 SCENARIO_NAME = "warehouse_sorting"
 
 TASK_DEFINITIONS = {
-    "SimpleSortingDefinition": "definitions:SimpleSortingDefinition",
-    "SortingCategoryDefinition": "definitions:SortingCategoryDefinition"
+    "SimpleSortingDefinition": "warehouse_definitions:SimpleSortingDefinition",
+    "SortingCategoryDefinition": "warehouse_definitions:SortingCategoryDefinition"
 }
 
 TASK_PRESETS = {
