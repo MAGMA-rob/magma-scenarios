@@ -18,11 +18,31 @@
     ]
   },
   {
+    "scenario_name": "Recovery_Color_Sorting",
+    "folder_name": "recovery_color_sorting",
+    "criteria": [
+      "recovery",
+      "multi-steps",
+      "c-reasoning",
+      "lg-memorization"
+    ]
+  },
+  {
     "scenario_name": "Laundry_Benchmark",
     "folder_name": "laundry",
     "criteria": [
       "multi-steps",
       "c-reasoning"
+    ]
+  },
+  {
+    "scenario_name": "Recovery_Warehouse_Sorting_Simp",
+    "folder_name": "recovery_warehouse",
+    "criteria": [
+      "recovery",
+      "c-reasoning",
+      "multi-steps",
+      "lg-memorization"
     ]
   },
   {
@@ -33,6 +53,16 @@
       "multi-steps",
       "lg-memorization",
       "recovery"
+    ]
+  },
+  {
+    "scenario_name": "Recovery_Laundry",
+    "folder_name": "recovery_laundry",
+    "criteria": [
+      "recovery",
+      "multi-steps",
+      "c-reasoning",
+      "lg-memorization"
     ]
   },
   {

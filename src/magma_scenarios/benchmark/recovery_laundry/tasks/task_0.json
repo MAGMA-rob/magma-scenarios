@@ -1,0 +1,55 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Load one white clothing item into the washing machine basket.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "shirt",
+                            "socks",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "shirt",
+                        "socks"
+                    ]
+                }
+            }
+        }
+    ]
+}

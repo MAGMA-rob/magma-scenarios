@@ -1,0 +1,54 @@
+{
+    "criteria": [
+        "recovery",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Send ref_obj_1 to area1, ref_obj_2 to area2, and ref_obj_3 to area3.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area1"
+                    }
+                },
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_2",
+                        "location": "area2"
+                    }
+                },
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_3",
+                        "location": "area3"
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": [
+                "recovery",
+                "c-reasoning"
+            ],
+            "injection": [
+                {
+                    "mode": "runtime_error",
+                    "error": "LaunchCycleTransientFailureError",
+                    "arguments": {
+                        "message": "Initial launch_cycle call failed with a transient communication error. Please retry."
+                    }
+                },
+                {
+                    "mode": "force_recovery",
+                    "message": "The successful retry did not commit its status. Please retry once more."
+                }
+            ]
+        }
+    ]
+}

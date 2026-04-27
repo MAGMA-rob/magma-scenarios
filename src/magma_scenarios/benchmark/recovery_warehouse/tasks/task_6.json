@@ -1,0 +1,31 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Add area4 to the known areas.",
+            "max_step": 2,
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "action": "ADD",
+                        "content": [
+                            "target_areas",
+                            "area4"
+                        ]
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "force_recovery",
+                "message": "The location registry update did not commit. Please retry adding area4."
+            }
+        }
+    ]
+}

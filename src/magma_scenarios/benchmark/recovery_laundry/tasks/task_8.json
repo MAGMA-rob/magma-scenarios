@@ -1,0 +1,58 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Load one item from the pair socks or panties, and keep colored clothes out.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "socks",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "injection": [
+                {
+                    "mode": "runtime_error",
+                    "error": "GraspClothesFailureError",
+                    "arguments": {
+                        "inaccessible": [
+                            "socks"
+                        ]
+                    }
+                },
+                {
+                    "mode": "force_recovery",
+                    "message": "The washing-machine basket rejected the first confirmation. Please retry."
+                }
+            ]
+        }
+    ]
+}

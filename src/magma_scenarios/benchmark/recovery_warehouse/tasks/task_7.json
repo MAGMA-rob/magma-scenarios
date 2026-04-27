@@ -1,0 +1,64 @@
+{
+    "criteria": [
+        "recovery",
+        "c-reasoning",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Add area4 to the known areas.",
+            "max_step": 1,
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "action": "ADD",
+                        "content": [
+                            "target_areas",
+                            "area4"
+                        ]
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction": "Now send ref_obj_1 to area4 and keep ref_obj_2 and ref_obj_3 in area1.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area4"
+                    }
+                },
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area1"
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": [
+                "recovery",
+                "c-reasoning",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "LaunchCycleTransientFailureError",
+                "arguments": {
+                    "message": "The cycle failed after adding the new area. Please retry."
+                }
+            }
+        }
+    ]
+}

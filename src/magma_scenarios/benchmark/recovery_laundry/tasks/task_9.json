@@ -1,0 +1,69 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning",
+        "lg-memorization"
+    ],
+    "stages": [
+        {
+            "instruction": "Remember this small batch rule: load OMO clothes first.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Now load one OMO clothing item: shirt, blouse, or jeans.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "shirt",
+                            "blouse",
+                            "jeans"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "cap"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning",
+                "lg-memorization"
+            ],
+            "injection": [
+                {
+                    "mode": "runtime_error",
+                    "error": "GraspClothesFailureError",
+                    "arguments": {
+                        "inaccessible": [
+                            "shirt",
+                            "blouse"
+                        ]
+                    }
+                },
+                {
+                    "mode": "force_recovery",
+                    "message": "Transient basket communication error. Please retry with a valid OMO item."
+                }
+            ]
+        }
+    ]
+}

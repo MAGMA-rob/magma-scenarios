@@ -1,0 +1,51 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Please store one green cube, but do not put any yellow cube in a box.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": "yellow_cube*",
+                        "locations": "yellow_box_pose",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "injection": [
+                {
+                    "mode": "runtime_error",
+                    "error": "MaskRemainingCubesError",
+                    "arguments": {
+                        "masked": [
+                            "green_cube_1"
+                        ]
+                    }
+                },
+                {
+                    "mode": "force_recovery",
+                    "message": "The successful move was not committed. Please retry with an available cube."
+                }
+            ]
+        }
+    ]
+}

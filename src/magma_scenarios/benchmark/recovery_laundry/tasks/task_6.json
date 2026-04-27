@@ -1,0 +1,39 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Load one cap, and do not load any socks.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "cap",
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": "socks",
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "injection": {
+                "mode": "force_recovery",
+                "message": "Temporary washing-machine door latch warning. Please retry."
+            }
+        }
+    ]
+}

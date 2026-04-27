@@ -18,6 +18,50 @@ class CycleRequest(BaseRequest):
         super().__init__()
         self.max_object = max_object_per_cycle_request
 
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("objects", [])) <= 0:
+            return 0
+        if len(state.attributes.get("target_areas", [])) <= 0:
+            return 0
+        if state.properties.get("object_area_needs_application", False):
+            return 8
+        object_assignments = state.relations.get("object_area", {})
+        if len(object_assignments) > 0:
+            return 4
+        return 2
+
+    def _sample_objects_to_sort(self, state: TaskState) -> List[str]:
+        all_objects = state.attributes.get("objects", []).copy()
+        random.shuffle(all_objects)
+        max_objects = min(self.max_object, len(all_objects))
+        nb_obj = random.randint(1, max_objects)
+
+        object_assignments = state.relations.get("object_area", {})
+        assigned_objects = [
+            obj for obj in all_objects
+            if obj in object_assignments
+        ]
+        missing_objects = [
+            obj for obj in all_objects
+            if obj not in object_assignments
+        ]
+
+        selected: List[str] = []
+        if state.properties.get("object_area_needs_application", False) and assigned_objects:
+            selected.append(random.choice(assigned_objects))
+        elif object_assignments and missing_objects and random.random() < 0.5:
+            selected.append(random.choice(missing_objects))
+            if len(selected) < nb_obj and assigned_objects:
+                selected.append(random.choice(assigned_objects))
+
+        for obj in all_objects:
+            if len(selected) >= nb_obj:
+                break
+            if obj not in selected:
+                selected.append(obj)
+
+        return selected
+
     def _create_stages(
             self,
             objects_to_sort : List,
@@ -63,10 +107,12 @@ class CycleRequest(BaseRequest):
         instruction_str = f"Launch a cycle for {objs}."
         has_c = False
         if base_assignement:
-            instruction_str += " And consider "
-            for obj, area in base_assignement.items():
-                instruction_str += f"{obj} to {area}"
-            instruction_str += " as news default assignment."
+            rule_text = ", ".join(
+                f"{obj} to {area}"
+                for obj, area in base_assignement.items()
+            )
+            assignment_word = "assignments" if len(base_assignement) > 1 else "assignment"
+            instruction_str += f" And consider {rule_text} as new default {assignment_word}."
             has_c = True
         cycle_instruction = UserInstruction(instruction_str, has_constraint=has_c)
 
@@ -99,10 +145,11 @@ class CycleRequest(BaseRequest):
                 memory=[],
                 attributes=state.attributes
             ))
-            ins = "For this cycle, "
-            for o, a in missing_assignment.items():
-                ins += f"{o} goes to {a}, "
-            cycle_instruction = UserInstruction(ins)
+            assignment_text = ", ".join(
+                f"{obj} goes to {area}"
+                for obj, area in missing_assignment.items()
+            )
+            cycle_instruction = UserInstruction(f"For this cycle, {assignment_text}.")
         
         append_stage(Cycle(
             assignment=assignement,
@@ -121,10 +168,15 @@ class CycleRequest(BaseRequest):
         if len(all_objects) <= 0 or len(all_areas) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
         
-        nb_obj = random.randint(1,min(self.max_object, len(all_objects)))
-        random.shuffle(all_objects)
+        return self._create_stages(self._sample_objects_to_sort(state), all_areas, state)
 
-        return self._create_stages(all_objects[:nb_obj], all_areas, state)
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("object_area_needs_application", False):
+            state.properties["object_area_needs_application"] = False
+            state.properties["object_area_applications"] = (
+                state.properties.get("object_area_applications", 0) + 1
+            )
+        return state
 
 class CycleWithPermanentRulesRequest(CycleRequest):
 
@@ -133,6 +185,13 @@ class CycleWithPermanentRulesRequest(CycleRequest):
     def __init__(self, max_object_per_cycle_request: int = 3, max_permanent_rule : int = 2) -> None:
         super().__init__(max_object_per_cycle_request)
         self.max_rules = max_permanent_rule
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("object_area_needs_application", False):
+            return 1
+        if len(state.relations.get("object_area", {})) < 1:
+            return 3
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_objects = state.attributes.get("objects", []).copy()
@@ -167,6 +226,8 @@ class CycleWithPermanentRulesRequest(CycleRequest):
     def apply_request(self, state: TaskState) -> TaskState:
         for c in self.constraints:
             c.apply(state)
+        if len(self.constraints) > 0:
+            state.properties["object_area_needs_application"] = True
         return state
         
 
@@ -174,6 +235,11 @@ class MoveOneObjectRequest(BaseRequest):
 
     def __init__(self) -> None:
         super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("object_area_needs_application", False):
+            return 0.5
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:        
         all_objects = state.attributes.get("objects", [])
@@ -233,7 +299,13 @@ class CycleByCategoriesRequest(BaseRequest):
             return 0
         if len(state.attributes.get("target_areas", [])) <= 0:
             return 0
-        return 1
+        if state.properties.get("type_area_needs_application", False):
+            return 8
+        if state.properties.get("object_type_needs_application", False):
+            return 5
+        if len(state.relations.get("type_area", {})) > 0:
+            return 4
+        return 2
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_types : List = self._get_known_types(state)
@@ -306,6 +378,16 @@ class CycleByCategoriesRequest(BaseRequest):
 
         return stages
 
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("object_type_needs_application", False):
+            state.properties["object_type_needs_application"] = False
+        if state.properties.get("type_area_needs_application", False):
+            state.properties["type_area_needs_application"] = False
+        state.properties["category_cycle_applications"] = (
+            state.properties.get("category_cycle_applications", 0) + 1
+        )
+        return state
+
 class AddAreas(AddValueToListRequest):
 
     def __init__(self, all_areas : List[str], max_update : int = 2) -> None:
@@ -351,6 +433,12 @@ class RemoveAreas(RemoveValueToListRequest):
 
     def __init__(self, max_update : int = 2) -> None:
         super().__init__(["target_areas"], max_update = max_update)
+
+    def sampling_weight(self, state: TaskState) -> float:
+        target_areas = state.attributes.get("target_areas", [])
+        if len(target_areas) <= 1:
+            return 0
+        return super().sampling_weight(state)
     
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         

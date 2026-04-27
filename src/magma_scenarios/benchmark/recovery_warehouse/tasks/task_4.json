@@ -1,0 +1,41 @@
+{
+    "criteria": [
+        "recovery",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Launch a cycle sending ref_obj_1 to area1 and the other objects to area2.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area1"
+                    }
+                },
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area2"
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": [
+                "recovery",
+                "c-reasoning"
+            ],
+            "injection": {
+                "mode": "force_recovery",
+                "message": "The robot reported a transient cycle commit error. Please retry."
+            }
+        }
+    ]
+}

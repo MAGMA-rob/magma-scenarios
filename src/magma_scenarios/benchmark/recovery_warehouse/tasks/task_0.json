@@ -1,0 +1,34 @@
+{
+    "criteria": [
+        "recovery",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Send every object to area3.",
+            "max_step": 2,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_*",
+                        "location": "area3"
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": [
+                "recovery",
+                "c-reasoning"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "LaunchCycleTransientFailureError",
+                "arguments": {
+                    "message": "Communication error with the robot. Please retry the cycle."
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Load one shirt into the washing machine basket.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "shirt",
+                        "location": "washing_machine_basket"
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "force_recovery",
+                "message": "The basket sensor did not confirm the load. Please retry the load."
+            }
+        }
+    ]
+}

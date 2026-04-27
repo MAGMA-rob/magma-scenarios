@@ -2,7 +2,7 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation
+from magma_core.base.data_structures import ToolErrorSupport, ToolExecution, ToolResult, Observation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
 from magma_core.base.data_structures import Log
@@ -11,6 +11,8 @@ from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_traject
 
 from typing import Dict, List
 import sapien, torch
+
+from .warehouse_errors import LaunchCycleTransientFailureError
 
 # "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
 # {\"name\": \"grab_specific_object\", \"description\": \"Grasp the object corresponding to item_name.\", \"parameters\": {\"item_name\": {\"description\": \"the name of the object to grasp.\", \"type\": \"str\"}}}]", 
@@ -127,7 +129,10 @@ class WithManufacturingOrder(WarehouseSortingTool):
             params_spec={
                 "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
                 "manu_order": {"description": "The Manufacturing Order associated with this cycle", "type": str}
-            }
+            },
+            errors=[
+                ToolErrorSupport(LaunchCycleTransientFailureError, pre=True, post=False)
+            ]
     )
     def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, manu_order, assignment = [], "", {}
@@ -259,7 +264,10 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
             description="Launch a default cycle to sort all objects to their assigned area.",
             params_spec={
                 "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
-            }
+            },
+            errors=[
+                ToolErrorSupport(LaunchCycleTransientFailureError, pre=True, post=False)
+            ]
     )
     def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, assignment = [], {}

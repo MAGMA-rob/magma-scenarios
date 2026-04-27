@@ -1,0 +1,44 @@
+{
+    "criteria": [
+        "recovery",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Send ref_obj_1 to area1 and ref_obj_2 and ref_obj_3 to area2.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": "ref_obj_1",
+                        "location": "area1"
+                    }
+                },
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ref_obj_2",
+                            "ref_obj_3"
+                        ],
+                        "location": "area2"
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "should_env_reset": true,
+            "keys_evaluator": [
+                "recovery",
+                "c-reasoning"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "LaunchCycleTransientFailureError",
+                "arguments": {
+                    "message": "Communication error with the robot. Please retry the exact same assignment."
+                }
+            }
+        }
+    ]
+}

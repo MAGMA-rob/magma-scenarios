@@ -50,9 +50,17 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
         )
 
     def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get(f"{self.relation_key}_needs_application", False):
+            return 0.25
         if len(state.relations.get(self.relation_key, {})) < 1:
-            return self.empty_relation_sampling_weight
+            return max(self.empty_relation_sampling_weight, 4)
         return 1
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        state = super().apply_request(state)
+        if len(self.constraints) > 0:
+            state.properties[f"{self.relation_key}_needs_application"] = True
+        return state
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -120,9 +128,17 @@ class GiveObjectCategoryRequest(BaseConstraintRequest):
         self.max_obj = max_object_assignment
 
     def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("object_type_needs_application", False):
+            return 0.25
         if len(state.relations.get("object_type",{})) < 1:
-            return 3 # if no assignment, probability to sample this request increase.
+            return 4 # if no assignment, probability to sample this request increase.
         return 1
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        state = super().apply_request(state)
+        if len(self.constraints) > 0:
+            state.properties["object_type_needs_application"] = True
+        return state
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -168,11 +184,21 @@ class GiveCategoryAssignmentRequest(BaseConstraintRequest):
         self.max_categories = max_categories_assignment
 
     def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("type_area_needs_application", False):
+            return 0.25
+        if len(state.relations.get("object_type",{})) < 1:
+            return 0
         if len(state.relations.get("type_area",{})) < 1:
-            return 3 # if no assignment, probability to sample this request increase.
+            return 4 # if no assignment, probability to sample this request increase.
         if len(state.relations.get("type_area",{})) > 3:
             return 0 # AVoiding too much category
         return 1
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        state = super().apply_request(state)
+        if len(self.constraints) > 0:
+            state.properties["type_area_needs_application"] = True
+        return state
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []

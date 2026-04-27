@@ -1,0 +1,55 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Load one dark clothing item, either pants, short, or boxer.",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "blouse",
+                            "jeans",
+                            "socks",
+                            "panties",
+                            "cap"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "pants",
+                        "short"
+                    ]
+                }
+            }
+        }
+    ]
+}

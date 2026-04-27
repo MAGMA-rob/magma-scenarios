@@ -1,0 +1,52 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+            "instruction": "Please store two cubes total, one in each matching color box.",
+            "max_step": 5,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 1
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "injection": [
+                {
+                    "mode": "runtime_error",
+                    "error": "GraspCubeFailureError",
+                    "arguments": {
+                        "inaccessible": [
+                            "green_cube_1",
+                            "yellow_cube_1"
+                        ]
+                    }
+                },
+                {
+                    "mode": "force_recovery",
+                    "message": "The robot reported a transient drop confirmation error. Please retry."
+                }
+            ]
+        }
+    ]
+}

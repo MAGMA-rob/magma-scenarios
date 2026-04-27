@@ -26,24 +26,37 @@ def _resolve_attributes_and_colors(state: TaskState) -> tuple[Dict, List[str]]:
 class FirstColorConstraint(BaseConstraint):
 
     def apply(self, state: TaskState):
+        super().apply(state)
         state.properties["constraint_order"] = "first-color"
+        state.properties["constraint_order_needs_application"] = True
 
 class SecondColorConstraint(BaseConstraint):
 
     def apply(self, state: TaskState):
+        super().apply(state)
         state.properties["constraint_order"] = "second-color"
+        state.properties["constraint_order_needs_application"] = True
 
 
 class AlternateConstraint(BaseConstraint):
 
     def apply(self, state: TaskState):
+        super().apply(state)
         state.properties["constraint_order"] = "alternate"
+        state.properties["constraint_order_needs_application"] = True
 
 
 class GiveOrderConstraint(BaseConstraintRequest):
 
     def __init__(self):
         super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("constraint_order_needs_application", False):
+            return 0.25
+        if state.properties.get("constraint_order", None) is None:
+            return 4
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         _, colors = _resolve_attributes_and_colors(state)
@@ -70,16 +83,27 @@ class AskForCycle(BaseRequest):
         self.max_cube = max_cube
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 3
+        if state.properties.get("constraint_order_needs_application", False):
+            return 8
+        if state.properties.get("constraint_order", None) is not None:
+            return 4
+        return 1
 
-    def _sample_color_counts(self, colors: List[str]) -> Dict[str, int]:
-        nb = random.randint(1, self.max_cube)
+    def _sample_color_counts(self, colors: List[str], include_all_colors: bool = False) -> Dict[str, int]:
+        min_nb = len(colors) if include_all_colors and self.max_cube >= len(colors) else 1
+        nb = random.randint(min_nb, self.max_cube)
+        counts = {color: 0 for color in colors}
+
+        if include_all_colors and self.max_cube >= len(colors):
+            for color in colors:
+                counts[color] = 1
+            nb -= len(colors)
+
         all_cubes = []
         for color in colors:
-            all_cubes.extend([color] * 3)
+            all_cubes.extend([color] * (3 - counts[color]))
         random.shuffle(all_cubes)
 
-        counts = {color: 0 for color in colors}
         for cube in all_cubes[:nb]:
             counts[cube] += 1
 
@@ -97,9 +121,18 @@ class AskForCycle(BaseRequest):
         ]
 
     def _build_instruction(self, colors: List[str], counts: Dict[str, int]) -> UserInstruction:
-        return UserInstruction(
-            f"Please store {counts[colors[0]]} {colors[0]} cubes and {counts[colors[1]]} {colors[1]} cubes."
-        )
+        parts = []
+        for color in colors:
+            count = counts[color]
+            if count <= 0:
+                continue
+            cube_word = "cube" if count == 1 else "cubes"
+            parts.append(f"{count} {color} {cube_word}")
+
+        if not parts:
+            raise ValueError("Cannot build a color sorting instruction with no cubes to store")
+
+        return UserInstruction(f"Please store {' and '.join(parts)}.")
 
     def _build_unordered_stages(
             self,
@@ -164,18 +197,18 @@ class AskForCycle(BaseRequest):
         if rule == "alternate":
             color_order = self._sample_alternating_order(colors)
         elif rule == "first-color":
-            counts = self._sample_color_counts(colors)
+            counts = self._sample_color_counts(colors, include_all_colors=True)
             color_order = ([colors[0]] * counts[colors[0]]) + ([colors[1]] * counts[colors[1]])
         elif rule == "second-color":
-            counts = self._sample_color_counts(colors)
+            counts = self._sample_color_counts(colors, include_all_colors=True)
             color_order = ([colors[1]] * counts[colors[1]]) + ([colors[0]] * counts[colors[0]])
         elif rule == "green-first":
-            counts = self._sample_color_counts(colors)
+            counts = self._sample_color_counts(colors, include_all_colors=True)
             first_color = "green" if "green" in colors else colors[0]
             second_color = colors[1] if first_color == colors[0] else colors[0]
             color_order = ([first_color] * counts[first_color]) + ([second_color] * counts[second_color])
         elif rule == "yellow-first":
-            counts = self._sample_color_counts(colors)
+            counts = self._sample_color_counts(colors, include_all_colors=True)
             first_color = "yellow" if "yellow" in colors else colors[0]
             second_color = colors[1] if first_color == colors[0] else colors[0]
             color_order = ([first_color] * counts[first_color]) + ([second_color] * counts[second_color])
@@ -185,3 +218,11 @@ class AskForCycle(BaseRequest):
         counts = {color: color_order.count(color) for color in colors}
         instruction = self._build_instruction(colors, counts)
         return self._build_ordered_stages(instruction, attributes, colors, color_order)
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("constraint_order", None) is not None:
+            state.properties["constraint_order_needs_application"] = False
+            state.properties["constraint_order_applications"] = (
+                state.properties.get("constraint_order_applications", 0) + 1
+            )
+        return state

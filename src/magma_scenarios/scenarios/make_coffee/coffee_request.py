@@ -31,6 +31,13 @@ class AskCoffeeRequest(BaseRequest):
         if strict_order == False:
             raise ValueError("Strict order to True is not currently supported")
 
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("coffee_preference_needs_application", False):
+            return 0.25
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 0.25
+        return 0.75
+
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
 
         pods = state.attributes.get("coffee_pod",[])
@@ -61,6 +68,15 @@ class GiveCoffeePreference(BaseConstraintRequest):
         self.max_nb = max_name
         self.possible_names = possible_names
         self.max_difference = max_different_name
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("coffee_preference_needs_application", False):
+            return 0.25
+        if len(state.relations.get("coffee_preference", {})) < 1:
+            return 4
+        if len(state.relations.get("coffee_preference", {})) >= self.max_difference:
+            return 0.5
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -97,6 +113,12 @@ class GiveCoffeePreference(BaseConstraintRequest):
                 self.constraint_msg += ", "
         self.constraint_msg += "."
 
+    def apply_request(self, state: TaskState) -> TaskState:
+        state = super().apply_request(state)
+        if len(self.constraints) > 0:
+            state.properties["coffee_preference_needs_application"] = True
+        return state
+
 
 class GiveTeamCoffeePreference(BaseConstraintRequest):
 
@@ -129,7 +151,13 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.attributes.get("coffee_pod", [])) == 0:
             return 0
-        return 1 if len(self._get_eligible_teams(state)) > 0 else 0
+        if len(self._get_eligible_teams(state)) == 0:
+            return 0
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 0.25
+        if len(state.relations.get("team_coffee_preference_rules", {})) < 1:
+            return 3
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         self.constraints = []
@@ -165,6 +193,13 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
 
         self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
 
+    def apply_request(self, state: TaskState) -> TaskState:
+        state = super().apply_request(state)
+        if len(self.constraints) > 0:
+            state.properties["team_coffee_preference_needs_application"] = True
+            state.properties["coffee_preference_needs_application"] = True
+        return state
+
 class AskCoffeePerUser(BaseRequest):
 
     def __init__(
@@ -177,6 +212,17 @@ class AskCoffeePerUser(BaseRequest):
         self.nb = max_coffee
         self.possible_names = possible_names
         self.force_order = force_order
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("coffee_pod", [])) == 0:
+            return 0
+        if state.properties.get("coffee_preference_needs_application", False):
+            return 8
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 6
+        if len(state.relations.get("coffee_preference", {})) > 0:
+            return 4
+        return 2
 
     def _join_names(self, names: List[str]) -> str:
         if len(names) == 1:
@@ -303,6 +349,16 @@ class AskCoffeePerUser(BaseRequest):
         stages.append(CoffeeCompositeStage(dict(number)))
 
         return stages
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("coffee_preference_needs_application", False):
+            state.properties["coffee_preference_needs_application"] = False
+            state.properties["coffee_preference_applications"] = (
+                state.properties.get("coffee_preference_applications", 0) + 1
+            )
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            state.properties["team_coffee_preference_needs_application"] = False
+        return state
     
 class AskPeopleTeam(BaseRequest):
 
@@ -319,7 +375,11 @@ class AskPeopleTeam(BaseRequest):
                 self.people_to_team[member] = team_name
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if len(self.people_to_team) > 0 else 0
+        if len(self.people_to_team) == 0:
+            return 0
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 0.75
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         if len(self.people_to_team) == 0:
@@ -339,7 +399,11 @@ class AskPeopleInTeam(BaseRequest):
         self.team_assignment = team_assignment
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if any(len(members) > 0 for members in self.team_assignment.values()) else 0
+        if not any(len(members) > 0 for members in self.team_assignment.values()):
+            return 0
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 1.5
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         non_empty_teams = [
@@ -395,7 +459,13 @@ class AskCoffeePreferenceInTeam(BaseRequest):
         return available_focus
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if any(len(members) > 0 for members in self.team_assignment.values()) else 0
+        if not any(len(members) > 0 for members in self.team_assignment.values()):
+            return 0
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 6
+        if len(state.relations.get("coffee_preference", {})) > 0:
+            return 3
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         non_empty_teams = [
@@ -425,3 +495,11 @@ class AskCoffeePreferenceInTeam(BaseRequest):
                 focus=focus,
             )
         ]
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            state.properties["team_coffee_preference_needs_application"] = False
+            state.properties["team_coffee_preference_applications"] = (
+                state.properties.get("team_coffee_preference_applications", 0) + 1
+            )
+        return state
