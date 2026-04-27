@@ -4,19 +4,20 @@
     ],
     "stages": [
         {
-            "instruction": "here is the clothes-detergents assignement to respect detergent OMO for shirt, blouse, jeans, ants, short, socks,boxer and the rest use SKIP ",
+            "instruction": "here is the clothes-detergents assignement to respect detergent OMO for shirt, blouse, jeans, pants, short, socks,boxer and the rest use SKIP ",
             "expected_behavior": "acknowledge"
         },
         {
             "instruction": "Wash all clothes can be washed with skip detergent",
-            "max_step": 6,
+            "max_step": 8,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
                             "panties",
-                            "cap"
+                            "cap",
+                            "detergent_SKIP"
                         ],
                         "location": "washing_muchine_basket"
                     }
@@ -25,8 +26,15 @@
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
+                            "shirt",    
+                            "blouse",
+                            "jeans",
                             "pants",
-                            "cap"
+                            "short",
+                            "socks",
+                            "boxer",
+                            "detergent_OMO",
+                            "detergent_PERSIL"
                         ],
                         "locations": "washing_muchine_basket",
                         "strict": false

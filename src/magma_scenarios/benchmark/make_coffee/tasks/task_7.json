@@ -1,0 +1,55 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "RAP team only drinks milky coffee.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Serve Lopez.",
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "milky"}
+              ]
+            }
+          }
+        ]
+      },
+      "injection": {
+        "mode": "runtime_error",
+        "error": "GraspCapsuleFailureError",
+        "arguments": {"inaccessible": ["milky_capsule"]}
+      },
+      "keys_evaluator": ["multi-steps"],
+      "flag_answer_to_user": false,
+      "should_reset_env": true
+    },
+    {
+      "instruction": null,
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "milky"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}

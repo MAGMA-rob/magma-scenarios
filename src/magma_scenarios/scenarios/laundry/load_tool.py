@@ -9,7 +9,7 @@ from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 from magma_core.base.data_structures import Log
 from magma_scenarios.envs.laundry.observation import ObjectObservation
-from magma_scenarios.scenarios.laundry.attributes import all_detergents
+from magma_scenarios.scenarios.laundry.attributes import all_detergents, all_clothes
 from typing import Dict, List
 import sapien, torch
 
@@ -64,6 +64,7 @@ class LaunchTool(BaseToolsAPI):
                 )
 
         return ToolExecution(poses, verifier=verifier, context={"target_name":name})
+
 
     @register_tool(
             description="Put the held clothes into the washing machine.",

@@ -1,9 +1,10 @@
 from pathlib import Path
 import sapien
-
+from .coffee_errors import GraspCapsuleFailureError
 from magma_core.base.tasks import BaseBenchmarkTask
 from .simple_tool import MakingCoffeeTool
 from .attributes import att, people, teams, loaded_capsule_pose, dropped_mug_pose
+import sapien
 
 class CoffeeBenchmark(BaseBenchmarkTask):
     """
@@ -29,6 +30,8 @@ class CoffeeBenchmark(BaseBenchmarkTask):
     }
 
     all_task_attributes = att
+
+    benchmark_possible_errors = [GraspCapsuleFailureError(2)]
 
 
 """

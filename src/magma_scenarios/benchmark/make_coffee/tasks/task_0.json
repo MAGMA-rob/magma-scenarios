@@ -8,7 +8,7 @@
             "expected_behavior": "acknowledge"
         },
         {
-            "instruction": "serve Thomas a white coffee",
+            "instruction": "serve Thomas coffee",
             "max_step": 4,
             "complementary_verif": {
                 "log_rules": [
@@ -24,7 +24,7 @@
                                 },
                                 {
                                     "function_name": "load_capsule",
-                                    "content": "white"
+                                    "content": "black"
                                 }
                             ]
                         }

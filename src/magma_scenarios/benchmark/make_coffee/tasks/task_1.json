@@ -12,15 +12,10 @@
       "expected_behavior": "acknowledge"
     },
     {
-      "instruction": "there is no limited coffee.",
-      "expected_behavior": "acknowledge"
-    },
-
-    {
       "instruction": "what team Rodriguez belogs to ",
       "expected_behavior": "answer",
       "complementary_verif": {
-        "judge": "The model answers that Mattieu belogs to GEPETTO team."
+        "judge": "The model answers that Rodriguez belogs to GEPETTO team."
       }
     },
 
@@ -28,14 +23,28 @@
       "instruction": "Serve him a coffee.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
-      "keys_evaluator": ["multi-steps"]
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "black"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env" : true
     },
 
     {
@@ -46,35 +55,56 @@
       }
     },
     {
-      "instruction": "Now prepare for Hector and florent.",
-      "max_step": 5,
+      "instruction": "Now prepare for Johnson and Thomas.",
+      "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["multi-steps"],
       "should_reset_env" : true
     },
-
-
-    {
-      "instruction": "You have only white capsules left.",
-      "expected_behavior": "acknowledge"
-    },
-
-    {
-      "instruction": "Serve Rodriguez a coffee.",
-      "expected_behavior": "answer",
+       {
+      "instruction": null,
+      "max_step": 4,
       "complementary_verif": {
-        "judge": "The model refuses because only white coffee is available and Matthieu does not accept it."
-      }
-    }
-
-  ]
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
+      "keys_evaluator": ["multi-steps"]
+    }]
 }
