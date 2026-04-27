@@ -1,0 +1,12 @@
+{
+    "scenario_name" : "Cooking_benchmark",
+    "scenario_id" : "Cooking_v1",
+    "scenario_description" : "",
+    "options_mplib": {
+    "robot": "panda_v2",
+    "join_vel_limit": 0.9,
+    "join_acc_limit": 0.9,
+    "control_timesteps": 0
+  }
+
+}
