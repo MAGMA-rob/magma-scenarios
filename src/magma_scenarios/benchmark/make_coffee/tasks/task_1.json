@@ -23,14 +23,26 @@
       "instruction": "Serve him a coffee.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [                
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "black"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
       "keys_evaluator": ["multi-steps"],
       "should_reset_env" : true
     },
@@ -46,15 +58,26 @@
       "instruction": "Now prepare for Johnson and Thomas.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["multi-steps"],
       "should_reset_env" : true
     },
@@ -62,15 +85,26 @@
       "instruction": null,
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["multi-steps"]
     }]
 }

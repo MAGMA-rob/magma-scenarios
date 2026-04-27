@@ -6,33 +6,56 @@
       "expected_behavior": "acknowledge"
     },
     {
-      "instruction": "Serve Hill and Smith.",
+      "instruction": "Serve Hill.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "black"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["multi-steps", "c-reasoning"],
       "should_reset_env" : true
     },
         {
-      "instruction": null,
+      "instruction": "now serve Smith",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "milky"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "milky"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["multi-steps", "c-reasoning"],
       "should_reset_env" : true
     },
@@ -40,14 +63,26 @@
       "instruction": "Actually Smith is not here today, serve Anderson instead.",
       "max_step": 4,
       "complementary_verif": {
-        "logs": [
-          [
-            {"function": "place_mug"},
-            {"function": "load_capsule", "content": "milky"},
-            {"function": "press_button"}
-          ]
-        ]
-      },
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "milky"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
       "keys_evaluator": ["c-reasoning", "multi-steps"],
       "should_reset_env" : true
     },
