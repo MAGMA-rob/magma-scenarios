@@ -1,0 +1,42 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction" : "serve me banana",
+            "max_step": 10,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "banana"
+                        ],
+                        "location": "tray"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta", 
+                        "ananas","apple", "watter","juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

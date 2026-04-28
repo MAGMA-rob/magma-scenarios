@@ -1,12 +1,25 @@
 {
-    "scenario_name" : "Cooking_benchmark",
-    "scenario_id" : "Cooking_v1",
-    "scenario_description" : "",
-    "options_mplib": {
+  "scenario_name": "Cooking_benchmark",
+  "scenario_id": "Cooking_v1",
+  "scenario_description": "The goal is to evaluate the model capacity to serve tray, respecting assignment rules that may be updated mid-task.",
+  "associate_task": "cooking.SimpBench",
+  "options_mplib": {
     "robot": "panda_v2",
     "join_vel_limit": 0.9,
     "join_acc_limit": 0.9,
     "control_timesteps": 0
+  },
+  "tasks_horizon": {
+    "10": [
+      "task_0"
+    ]
+  },
+  "criteria": {
+    "multi-steps": 1
+  },
+  "criteria_tasks": {
+    "multi-steps": [
+      "task_0.json"
+    ]
   }
-
 }

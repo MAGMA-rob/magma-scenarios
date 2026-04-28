@@ -78,7 +78,7 @@ class CookingEnv(DefaultEnv):
                 self.scene,
                 half_size=self.drinks_size,
                 color=np.array([185, 206, 235, 255]) / 255,
-                name="coca",
+                name="milk",
                 body_type="dynamic",
                 initial_pose=sapien.Pose(p=[-0.04, -0.2, self.drinks_size]),
             ),

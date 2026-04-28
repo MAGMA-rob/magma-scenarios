@@ -1,7 +1,7 @@
 from magma_core.base.tasks import BaseBenchmarkTask
 from magma_scenarios.templates.errors.perception_errors import MaskedObjectError
 from .load_tools import CookingTool
-from .attributes import main_course, desserts, drinks
+from .attributes import main_course, fruits, drinks
 from .cooking_errors import GraspFoodFailureError, MaskRemainingFoodError
 
 class cookingBenchmarks(BaseBenchmarkTask) :
@@ -13,7 +13,7 @@ class cookingBenchmarks(BaseBenchmarkTask) :
     env_options = {}
     all_task_attributes = {
         "main_course" : main_course,
-        "desserts" : desserts,
+        "fruits" : fruits,
         "drinks" : drinks
     }
 

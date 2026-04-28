@@ -1,3 +1,3 @@
-main_course = ["chiken","fish","pasta","rice","vegetables"]
-desserts = ["cake","ice_cream","ananas","apple","banana"]
-drinks = ["water","juice","milk"]
+main_course = ["chiken","fish","pasta"]
+fruits = ["ananas","apple","banana"]
+drinks = ["watter","juice","milk"]
