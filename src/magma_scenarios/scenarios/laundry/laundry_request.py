@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from magma_core.base.data_structures import EmptyInstruction, UserInstruction
 from magma_core.base.stage import BaseTaskStage
@@ -145,7 +145,7 @@ def _build_all_groups_resolution_instruction(groups: List[Tuple[str, List[str]]]
 def _build_wash_stages(
         detergent: str,
         clothes: List[str],
-        instruction: str | None = None,
+        instruction: Optional[str] = None,
     ) -> List[BaseTaskStage]:
     stages: List[BaseTaskStage] = []
     first_instruction = EmptyInstruction() if instruction is None else UserInstruction(instruction)

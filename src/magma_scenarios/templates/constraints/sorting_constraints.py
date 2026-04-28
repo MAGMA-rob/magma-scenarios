@@ -1,3 +1,5 @@
+from typing import Optional
+
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.state.task_state import TaskState
 
@@ -48,8 +50,8 @@ class RelationAssignmentConstraint(BaseConstraint):
         source_value: str,
         target_value: str,
         relation_key: str,
-        source_attribute_key: str | None = None,
-        target_attribute_key: str | None = None,
+        source_attribute_key: Optional[str] = None,
+        target_attribute_key: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.source_value = source_value
@@ -61,7 +63,7 @@ class RelationAssignmentConstraint(BaseConstraint):
     def _is_missing_attribute_value(
         self,
         state: TaskState,
-        attribute_key: str | None,
+        attribute_key: Optional[str],
         value: str,
     ) -> bool:
         """Return True when a value is expected in an attribute list but missing."""

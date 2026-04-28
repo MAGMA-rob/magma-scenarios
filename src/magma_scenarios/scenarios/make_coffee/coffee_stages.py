@@ -6,6 +6,7 @@ from magma_core.base.goals import BaseGoal
 from magma_scenarios.utils import sapien_to_tensor
 
 from .attributes import att, dropped_mug_pose, loaded_capsule_pose
+from .coffee_errors import GraspCapsuleFailureError
 
 import sapien, torch, random
 from collections import defaultdict
@@ -67,6 +68,8 @@ class RefuseCoffee(BaseTaskStage):
 class MakeOneCoffeStage(BaseTaskStage):
 
     target_steps = 3
+
+    t
     acceptance_steps = 1
 
     def __init__(self, capsule : str, instruction : str, add_memory : List[str], flag_answer : bool) -> None:
