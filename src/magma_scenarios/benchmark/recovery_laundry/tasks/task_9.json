@@ -1,26 +1,21 @@
 {
     "criteria": [
         "recovery",
-        "multi-steps",
-        "c-reasoning",
-        "lg-memorization"
+        "multi-steps"
     ],
     "stages": [
         {
-            "instruction": "Remember this small batch rule: load OMO clothes first.",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction": "Now load one OMO clothing item: shirt, blouse, or jeans.",
+            "instruction": "Please clean blouse, pants, boxer and cap with detergent_PERSIL.",
             "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",
                     "arguments": {
                         "objects": [
-                            "shirt",
                             "blouse",
-                            "jeans"
+                            "pants",
+                            "boxer",
+                            "cap"
                         ],
                         "location": "washing_machine_basket",
                         "minimum": 1
@@ -30,12 +25,13 @@
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "pants",
+                            "shirt",
+                            "jeans",
                             "short",
                             "socks",
-                            "boxer",
                             "panties",
-                            "cap"
+                            "detergent_OMO",
+                            "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
@@ -44,26 +40,124 @@
             ],
             "keys_evaluator": [
                 "recovery",
-                "multi-steps",
-                "c-reasoning",
-                "lg-memorization"
+                "multi-steps"
             ],
-            "injection": [
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "blouse",
+                        "pants",
+                        "boxer"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal": [
                 {
-                    "mode": "runtime_error",
-                    "error": "GraspClothesFailureError",
+                    "predicate": "count",
                     "arguments": {
-                        "inaccessible": [
-                            "shirt",
-                            "blouse"
-                        ]
+                        "objects": [
+                            "blouse",
+                            "pants",
+                            "boxer",
+                            "cap"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 2
                     }
                 },
                 {
-                    "mode": "force_recovery",
-                    "message": "Transient basket communication error. Please retry with a valid OMO item."
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "jeans",
+                            "short",
+                            "socks",
+                            "panties",
+                            "detergent_OMO",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
                 }
-            ]
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "blouse",
+                        "pants"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 8,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "blouse",
+                            "pants",
+                            "boxer",
+                            "cap",
+                            "detergent_PERSIL"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "jeans",
+                            "short",
+                            "socks",
+                            "panties",
+                            "detergent_OMO",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "blouse",
+                                "pants",
+                                "boxer",
+                                "cap"
+                            ],
+                            "detergent": [
+                                "detergent_PERSIL"
+                            ]
+                        }
+                    }
+                ]
+            }
         }
     ]
 }

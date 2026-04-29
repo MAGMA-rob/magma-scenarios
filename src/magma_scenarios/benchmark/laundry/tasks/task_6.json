@@ -103,57 +103,9 @@
                 }
             }
         },
-                {
-            "instruction": null,
-            "max_step": 3,
-            "action_goal": [
-                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "shirt",
-                            "panties",
-                            "detergent_OMO"
-                        ],
-                        "location": "washing_machine_basket"
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "jeans",
-                            "blouse",
-                            "cap",
-                            "pants",
-                            "short",
-                            "boxer",
-                            "detergent_PERSIL",
-                            "detergent_SKIP"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "GraspClothesFailureError",
-                "arguments": {
-                    "inaccessible": [
-                        "socks"
-                            
-                    ]
-                }
-            }
-        },
         {
             "instruction": null,
-            "max_step": 4,
+            "max_step": 6,
             "action_goal": [
                 {
                     "predicate": "in",

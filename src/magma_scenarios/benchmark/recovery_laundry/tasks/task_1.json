@@ -5,31 +5,33 @@
     ],
     "stages": [
         {
-            "instruction": "Load two white clothing items into the washing machine basket.",
+            "instruction": "Please clean cap, blouse and jeans with detergent_PERSIL.",
             "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",
                     "arguments": {
                         "objects": [
-                            "shirt",
-                            "socks",
-                            "panties"
+                            "cap",
+                            "blouse",
+                            "jeans"
                         ],
                         "location": "washing_machine_basket",
-                        "minimum": 2
+                        "minimum": 1
                     }
                 },
                 {
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
-                            "blouse",
-                            "cap",
+                            "shirt",
                             "pants",
                             "short",
-                            "boxer"
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "detergent_OMO",
+                            "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
@@ -45,9 +47,65 @@
                 "error": "GraspClothesFailureError",
                 "arguments": {
                     "inaccessible": [
-                        "shirt"
+                        "cap",
+                        "blouse"
                     ]
                 }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 8,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "cap",
+                            "blouse",
+                            "jeans",
+                            "detergent_PERSIL"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "detergent_OMO",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "blouse",
+                                "jeans",
+                                "cap"
+                            ],
+                            "detergent": [
+                                "detergent_PERSIL"
+                            ]
+                        }
+                    }
+                ]
             }
         }
     ]

@@ -59,7 +59,8 @@
             "keys_evaluator": [
                 "multi-steps"
             ],
-            "should_reset_env": true
+            "should_reset_env": true,
+            "flag_answer_user": true
         },
         {
             "instruction": "Actually cap is white, not colored, wash it.",

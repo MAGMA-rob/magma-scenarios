@@ -5,19 +5,16 @@
     ],
     "stages": [
         {
-            "instruction": "Load one clothing item that is not white into the basket.",
+            "instruction": "Please clean blouse, panties and cap with detergent_PERSIL.",
             "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",
                     "arguments": {
                         "objects": [
-                            "jeans",
                             "blouse",
-                            "cap",
-                            "pants",
-                            "short",
-                            "boxer"
+                            "panties",
+                            "cap"
                         ],
                         "location": "washing_machine_basket",
                         "minimum": 1
@@ -28,8 +25,13 @@
                     "arguments": {
                         "obj_name": [
                             "shirt",
+                            "jeans",
+                            "pants",
+                            "short",
                             "socks",
-                            "panties"
+                            "boxer",
+                            "detergent_OMO",
+                            "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
@@ -40,22 +42,71 @@
                 "recovery",
                 "multi-steps"
             ],
-            "injection": [
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "blouse",
+                        "panties"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 8,
+            "action_goal": [
                 {
-                    "mode": "runtime_error",
-                    "error": "GraspClothesFailureError",
+                    "predicate": "in",
                     "arguments": {
-                        "inaccessible": [
-                            "jeans",
-                            "blouse"
-                        ]
+                        "obj_name": [
+                            "blouse",
+                            "panties",
+                            "cap",
+                            "detergent_PERSIL"
+                        ],
+                        "location": "washing_machine_basket"
                     }
                 },
                 {
-                    "mode": "force_recovery",
-                    "message": "The basket load confirmation was dropped. Please retry with another valid item."
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "jeans",
+                            "pants",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "detergent_OMO",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
                 }
-            ]
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "blouse",
+                                "panties",
+                                "cap"
+                            ],
+                            "detergent": [
+                                "detergent_PERSIL"
+                            ]
+                        }
+                    }
+                ]
+            }
         }
     ]
 }

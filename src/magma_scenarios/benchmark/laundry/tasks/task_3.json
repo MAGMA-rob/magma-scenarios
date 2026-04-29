@@ -70,7 +70,8 @@
                 "multi-steps",
                 "c-reasoning"
             ],
-            "should_reset_env": true
+            "should_reset_env": true,
+            "flag_answer_user": true
         },
         {
             "instruction": "Wash the short",

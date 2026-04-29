@@ -59,7 +59,8 @@
             "keys_evaluator": [
                 "multi-steps"
             ],
-            "should_reset_env": true
+            "should_reset_env": true,
+            "flag_answer_user": true
         },
         {
             "instruction": "Can blouse go with the skin clothes in the same wash?",
@@ -69,107 +70,6 @@
             },
             "keys_evaluator": [
                 "c-reasoning"
-            ]
-        },
-        {
-            "instruction": "Wash the delicate first and after the cap",
-            "max_step": 6,
-            "action_goal": [
-                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "blouse",
-                            "detergent_OMO"
-                        ],
-                        "location": "washing_machine_basket"
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "socks",
-                            "boxer",
-                            "panties",
-                            "shirt",
-                            "jeans",
-                            "pants",
-                            "short",
-                            "cap",
-                            "detergent_SKIP",
-                            "detergent_PERSIL"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {
-                "logs": [
-                    {
-                        "content": {
-                            "clothes": [
-                                "blouse"
-                            ],
-                            "detergent": "detergent_OMO"
-                        }
-                    }
-                ]
-            },
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "should_reset_env": true
-        },
-        {
-            "instruction": null,
-            "max_step": 6,
-            "action_goal": [
-                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "cap",
-                            "detergent_SKIP"
-                        ],
-                        "location": "washing_machine_basket"
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "socks",
-                            "boxer",
-                            "panties",
-                            "shirt",
-                            "jeans",
-                            "pants",
-                            "short",
-                            "blouse",
-                            "detergent_OMO",
-                            "detergent_PERSIL"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {
-                "logs": [
-                    {
-                        "content": {
-                            "clothes": [
-                                "cap"
-                            ],
-                            "detergent": "detergent_SKIP"
-                        }
-                    }
-                ]
-            },
-            "keys_evaluator": [
-                "multi-steps"
             ]
         }
     ]

@@ -87,9 +87,7 @@
     "folder_name": "recovery_laundry",
     "criteria": [
       "recovery",
-      "multi-steps",
-      "c-reasoning",
-      "lg-memorization"
+      "multi-steps"
     ]
   },
   {

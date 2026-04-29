@@ -7,7 +7,6 @@ from pathlib import Path
 
 from .tools import WithoutManufacturingOrder, WithManufacturingOrder
 from .att import OBJECTS, AREAS
-from .warehouse_errors import LaunchCycleTransientFailureError
 
 class WS_Simp_Benchmark(BaseBenchmarkTask):
     """
@@ -26,10 +25,6 @@ class WS_Simp_Benchmark(BaseBenchmarkTask):
         "target_areas" : AREAS[:3]
     }
 
-    benchmark_possible_errors = [
-        LaunchCycleTransientFailureError()
-    ]
-
 
 class WS_Benchmark(BaseBenchmarkTask):
     """
@@ -47,7 +42,3 @@ class WS_Benchmark(BaseBenchmarkTask):
         "objects" : OBJECTS,
         "target_areas" : AREAS
     }
-
-    benchmark_possible_errors = [
-        LaunchCycleTransientFailureError()
-    ]

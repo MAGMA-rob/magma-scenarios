@@ -13,7 +13,7 @@
                     "arguments": {
                         "objects": "green_cube*",
                         "location": "green_box_pose",
-                        "minimum": 2
+                        "minimum": 1
                     }
                 }
             ],
@@ -26,10 +26,29 @@
                 "error": "MaskRemainingCubesError",
                 "arguments": {
                     "masked": [
-                        "green_cube_1"
+                        "green_cube_1",
+                        "green_cube_2"
                     ]
                 }
             }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 2
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ]
         }
     ]
 }

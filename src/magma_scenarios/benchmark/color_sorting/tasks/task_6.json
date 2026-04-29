@@ -2,8 +2,7 @@
     "criteria": [
         "recovery",
         "multi-steps",
-        "c-reasoning",
-        "lg-memorization"
+        "c-reasoning"
     ],
     "stages": [
         {
@@ -12,7 +11,43 @@
         },
         {
             "instruction": "Store one green cube and one yellow cube.",
-            "max_step": 5,
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 0
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspCubeFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "green_cube_1"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",
@@ -34,16 +69,15 @@
             "keys_evaluator": [
                 "recovery",
                 "multi-steps",
-                "c-reasoning",
-                "lg-memorization"
+                "c-reasoning"
             ],
             "injection": {
                 "mode": "runtime_error",
                 "error": "GraspCubeFailureError",
                 "arguments": {
                     "inaccessible": [
-                        "green_cube_1",
-                        "yellow_cube_1"
+                        "yellow_cube_1",
+                        "yellow_cube_2"
                     ]
                 }
             }

@@ -6,15 +6,46 @@
     ],
     "stages": [
         {
-            "instruction": "Please store one cube of each color in its matching box.",
-            "max_step": 5,
+            "instruction": "For this table, sort green cubes before yellow cubes. Understood?",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Store one yellow cube and two green.",
+            "max_step": 6,
             "action_goal": [
                 {
                     "predicate": "count",
                     "arguments": {
                         "objects": "green_cube*",
                         "location": "green_box_pose",
-                        "minimum": 1
+                        "minimum": 2
+                    }
+                },
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 0
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps",
+                "c-reasoning"
+            ]
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 2
                     }
                 },
                 {
@@ -30,28 +61,6 @@
                 "recovery",
                 "multi-steps",
                 "c-reasoning"
-            ],
-            "injection": [
-                {
-                    "mode": "runtime_error",
-                    "error": "MaskRemainingCubesError",
-                    "arguments": {
-                        "masked": [
-                            "green_cube_1",
-                            "yellow_cube_1"
-                        ]
-                    }
-                },
-                {
-                    "mode": "runtime_error",
-                    "error": "GraspCubeFailureError",
-                    "arguments": {
-                        "inaccessible": [
-                            "green_cube_2",
-                            "yellow_cube_3"
-                        ]
-                    }
-                }
             ]
         }
     ]
