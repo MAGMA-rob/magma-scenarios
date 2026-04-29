@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.state.task_state import TaskState
@@ -120,7 +120,12 @@ class AskForCycle(BaseRequest):
             for i in range(nb)
         ]
 
-    def _build_instruction(self, colors: List[str], counts: Dict[str, int]) -> UserInstruction:
+    def _build_instruction(
+            self,
+            colors: List[str],
+            counts: Dict[str, int],
+            start_color: Optional[str] = None,
+        ) -> UserInstruction:
         parts = []
         for color in colors:
             count = counts[color]
@@ -132,7 +137,11 @@ class AskForCycle(BaseRequest):
         if not parts:
             raise ValueError("Cannot build a color sorting instruction with no cubes to store")
 
-        return UserInstruction(f"Please store {' and '.join(parts)}.")
+        instruction = f"Please store {' and '.join(parts)}"
+        if start_color is not None:
+            instruction += f", starting with 1 {start_color} cube"
+
+        return UserInstruction(f"{instruction}.")
 
     def _build_unordered_stages(
             self,
@@ -216,7 +225,11 @@ class AskForCycle(BaseRequest):
             raise ValueError(f"Unknown constraint_order: {rule}")
 
         counts = {color: color_order.count(color) for color in colors}
-        instruction = self._build_instruction(colors, counts)
+        start_color = None
+        if rule == "alternate" and counts[colors[0]] == counts[colors[1]]:
+            start_color = color_order[0]
+
+        instruction = self._build_instruction(colors, counts, start_color=start_color)
         return self._build_ordered_stages(instruction, attributes, colors, color_order)
 
     def apply_request(self, state: TaskState) -> TaskState:
