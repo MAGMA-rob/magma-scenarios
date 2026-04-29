@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.state.task_state import TaskState
@@ -11,7 +11,7 @@ from .attributes import MAX_NB_PER_RECIPE
 from .delivery_stages import CycleStage
 
 
-def build_recipe_instruction(products: List[str], action: str | None = None) -> str:
+def build_recipe_instruction(products: List[str], action: Optional[str] = None) -> str:
     recipe_counts: Dict[str, int] = {}
     for product_name in products:
         recipe_counts[product_name] = recipe_counts.get(product_name, 0) + 1

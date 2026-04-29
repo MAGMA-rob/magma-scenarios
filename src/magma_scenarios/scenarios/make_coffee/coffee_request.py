@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 import random
 from collections import defaultdict
 
@@ -425,7 +425,7 @@ class AskCoffeePreferenceInTeam(BaseRequest):
     def __init__(
             self,
             team_assignment: Dict[str, List[str]],
-            allowed_focus: List[str] | None = None,
+            allowed_focus: Optional[List[str]] = None,
         ) -> None:
         super().__init__()
         self.team_assignment = team_assignment
