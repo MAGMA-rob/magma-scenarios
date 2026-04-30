@@ -51,7 +51,8 @@
     "scenario_name": "Cooking_benchmark",
     "folder_name": "cooking",
     "criteria": [
-      "multi-steps"
+      "multi-steps",
+      "recovery"
     ]
   }
 ]

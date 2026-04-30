@@ -1,0 +1,61 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "you can't serve more the one food from each categorie (fruits/drinks/main_course) ",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "what fruits are available for today ",
+            "expected_behavior": "answer",
+            "complementary_verif": {
+                    "judge": "The model answers ananas apple banana"}
+        },
+
+        {
+            "instruction" : "serve me chicken and ananas",
+            "max_step": 8,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ananas",
+                            "chicken"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["pasta","watter","fish","banana","apple","juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas"], "drinks": [], "main_course": ["chicken"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction": "i want also an apple please",
+            "expected_behavior": "answer",
+            "complementary_verif": {
+                "judge": "The model refuses because he is not allowed to serve more then one food from each category"
+            },
+            "keys_evaluator": ["c-reasoning"]
+        }
+    ]
+}

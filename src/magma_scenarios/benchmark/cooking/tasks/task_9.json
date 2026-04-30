@@ -1,0 +1,120 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction": "avaiable food for today pasta, milk, banana",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction" : "serve me the recette of today",
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "milk"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","ananas","apple","banana","watter", "juice"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "banana","pasta"
+                    ]
+                }
+            }
+        },
+                {
+            "instruction" : null,
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "milk",
+                            "banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","ananas","apple","watter", "juice"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "MaskFoodError",
+                "arguments": {
+                    "inaccessible": [
+                      "pasta"
+                    ]
+                }
+            }
+        },
+                {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "milk","pasta","banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","ananas","apple","watter", "juice"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": ["milk"], "main_course": ["pasta"]}
+                    }
+                ]},
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

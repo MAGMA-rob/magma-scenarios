@@ -20,7 +20,7 @@
                             "jeans",
                             "detergent_OMO"
                         ],
-                        "location": "washing_muchine_basket"
+                        "location": "washing_machine_basket"
                     }
                 },
                 {
@@ -36,7 +36,7 @@
                             "detergent_SKIP",
                             "detergent_PERSIL"
                         ],
-                        "locations": "washing_muchine_basket",
+                        "locations": "washing_machine_basket",
                         "strict": false
                     }
                 }

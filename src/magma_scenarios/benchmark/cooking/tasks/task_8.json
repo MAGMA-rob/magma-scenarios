@@ -4,14 +4,14 @@
     ],
     "stages" : [
         {
-            "instruction" : "serve me banana",
+            "instruction" : "serve me chicken",
             "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "banana"
+                            "chiken"
                         ],
                         "location": "tray",
                         "thresh" :  0.2
@@ -20,23 +20,18 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta", 
-                        "ananas","apple", "watter","juice","milk"],
+                        "obj_name": ["banana","fish","pasta","ananas","apple","watter", "juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }
                 }
             ],
-            "complementary_verif": {
-                "logs": [
-                    {
-                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
-                    }
-                ]
+            "complementary_verif": {},
+            "injection": {
+                "mode": "force_failure",
+                "message": "Communication system with the robot is not responding"
             },
-            "keys_evaluator": [
-                "multi-steps"
-            ]
+            "keys_evaluator": ["multi-steps"]
         }
 
     ]

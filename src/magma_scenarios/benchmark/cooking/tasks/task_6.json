@@ -1,0 +1,114 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction" : "put the banans in the tray",
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","ananas","apple","watter", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                        
+                "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction": "what fruits still",
+            "expected_behavior": "answer",
+            "complementary_verif": {
+                    "judge": "The model answers ananas apple "}
+        },
+        {
+            "instruction" : "Ow change me the banana with apple",
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "apple","banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","watter", "juice","milk","ananas"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "banana"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "apple"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["fish","pasta", "chicken","ananas","banana", "juice","milk","watter"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                
+                "logs": [
+                    {
+                        "content": {"fruits" : ["apple"], "drinks": [], "main_course": []}
+                    }
+                ]},
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

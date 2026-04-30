@@ -1,0 +1,119 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction" : "serve me chicken, watter and ananas",
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "watter"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","ananas","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "chicken",
+                        "ananas"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "watter","ananas"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "chicken"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "watter",
+                            "ananas",
+                            "chicken"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["fish","pasta", 
+                        "ananas","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas"], "drinks": ["watter"], "main_course": ["chicken"]}
+                    }
+                ]},
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

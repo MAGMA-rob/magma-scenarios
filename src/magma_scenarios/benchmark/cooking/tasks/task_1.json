@@ -1,0 +1,78 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction" : "serve me banana then milk",
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta", 
+                        "ananas","apple", "watter","juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "banana","milk"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","pasta", 
+                        "ananas","apple", "watter","juice"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana","milk"], "drinks": [], "main_course": []}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

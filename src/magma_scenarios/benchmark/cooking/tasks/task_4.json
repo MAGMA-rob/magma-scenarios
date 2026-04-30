@@ -1,0 +1,84 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "today you offert banana to every custumer ",
+            "expected_behavior": "acknowledge"
+        },
+
+        {
+            "instruction" : "serve me chicken and ananas",
+            "max_step": 8,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ananas",
+                            "chiken",
+                            "banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["pasta","fish","apple","juice","milk","watter"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas","banana"], "drinks": [], "main_course": ["chicken"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+                {
+            "instruction" : "replace me the chicken by fish",
+            "max_step": 5,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ananas",
+                            "fish",
+                            "banana"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["pasta","chicken","apple","juice","milk","watter"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas","banana"], "drinks": [], "main_course": ["fish"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

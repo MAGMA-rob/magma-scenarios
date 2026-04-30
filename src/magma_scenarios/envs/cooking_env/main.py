@@ -10,15 +10,17 @@ from mani_skill.utils.registration import register_env
 from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
 
-tray_pose = [-0.02, 0.2,0]
+
 
 @register_env("Cooking", max_episode_steps = 200)
 class CookingEnv(DefaultEnv):
 
+    tray_centre = [-0.1, 0.12,0]
+    table_center = [-0.1,-0.2]
 
-    fruits_size = 0.02
-    drinks_size = 0.03
-    main_course_size = 0.035
+    fruits_size = 0.018
+    drinks_size = 0.02
+    main_course_size = 0.025
 
     z_half_tray_size = 0.005
 
@@ -39,11 +41,11 @@ class CookingEnv(DefaultEnv):
 
         self.tray = actors.build_box(
                 scene=self.scene,
-                half_sizes=np.array([0.25, 0.2, self.z_half_tray_size], dtype=np.float32),
+                half_sizes=np.array([0.16, 0.16, self.z_half_tray_size], dtype=np.float32),
                 color=np.array([211, 211, 211, 255]) / 255,
                 name="tray",
                 body_type="static",
-                initial_pose=sapien.Pose(p=[0, 0.2, self.z_half_tray_size]),
+                initial_pose=sapien.Pose(p=[-0.2, 0, self.z_half_tray_size]),
             )
         
         self.fruits = [
@@ -80,7 +82,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([185, 206, 235, 255]) / 255,
                 name="milk",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.04, -0.2, self.drinks_size]),
+                initial_pose=sapien.Pose(p=[-0.04, -0.16, self.drinks_size]),
             ),
             actors.build_cube(
                 self.scene,
@@ -88,7 +90,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([185, 206, 235, 255]) / 255,
                 name="watter",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.02, -0.2, self.drinks_size]),
+                initial_pose=sapien.Pose(p=[0.02, -0.16, self.drinks_size]),
             ),
             actors.build_cube(
                 self.scene,
@@ -96,7 +98,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([185, 206, 235, 255]) / 255,
                 name="juice",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.08, -0.2, self.drinks_size]),
+                initial_pose=sapien.Pose(p=[0.08, -0.16, self.drinks_size]),
             )
         ]
 
@@ -107,7 +109,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([65, 180, 75, 255]) / 255,
                 name="chiken",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.04, -0.3, self.main_course_size]),
+                initial_pose=sapien.Pose(p=[-0.04, -0.22, self.main_course_size]),
             ),
             actors.build_cube(
                 self.scene,
@@ -115,7 +117,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([65, 180, 75, 255]) / 255,
                 name="fish",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.02, -0.3, self.main_course_size]),
+                initial_pose=sapien.Pose(p=[0.02, -0.22, self.main_course_size]),
             ),
             actors.build_cube(
                 self.scene,
@@ -123,7 +125,7 @@ class CookingEnv(DefaultEnv):
                 color=np.array([65, 180, 75, 255]) / 255,
                 name="pasta",
                 body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.08, -0.3, self.main_course_size]),
+                initial_pose=sapien.Pose(p=[0.08, -0.22, self.main_course_size]),
             )
         ]
 
@@ -132,7 +134,7 @@ class CookingEnv(DefaultEnv):
         self.table_scene.initialize(env_idx)
         q = [1,0,0,0]
 
-        r = 0.17
+        r = 0.11
 
 
         offsets = [
@@ -141,19 +143,14 @@ class CookingEnv(DefaultEnv):
             (r,-r),(r,0),(r,r)
         ] 
 
-        table_center = [0,-0.3]
+        
 
         table_cells = [
-            (table_center[0] + dx, table_center[1] + dy)
+            (self.table_center[0] + dx, self.table_center[1] + dy)
             for dx, dy in offsets
         ]
 
-        tray_center = [0.2,0.2]
 
-        tray_cells = [
-            (tray_center[0] + dx, tray_center[1] + dy)
-            for dx, dy in offsets
-        ]
 
         self.objects = []
         for elem_list in [self.fruits, self.drinks,self.main_course]:
@@ -184,7 +181,7 @@ class CookingEnv(DefaultEnv):
                     
                     elem.set_pose(obj_pose)
 
-        p_batched = torch.tensor(tray_pose).repeat(b,1)
+        p_batched = torch.tensor(self.tray_centre).repeat(b,1)
         self.tray.set_pose(Pose.create_from_pq(p=p_batched,q=q))
 
     def _get_obs_extra(self, info: Dict):

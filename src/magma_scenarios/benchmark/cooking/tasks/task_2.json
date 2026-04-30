@@ -1,0 +1,54 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "you can't serve more the one food from each categorie (fruits/drinks/main_course) ",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "what options are available for today ",
+            "expected_behavior": "answer",
+            "complementary_verif": {
+                    "judge": "The model answers chiken fish pasta ananas apple banana watter juice milk"}
+        },
+
+        {
+            "instruction" : "serve me pasta with watter and ananas",
+            "max_step": 8,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "ananas",
+                            "pasta",
+                            "watter"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chiken","fish","banana","apple","juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas"], "drinks": ["watter"], "main_course": ["pasta"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

@@ -89,6 +89,7 @@ class LaunchTool(BaseToolsAPI):
             )
         
         poses = [sapien.Pose(agent_tcp_position[:3].cpu().numpy() + (0, 0, 0.1), (0, 1, 0, 0))]
+        print("target_pose:", target_pos)
         poses.extend(compute_drop_trajectory(
             self.get_agent(),
             drop_pose=target_pos,
