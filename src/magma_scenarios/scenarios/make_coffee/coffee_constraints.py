@@ -8,6 +8,7 @@ from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 
 COFFEE_PREFERENCE_KEY = "coffee_preference"
 TEAM_COFFEE_RULES_KEY = "team_coffee_preference_rules"
+UNAVAILABLE_COFFEE_PODS_KEY = "unavailable_coffee_pods"
 
 
 def _get_coffee_preferences(state: TaskState) -> Dict[str, str]:
@@ -20,6 +21,25 @@ def _get_team_rule_specs(state: TaskState) -> Dict[str, Dict]:
     if TEAM_COFFEE_RULES_KEY not in state.relations:
         state.relations[TEAM_COFFEE_RULES_KEY] = {}
     return state.relations[TEAM_COFFEE_RULES_KEY]
+
+
+def get_unavailable_coffee_pods(state: TaskState) -> List[str]:
+    """Return the currently unavailable pods that still exist in attributes."""
+    known_pods = state.attributes.get("coffee_pod", [])
+    return [
+        pod
+        for pod in state.properties.get(UNAVAILABLE_COFFEE_PODS_KEY, [])
+        if pod in known_pods
+    ]
+
+
+def get_available_coffee_pods(state: TaskState) -> List[str]:
+    unavailable_pods = set(get_unavailable_coffee_pods(state))
+    return [
+        pod
+        for pod in state.attributes.get("coffee_pod", [])
+        if pod not in unavailable_pods
+    ]
 
 
 class CoffeePreferenceConstraint(RelationAssignmentConstraint):
@@ -72,6 +92,40 @@ class TeamCoffeePreferenceConstraint(BaseConstraint):
             if self.mode == "default" and member in preferences:
                 continue
             preferences[member] = self.coffee
+
+    def outdated(self, state: TaskState) -> bool:
+        return self.coffee not in state.attributes.get("coffee_pod", [])
+
+
+class CoffeeUnavailableConstraint(BaseConstraint):
+    """Persistently mark one coffee pod as unavailable."""
+
+    def __init__(self, coffee: str) -> None:
+        super().__init__()
+        self.coffee = coffee
+
+    def apply(self, state: TaskState):
+        super().apply(state)
+        if self.coffee not in state.attributes.get("coffee_pod", []):
+            raise RuntimeError(
+                f"{self.coffee} is not a known coffee pod for {self.__class__.__name__}"
+            )
+        state.properties[UNAVAILABLE_COFFEE_PODS_KEY] = [self.coffee]
+
+    def outdated(self, state: TaskState) -> bool:
+        return self.coffee not in state.attributes.get("coffee_pod", [])
+
+
+class CoffeeAvailableConstraint(BaseConstraint):
+    """Remove the current coffee pod unavailability."""
+
+    def __init__(self, coffee: str) -> None:
+        super().__init__()
+        self.coffee = coffee
+
+    def apply(self, state: TaskState):
+        super().apply(state)
+        state.properties[UNAVAILABLE_COFFEE_PODS_KEY] = []
 
     def outdated(self, state: TaskState) -> bool:
         return self.coffee not in state.attributes.get("coffee_pod", [])

@@ -10,6 +10,8 @@ from .warehouse_requests import (
     MoveOneObjectRequest,
     CycleRequest,
     CycleWithPermanentRulesRequest,
+    ForbidObjectsRequest,
+    TemporaryObjectAssignmentCycleRequest,
     AddAreas,
     RemoveAreas,
     CycleByCategoriesRequest
@@ -29,6 +31,29 @@ class SimpleSortingDefinition(TaskDefinition):
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
         CycleWithPermanentRulesRequest()
+    ]
+    Tools_cls = WithoutManufacturingOrder
+    env_id = "SortingCubesWarehouse-v1"
+
+    def __init__(self) -> None:
+        
+        self.starting_state = TaskState()
+        self.starting_state.attributes = {
+            "objects": OBJECTS,
+            "target_areas": AREAS
+        }
+
+        super().__init__(randomized_config_path=str(Path(__file__).parent.joinpath("config.yaml")))
+
+
+class SortingWithInterdictionsDefinition(TaskDefinition):
+    """Object assignment training with temporary overrides and one forbidden object."""
+
+    active_requests = [
+        GiveObjectAssignmentRequest(max_simultaneous_change=2),
+        ForbidObjectsRequest(),
+        TemporaryObjectAssignmentCycleRequest(all_objects_probability=0.8),
+        CycleRequest(),
     ]
     Tools_cls = WithoutManufacturingOrder
     env_id = "SortingCubesWarehouse-v1"

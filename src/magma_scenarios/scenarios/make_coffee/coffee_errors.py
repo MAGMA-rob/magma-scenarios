@@ -1,46 +1,37 @@
 import random
-from typing import Dict, Any, List, Optional
-import torch
+from typing import Any, Dict, List
+
 from magma_core.base.data_structures import Observation
-from magma_core.base.data_structures.tools import ToolResult
-from magma_core.utils.env_utils import is_object_inside_target
-from magma_scenarios.templates.errors import MaskedObjectError, GraspFailureError
-from magma_scenarios.utils import sapien_to_tensor
-from torch import rand
-from .attributes import people, teams,att
+from magma_scenarios.templates.errors import GraspFailureError
 
-
-def _get_available_capsules(obs: Observation, env_id: int) -> List[str]:
-    remaining = []
-    extra = obs.maniskill_obs["extra"]
-    capsule_target = sapien_to_tensor(obs.add_constants["loaded_capsule_pose"],extra["coffee_maker"].device)
-    target_absolue = torch.add(extra["coffee_maker"][env_id][:7],capsule_target)
-    for obj_name, obj_data in extra.items():
-        if not any(pod in obj_name for pod in att["coffee_pod"]):
-            continue
-        if not is_object_inside_target(
-            obj_data["pose"][env_id],
-            target_absolue
-        ):
-            remaining.append(obj_name)
-    return remaining
+from .attributes import att
 
 class GraspCapsuleFailureError(GraspFailureError):
     recovery_extra_steps = 1
 
-    def __init__(self,max_impossible= 1) -> None:
+    def __init__(
+        self,
+        max_impossible: int = 1,
+        requested_coffee_pods: List[str] = [],
+    ) -> None:
         super().__init__()
         self.max_nb = max_impossible
+        self.requested_coffee_pods = set(requested_coffee_pods)
+
 
     def initialize(self, obs: Observation, env_id: int) -> Dict[str, Any]:
-        remaining = _get_available_capsules(obs,env_id)
-        if len(remaining) <= 1:
+        if len(self.requested_coffee_pods) > 0:
+            remaining = obs.task_attributes.get("coffee_pod", att["coffee_pod"])
+        else:
+            remaining = list(self.requested_coffee_pods)
+
+        if len(remaining) <= 1 or self.max_nb <= 0:
             return {
-                "inaccessible" : [],
+                "inaccessible": [],
             }
 
         if len(remaining) == 2:
             nb = 1
         else:
-            nb = random.randint(1,self.max_nb) 
-        return {"inaccessible" : random.sample(remaining,k=nb)}
+            nb = random.randint(1, min(self.max_nb, len(remaining) - 1))
+        return {"inaccessible": random.sample(remaining, k=nb)}
