@@ -12,8 +12,6 @@ from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_traject
 from typing import Dict, List
 import sapien, torch
 
-from .warehouse_errors import LaunchCycleTransientFailureError
-
 # "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
 # {\"name\": \"grab_specific_object\", \"description\": \"Grasp the object corresponding to item_name.\", \"parameters\": {\"item_name\": {\"description\": \"the name of the object to grasp.\", \"type\": \"str\"}}}]", 
 # {\"name\": \"launch_cycle\", \"description\": \"Launch the default sorting cycle. It sort only objects provided as keys in object_areas_mapping parameter. The cycle continue until there is no more objects since 5 minutes.\", \"parameters\": {\"object_areas_mapping\": {\"description\": \"Keys represent the name of object to detect, associated value correspond to the target_location name.\", \"type\": \"Dict\"}}}
@@ -130,9 +128,6 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
                 "manu_order": {"description": "The Manufacturing Order associated with this cycle", "type": str}
             },
-            errors=[
-                ToolErrorSupport(LaunchCycleTransientFailureError, pre=True, post=False)
-            ]
     )
     def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, manu_order, assignment = [], "", {}
@@ -265,9 +260,6 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
             params_spec={
                 "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
             },
-            errors=[
-                ToolErrorSupport(LaunchCycleTransientFailureError, pre=True, post=False)
-            ]
     )
     def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         obj_to_sort, assignment = [], {}
