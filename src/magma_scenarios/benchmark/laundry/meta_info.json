@@ -45,7 +45,7 @@
   },
   "criteria": {
     "multi-steps": 14,
-    "c-reasoning": 7,
+    "c-reasoning": 9,
     "recovery": 5
   },
   "criteria_tasks": {
@@ -67,10 +67,12 @@
     ],
     "c-reasoning": [
       "task_6.json",
+      "task_12.json",
       "task_5.json",
       "task_11.json",
       "task_3.json",
       "task_8.json",
+      "task_13.json",
       "task_4.json",
       "task_7.json"
     ],

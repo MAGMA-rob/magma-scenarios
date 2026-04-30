@@ -19,7 +19,7 @@
                             "cap",
                             "detergent_SKIP"
                         ],
-                        "location": "washing_muchine_basket"
+                        "location": "washing_machine_basket"
                     }
                 },
                 {
@@ -36,7 +36,7 @@
                             "detergent_OMO",
                             "detergent_PERSIL"
                         ],
-                        "locations": "washing_muchine_basket",
+                        "locations": "washing_machine_basket",
                         "strict": false
                     }
                 }
