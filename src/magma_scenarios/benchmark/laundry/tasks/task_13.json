@@ -1,7 +1,8 @@
 {
     "criteria": [
         "recovery",
-        "multi-steps"
+        "multi-steps",
+        "c-reasoning"
     ],
     "stages": [
         {

@@ -10,33 +10,33 @@
     "control_timesteps": 0
   },
   "tasks_horizon": {
-    "12": [
-      "task_11",
-      "task_8",
-      "task_9"
-    ],
-    "21": [
-      "task_2"
-    ],
-    "6": [
-      "task_10"
+    "5": [
+      "task_0"
     ],
     "11": [
       "task_6",
       "task_7"
     ],
-    "5": [
-      "task_0"
+    "20": [
+      "task_2"
     ],
-    "13": [
-      "task_4"
+    "6": [
+      "task_10"
     ],
     "14": [
       "task_5",
       "task_3"
     ],
+    "12": [
+      "task_11",
+      "task_9",
+      "task_8"
+    ],
     "16": [
       "task_1"
+    ],
+    "13": [
+      "task_4"
     ]
   },
   "criteria": {
@@ -46,28 +46,28 @@
   },
   "criteria_tasks": {
     "multi-steps": [
-      "task_11.json",
+      "task_0.json",
+      "task_6.json",
       "task_2.json",
       "task_10.json",
-      "task_6.json",
-      "task_0.json",
-      "task_4.json",
       "task_5.json",
+      "task_11.json",
+      "task_9.json",
+      "task_3.json",
       "task_8.json",
       "task_1.json",
-      "task_3.json",
-      "task_7.json",
-      "task_9.json"
+      "task_4.json",
+      "task_7.json"
     ],
     "c-reasoning": [
-      "task_11.json",
       "task_2.json",
-      "task_4.json",
       "task_5.json",
-      "task_8.json",
+      "task_11.json",
+      "task_9.json",
       "task_3.json",
-      "task_7.json",
-      "task_9.json"
+      "task_8.json",
+      "task_4.json",
+      "task_7.json"
     ],
     "recovery": [
       "task_10.json",

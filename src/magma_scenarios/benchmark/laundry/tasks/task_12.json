@@ -1,5 +1,5 @@
 {
-  "criteria": ["multi-steps"],
+  "criteria": ["multi-steps","c-reasoning"],
   "stages": [
     {
       "instruction": "Rule: delicate clothes (blouse, panties) use PERSIL.",

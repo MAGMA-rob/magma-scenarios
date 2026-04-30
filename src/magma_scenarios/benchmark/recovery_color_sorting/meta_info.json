@@ -16,24 +16,20 @@
     ],
     "4": [
       "task_6",
+      "task_5"
+    ],
+    "8": [
       "task_2",
-      "task_5",
       "task_3"
     ],
-    "6": [
-      "task_9",
-      "task_7"
-    ],
     "5": [
-      "task_8",
       "task_4"
     ]
   },
   "criteria": {
-    "recovery": 10,
-    "multi-steps": 10,
-    "c-reasoning": 4,
-    "lg-memorization": 1
+    "recovery": 7,
+    "multi-steps": 7,
+    "c-reasoning": 1
   },
   "criteria_tasks": {
     "recovery": [
@@ -41,33 +37,21 @@
       "task_6.json",
       "task_2.json",
       "task_5.json",
-      "task_9.json",
       "task_3.json",
-      "task_8.json",
       "task_1.json",
-      "task_4.json",
-      "task_7.json"
+      "task_4.json"
     ],
     "multi-steps": [
       "task_0.json",
       "task_6.json",
       "task_2.json",
       "task_5.json",
-      "task_9.json",
       "task_3.json",
-      "task_8.json",
       "task_1.json",
-      "task_4.json",
-      "task_7.json"
+      "task_4.json"
     ],
     "c-reasoning": [
-      "task_9.json",
-      "task_8.json",
-      "task_4.json",
-      "task_7.json"
-    ],
-    "lg-memorization": [
-      "task_7.json"
+      "task_4.json"
     ]
   }
 }

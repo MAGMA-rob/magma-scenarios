@@ -5,10 +5,6 @@
     ],
     "stages": [
         {
-            "instruction": "The default rule is to send cubes to a box with a different color.",
-            "expected_behavior": "acknowledge"
-        },
-        {
             "instruction": "I need to have two green cubes into the green box",
             "max_step": 4,
             "action_goal": [
