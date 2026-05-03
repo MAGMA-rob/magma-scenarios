@@ -1,93 +1,53 @@
 {
-    "criteria": [
-        "recovery",
-        "multi-steps",
-        "c-reasoning"
-    ],
-    "stages": [
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "Rule: sports/accessories (socks, boxer, cap) use SKIP. Delicate clothes (panties) use PERSIL.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Wash all delicate clothes.",
+      "max_step": 6,
+      "action_goal": [
         {
-        "instruction": "Please clean shirt and panties.",
-        "expected_behavior": "answer",
-        "complementary_verif": {
-            "judge": "The model must ask which detergent to use."
-        },
-        "keys_evaluator": ["c-reasoning"]
-        },
-        {
-            "instruction": "Use OMO",
-            "max_step": 3,
-            "action_goal": [
-                {
-                    "predicate": "count",
-                    "arguments": {
-                        "objects": [
-                            "shirt",
-                            "panties"
-                        ],
-                        "location": "washing_machine_basket",
-                        "minimum": 1
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "jeans",
-                            "blouse",
-                            "cap",
-                            "pants",
-                            "short",
-                            "boxer"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "keys_evaluator": [
-                "recovery",
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "GraspClothesFailureError",
-                "arguments": {
-                    "inaccessible": [
-                        "shirt"
-                    ]
-                }
-            }
+          "predicate": "in",
+          "arguments": {"obj_name": ["panties", "detergent_PERSIL"], "location": "washing_machine_basket"}
         },
         {
-            "instruction": null,
-            "max_step": 7,
-            "action_goal": [
-                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": ["shirt", "panties", "detergent_OMO"],
-                        "location": "washing_machine_basket"}
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "jeans",
-                            "blouse",
-                            "cap",
-                            "pants",
-                            "short",
-                            "boxer"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "keys_evaluator": [
-                "recovery",
-                "multi-steps"
-            ]
+          "predicate": "not_in",
+          "arguments": {"obj_name": ["blouse", "panties", "cap", "shirt", "jeans", "pants", "short", "detergent_SKIP", "detergent_OMO"], "locations": "washing_machine_basket",
+                        "strict": false}
         }
-    ]
+      ],
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"clothes": ["panties"], "detergent": "detergent_PERSIL"}
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true,
+      "flag_answer_user": true
+    },
+    {
+      "instruction": "Wash jeans and short with the persil detergent.",
+      "max_step": 8,
+      "action_goal": [
+        {
+          "predicate": "in",
+          "arguments": {"obj_name": ["jeans", "short", "detergent_PERSIL"], "location": "washing_machine_basket"}
+        }
+      ],
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"clothes": ["jeans", "short"], "detergent": "detergent_PERSIL"}
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
 }

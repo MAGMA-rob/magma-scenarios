@@ -5,6 +5,7 @@ SCENARIO_NAME = "warehouse_sorting"
 
 TASK_DEFINITIONS = {
     "SimpleSortingDefinition": "warehouse_definitions:SimpleSortingDefinition",
+    "SortingWithInterdictionsDefinition": "warehouse_definitions:SortingWithInterdictionsDefinition",
     "SortingCategoryDefinition": "warehouse_definitions:SortingCategoryDefinition"
 }
 
@@ -33,4 +34,3 @@ TASK_PRESETS = {
     # Benchmark
     "SimpBench": "benchmark:WS_Simp_Benchmark"
 }
-

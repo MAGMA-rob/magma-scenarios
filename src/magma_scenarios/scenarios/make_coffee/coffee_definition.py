@@ -18,6 +18,7 @@ from .coffee_request import (
     AskPeopleInTeam,
     AskPeopleTeam,
     AskCoffeePreferenceInTeam,
+    ToggleCoffeeAvailability,
 )
 
 import sapien
@@ -32,6 +33,7 @@ class SimpleDefinition(TaskDefinition):
 
     active_requests = [
         GiveCoffeePreference(people),
+        ToggleCoffeeAvailability(),
         AskCoffeeRequest(),
         AskCoffeePerUser(people, force_order=True)
     ]
@@ -53,6 +55,9 @@ class SimpleDefinition(TaskDefinition):
             "coffee_preference": {},
             "team_coffee_preference_rules": {},
         }
+        self.starting_state.properties.update({
+            "unavailable_coffee_pods": [],
+        })
 
 
 class TeamDefinition(TaskDefinition):
@@ -85,11 +90,15 @@ class TeamDefinition(TaskDefinition):
             "coffee_preference": {},
             "team_coffee_preference_rules": {},
         }
+        self.starting_state.properties.update({
+            "unavailable_coffee_pods": [],
+        })
 
         self.active_requests = [
             GiveCoffeePreference(all_people),
             GiveTeamCoffeePreference(team_dict, mode="override"),
             GiveTeamCoffeePreference(team_dict, mode="default"),
+            ToggleCoffeeAvailability(),
             AskCoffeePerUser(all_people, force_order=True),
             AskPeopleTeam(team_dict,3),
             AskPeopleInTeam(team_dict),
