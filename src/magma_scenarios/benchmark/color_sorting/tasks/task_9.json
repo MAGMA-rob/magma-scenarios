@@ -1,0 +1,61 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Hello, the rule is to sort green cubes first.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Okay, so sort 1 green cube and 2 yellow please",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 0
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+        {
+            "instruction": null,
+            "max_step": 6,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "green_cube*",
+                        "location": "green_box_pose",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
+                        "minimum": 2
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

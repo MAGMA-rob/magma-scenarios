@@ -14,13 +14,58 @@
         "keys_evaluator": ["c-reasoning"]
         },
         {
-            "instruction": "Use SKIP and consider it as default for all clothes",
-            "max_step": 8,
+            "instruction": "Use OMO",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "shirt",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "shirt"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 7,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
-                        "obj_name": ["shirt", "panties", "detergent_SKIP"],
+                        "obj_name": ["shirt", "panties", "detergent_OMO"],
                         "location": "washing_machine_basket"}
                 },
                 {
@@ -39,58 +84,10 @@
                     }
                 }
             ],
-            "complementary_verif": {
-                "logs": [
-                {
-                    "content": {"clothes": ["shirt","panties"], "detergent": "detergent_SKIP"}
-                }
-                ]
-            },
-            "should_reset_env": true,
-            "flag_answer_user": true,
             "keys_evaluator": [
                 "recovery",
                 "multi-steps"
             ]
-        },
-        {
-            "instruction": "Hello can you clean my boxer and short please?",
-            "max_step": 8,
-            "action_goal": [
-                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": ["boxer", "short", "detergent_SKIP"],
-                        "location": "washing_machine_basket"}
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": [
-                            "jeans",
-                            "blouse",
-                            "cap",
-                            "pants",
-                            "short",
-                            "boxer"
-                        ],
-                        "locations": "washing_machine_basket",
-                        "strict": false
-                    }
-                }
-            ],
-            "should_reset_env": true,
-            "keys_evaluator": [
-                "lg-memorization",
-                "multi-steps"
-            ],
-            "complementary_verif": {
-                "logs": [
-                {
-                    "content": {"clothes": ["boxer", "short"], "detergent": "detergent_SKIP"}
-                }
-                ]
-            }
         }
     ]
 }

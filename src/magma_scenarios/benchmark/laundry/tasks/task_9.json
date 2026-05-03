@@ -1,5 +1,5 @@
 {
-  "criteria": ["multi-steps"],
+  "criteria": ["multi-steps","c-reasoning"],
   "stages": [
     {
       "instruction": "Wash the jeans with OMO.",
@@ -24,9 +24,34 @@
       },
       "injection": {
         "mode": "force_recovery",
-        "message": "Planning error: failed to grasp jeans, retry please."
+        "message": "Planning error: failed to start the machine, retry please."
       },
       "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true,
+      "flag_answer_user": true
+    },
+    {
+      "instruction": "Hello, can you wash my socks with any other detergent than OMO?",
+      "max_step": 6,
+      "action_goal": [
+        {
+          "predicate": "in",
+          "arguments": {"obj_name": ["socks"], "location": "washing_machine_basket"}
+        },
+        {
+          "predicate": "not_in",
+          "arguments": {"obj_name": ["blouse", "panties", "jean", "boxer", "cap", "shirt", "pants", "short", "detergent_OMO"], "locations": "washing_machine_basket",
+                        "strict": false}
+        }
+      ],
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"clothes": ["socks"]}
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps","c-reasoning"],
       "should_reset_env": true
     }
   ]

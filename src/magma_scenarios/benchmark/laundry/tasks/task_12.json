@@ -2,7 +2,7 @@
   "criteria": ["multi-steps","c-reasoning"],
   "stages": [
     {
-      "instruction": "Rule: delicate clothes (blouse, panties) use PERSIL.",
+      "instruction": "Rule: delicate clothes (blouse, panties, cap, shirt) use PERSIL.",
       "expected_behavior": "acknowledge"
     },
     {
