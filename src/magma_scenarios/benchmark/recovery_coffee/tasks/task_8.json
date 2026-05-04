@@ -1,0 +1,53 @@
+{
+  "criteria": ["multi-steps"],
+  "stages": [
+    {
+      "instruction": "Serve two black coffee.",
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "black"}
+              ]
+            }
+          }
+        ]
+      },
+      "injection": {
+        "mode": "force_recovery",
+        "message": "Planning error: failed to press the button, retry please."
+      },
+      "keys_evaluator": ["multi-steps"],
+      "flag_answer_to_user": false,
+      "should_reset_env": true
+    },
+    {
+      "instruction": null,
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "black"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "injection": {
+        "mode": "force_failure",
+        "message": "Planning error: failed to press the button."
+      }
+    }
+  ]
+}

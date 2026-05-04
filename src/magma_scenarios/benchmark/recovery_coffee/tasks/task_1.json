@@ -1,0 +1,69 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "I need two coffee: a milky and a black.",
+            "max_step": 4,
+            "complementary_verif": {
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "black"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspCapsuleFailureError",
+                "arguments": {"inaccessible": ["milky_capsule"]}
+            },
+            "should_reset_env": true
+        },
+        {
+            "instruction": null,
+            "max_step": 4,
+            "complementary_verif": {
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "milky"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

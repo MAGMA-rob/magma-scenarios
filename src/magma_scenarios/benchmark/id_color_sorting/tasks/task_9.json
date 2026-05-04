@@ -4,7 +4,7 @@
     ],
     "stages": [
         {
-            "instruction": "Hello, the rule is to sort green cubes first.",
+            "instruction": "Hello, the rule is to sort green cubes before yellows.",
             "expected_behavior": "acknowledge"
         },
         {

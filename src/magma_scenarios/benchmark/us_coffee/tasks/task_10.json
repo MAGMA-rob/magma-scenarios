@@ -1,0 +1,33 @@
+{
+  "criteria": ["multi-steps"],
+  "stages": [
+    {
+      "instruction": "MAC team accepts any coffee.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Serve Scott.",
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule"}
+              ]
+            }
+          }
+        ]
+      },
+      "injection": {
+        "mode": "force_failure",
+        "message": "Planning error: coffee machine is unreachable."
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}

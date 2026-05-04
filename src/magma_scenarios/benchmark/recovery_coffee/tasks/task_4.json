@@ -4,11 +4,7 @@
     ],
     "stages": [
         {
-            "instruction": "The GEPETTO team prefer black coffee, can drink milky, but dislike white.",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction": "serve Thomas coffee",
+            "instruction": "I need a milky coffee.",
             "max_step": 4,
             "complementary_verif": {
                 "log_rules": [
@@ -33,7 +29,11 @@
             },
             "keys_evaluator": [
                 "multi-steps"
-            ]
+            ],
+            "injection": {
+                "mode": "force_recovery",
+                "message": "Failed to launch the machine"
+            }
         }
     ]
 }

@@ -1,0 +1,77 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "RIS team only drinks white coffee. GEPETTO team only drinks black.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "What team does Hill belong to?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answers that Hill belongs to the RIS team."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "Serve Mitchell first then Hill.",
+      "max_step": 4,
+      "complementary_verif": {
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "black"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
+      "keys_evaluator": ["multi-steps", "c-reasoning"]
+    },
+        {
+      "instruction": null,
+      "max_step": 4,
+      "complementary_verif": {
+                      "log_rules": [
+                          {
+                              "rule_name": "requires_before",
+                              "arguments": {
+                                  "event": {
+                                      "function_name": "press_button"
+                                  },
+                                  "required_before": [
+                                      {
+                                          "function_name": "place_mug"
+                                      },
+                                      {
+                                          "function_name": "load_capsule",
+                                          "content": "white"
+                                      }
+                                  ]
+                              }
+                          }
+                      ]
+                  },
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "flag_answer_to_user": true
+    },
+    {
+      "instruction": "Who is in the GEPETTO team?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answers that GEPETTO team contains Mitchell, Johnson, Thomas, Rodriguez."
+      }
+    }
+  ]
+}
