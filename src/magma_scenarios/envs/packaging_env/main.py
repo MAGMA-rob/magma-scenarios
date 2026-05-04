@@ -12,8 +12,8 @@ from mani_skill.utils.structs import Pose
 
 
 
-@register_env("Cooking", max_episode_steps = 200)
-class CookingEnv(DefaultEnv):
+@register_env("Packaging", max_episode_steps = 200)
+class PackagingEnv(DefaultEnv):
 
     tray_centre = [-0.1, 0.12,0]
     table_center = [-0.1,-0.2]
@@ -107,7 +107,7 @@ class CookingEnv(DefaultEnv):
                 self.scene,
                 half_size=self.main_course_size,
                 color=np.array([65, 180, 75, 255]) / 255,
-                name="chiken",
+                name="chicken",
                 body_type="dynamic",
                 initial_pose=sapien.Pose(p=[-0.04, -0.22, self.main_course_size]),
             ),

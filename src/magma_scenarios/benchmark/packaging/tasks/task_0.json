@@ -4,7 +4,7 @@
     ],
     "stages" : [
         {
-            "instruction" : "serve me all the fruits",
+            "instruction" : "serve me banana",
             "max_step": 4,
             "action_goal" : [
                                 {
@@ -20,18 +20,23 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta","ananas","apple","watter", "juice","milk"],
+                        "obj_name": ["chicken","fish","pasta", 
+                        "ananas","apple", "watter","juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }
                 }
             ],
-            "complementary_verif": {},
-            "injection": {
-              "mode": "force_recovery",
-              "message": "Planning error: failed to grasp banana, retry please."
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
+                    }
+                ]
             },
-            "keys_evaluator": ["multi-steps"]
+            "keys_evaluator": [
+                "multi-steps"
+            ]
         }
 
     ]

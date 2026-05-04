@@ -5,7 +5,7 @@
     "stages" : [
         {
             "instruction" : "serve me banana then milk",
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -20,7 +20,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta", 
+                        "obj_name": ["chicken","fish","pasta", 
                         "ananas","apple", "watter","juice","milk"],
                         "locations": "tray",
                         "strict": false
@@ -40,7 +40,7 @@
         },
         {
             "instruction" : null,
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -55,7 +55,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta", 
+                        "obj_name": ["chicken","fish","pasta", 
                         "ananas","apple", "watter","juice"],
                         "locations": "tray",
                         "strict": false
@@ -65,7 +65,7 @@
             "complementary_verif": {
                 "logs": [
                     {
-                        "content": {"fruits" : ["banana","milk"], "drinks": [], "main_course": []}
+                        "content": {"fruits" : ["banana"], "drinks": ["milk"], "main_course": []}
                     }
                 ]
             },

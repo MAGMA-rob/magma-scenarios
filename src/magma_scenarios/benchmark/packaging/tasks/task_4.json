@@ -16,8 +16,7 @@
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "ananas",
-                            "chiken",
+                            "chicken",
                             "banana"
                         ],
                         "location": "tray",
@@ -27,7 +26,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["pasta","fish","apple","juice","milk","watter"],
+                        "obj_name": ["pasta","fish","apple","juice","milk","watter","ananas"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -36,7 +35,7 @@
             "complementary_verif": {
                 "logs": [
                     {
-                        "content": {"fruits" : ["ananas","banana"], "drinks": [], "main_course": ["chicken"]}
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": ["chicken"]}
                     }
                 ]
             },
@@ -46,16 +45,12 @@
         },
                 {
             "instruction" : "replace me the chicken by fish",
-            "max_step": 5,
+            "max_step": 8,
             "action_goal" : [
                                 {
                     "predicate": "in",
                     "arguments": {
-                        "obj_name": [
-                            "ananas",
-                            "fish",
-                            "banana"
-                        ],
+                        "obj_name": ["fish","banana"],
                         "location": "tray",
                         "thresh" :  0.2
                     }
@@ -63,7 +58,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["pasta","chicken","apple","juice","milk","watter"],
+                        "obj_name": ["ananas","pasta","chicken","apple","juice","milk","watter"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -72,7 +67,7 @@
             "complementary_verif": {
                 "logs": [
                     {
-                        "content": {"fruits" : ["ananas","banana"], "drinks": [], "main_course": ["fish"]}
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": ["fish"]}
                     }
                 ]
             },

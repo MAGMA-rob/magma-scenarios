@@ -5,7 +5,7 @@
     "stages" : [
         {
             "instruction" : "serve me chicken, watter and ananas",
-            "max_step": 3,
+            "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -20,7 +20,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta","ananas","apple","banana", "juice","milk"],
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana", "juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -43,7 +43,7 @@
         },
         {
             "instruction" : null,
-            "max_step": 3,
+            "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -58,7 +58,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta","apple","banana", "juice","milk"],
+                        "obj_name": ["chicken","fish","pasta","apple","banana", "juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -80,7 +80,7 @@
         },
         {
             "instruction" : null,
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [
                                 {
                     "predicate": "in",

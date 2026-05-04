@@ -5,13 +5,13 @@
     "stages" : [
         {
             "instruction" : "serve me chicken",
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [
                                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "chiken"
+                            "chicken"
                         ],
                         "location": "tray",
                         "thresh" :  0.2

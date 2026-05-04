@@ -48,11 +48,12 @@
     ]
   },
   {
-    "scenario_name": "Cooking_benchmark",
-    "folder_name": "cooking",
+    "scenario_name": "Packaging_benchmark",
+    "folder_name": "packaging",
     "criteria": [
       "multi-steps",
-      "recovery"
+      "recovery",
+      "c-reasoning"
     ]
   }
 ]

@@ -1,7 +1,5 @@
 {
-    "criteria": [
-        "multi-steps"
-    ],
+    "criteria": ["multi-steps", "c-reasoning"],
     "stages": [
         {
             "instruction": "you can't serve more the one food from each categorie (fruits/drinks/main_course) ",

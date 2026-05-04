@@ -5,20 +5,21 @@ from magma_core.base.data_structures import ToolExecution, ToolResult, Observati
 from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 from magma_scenarios.envs.six_cubes_two_boxes_on_table import reduced_env
 import sapien
-from .cooking_errors import MaskFoodError, GraspFoodFailureError
+from .packaging_errors import MaskFoodError, GraspFoodFailureError
 from magma_scenarios.utils import compute_drop_trajectory, compute_grasp_trajectory
 from magma_core.utils.env_utils import is_object_inside_target
 import numpy as np
 import torch
 from .attributes import fruits, drinks, main_course
 
-class CookingTool(BaseToolsAPI):
+class PackagingTool(BaseToolsAPI):
 
     r = 0.11
     table_gride_centre = [-0.1,-0.2,0]
     tray_gride_center = [-0.1, 0.12,0]
 
-
+    perceived_objects = None
+    has_seen_world = False
 
     def _world_to_grid(self,center_target_position : list , object_world_position : list)-> tuple:
         i = np.round((object_world_position[0]-center_target_position[0])/self.r)
@@ -31,6 +32,7 @@ class CookingTool(BaseToolsAPI):
         grid_position[1] = grid_position[1] + r * grid[1]
 
         return grid_position
+
 
     def _get_free_cell(self,obs : Observation , env_id : int ,target_center : list):
         extra = obs.maniskill_obs["extra"]
@@ -55,12 +57,11 @@ class CookingTool(BaseToolsAPI):
         return None
 
 
-
     @register_tool(
         description ="Returns visible objects and their locations",
         params_spec={},
         errors = [
-            ToolErrorSupport(MaskFoodError,pre = True, post= False)
+            ToolErrorSupport(MaskFoodError,pre = False, post= True)
         ]
     )
     def detect(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
@@ -72,9 +73,13 @@ class CookingTool(BaseToolsAPI):
                 continue
             y = pos[env_id][1]
             if y < 0 :
-                detected_obj["table"][name] = pos[env_id][:3].cpu().numpy()
+                detected_obj["table"][name] = pos[env_id][:3]
             else :
-                detected_obj["tray"][name] = pos[env_id][:3].cpu().numpy()  
+                detected_obj["tray"][name] = pos[env_id][:3]
+            
+        self.perceived_objects = detected_obj
+        self.has_seen_world = True
+
         def verifier(new_obs: Dict) -> ToolResult:
             s = "this is the position of existing object : "
 
@@ -87,7 +92,6 @@ class CookingTool(BaseToolsAPI):
                 s += ", and the tray is empty"
             else :
                 s += ", and the tray contain " + ', '.join(f"{name}" for name in detected_obj["tray"].keys())
-            
 
             return ToolResult(True,s,context = detected_obj, logs = Log(""))
 
@@ -103,15 +107,33 @@ class CookingTool(BaseToolsAPI):
     )
     def take(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
         """go fetch an object by his name """
-        extra = obs.maniskill_obs["extra"]
+
         name = params["name"]
-        object = extra.get(name, None)
-        if object is None:
+
+        if self.perceived_objects is None or self.has_seen_world == False :
             return ToolExecution(
-                poses = [], verifier=None, reason=f"no object with name {params['name']}"
+            poses=[],
+            verifier=None,
+            reason="You must call detect before acting."
+        )
+
+        perceived = self.perceived_objects 
+
+        obj_pose = None
+        for area in ["table", "tray"]:
+            if name in perceived.get(area, {}):
+                obj_pose = perceived[area][name]
+                break
+
+        if obj_pose is None:
+            return ToolExecution(
+                poses=[],
+                verifier=None,
+                reason=f"{name} is not visible in perceived world"
             )
-        poses = compute_grasp_trajectory(self.get_agent(),object[env_id].cpu().numpy())
-        all_food = [name for name in extra if name not in ["agent_tcp", "tray"]]
+
+        poses = compute_grasp_trajectory(self.get_agent(),obj_pose.cpu().numpy())
+
         def verifier(new_obs: dict) -> ToolResult:
             "the object must be in the gripper"
             new_extra = new_obs["extra"]
@@ -126,7 +148,7 @@ class CookingTool(BaseToolsAPI):
                 return ToolResult(
                     False, f"you failed to take the object {name}. you can retry"
                 )
-        return ToolExecution(poses, verifier=verifier, context = {"visible_food": all_food,"target_name": name})
+        return ToolExecution(poses, verifier=verifier, context = {"target_name": name})
 
 
     @register_tool(
@@ -138,9 +160,7 @@ class CookingTool(BaseToolsAPI):
         reduced_env = {obj : pose[env_id][:3] for obj, pose in extra.items()}
         agent_tcp_position = reduced_env.pop("agent_tcp")
         obj_in_gripper = find_object_in_gripper(agent_tcp_position, reduced_env)
-        print("Objects:", reduced_env)
-        print("TCP:", agent_tcp_position)
-        print("Detected in gripper:", obj_in_gripper)
+
         if obj_in_gripper is None:
             return ToolExecution(
                 poses = [], verifier= None, reason = "No food in gripper"
@@ -166,7 +186,7 @@ class CookingTool(BaseToolsAPI):
             drop_seuil = 0.03,
             approach_seuil = 0.1
         ))
-
+        self.has_seen_world = False
         def verifier(new_obs: dict) -> ToolResult:
             new_extra = new_obs["extra"]
             obj_pose = new_extra[obj_in_gripper][env_id]

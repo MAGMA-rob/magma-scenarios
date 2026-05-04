@@ -1,8 +1,8 @@
 {
-  "scenario_name": "Cooking_benchmark",
-  "scenario_id": "Cooking_v1",
+  "scenario_name": "Packaging_benchmark",
+  "scenario_id": "Packaging_v1",
   "scenario_description": "The goal is to evaluate the model capacity to serve tray, respecting assignment rules that may be updated mid-task.",
-  "associate_task": "cooking.SimpBench",
+  "associate_task": "packaging.SimpBench",
   "options_mplib": {
     "robot": "panda_v2",
     "join_vel_limit": 0.9,
@@ -10,34 +10,39 @@
     "control_timesteps": 0
   },
   "tasks_horizon": {
-    "10": [
+    "13": [
       "task_2",
       "task_5"
     ],
-    "12": [
+    "15": [
       "task_6"
     ],
     "4": [
       "task_0"
     ],
-    "14": [
+    "17": [
       "task_4"
     ],
-    "5": [
-      "task_8",
-      "task_7"
+    "6": [
+      "task_8"
     ],
-    "8": [
+    "10": [
       "task_1"
     ],
     "11": [
-      "task_3",
+      "task_3"
+    ],
+    "12": [
+      "task_7"
+    ],
+    "14": [
       "task_9"
     ]
   },
   "criteria": {
     "multi-steps": 10,
-    "recovery": 2
+    "recovery": 2,
+    "c-reasoning": 1
   },
   "criteria_tasks": {
     "multi-steps": [
@@ -55,6 +60,9 @@
     "recovery": [
       "task_8.json",
       "task_7.json"
+    ],
+    "c-reasoning": [
+      "task_3.json"
     ]
   }
 }

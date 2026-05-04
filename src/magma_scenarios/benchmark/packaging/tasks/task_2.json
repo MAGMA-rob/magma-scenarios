@@ -11,12 +11,12 @@
             "instruction": "what options are available for today ",
             "expected_behavior": "answer",
             "complementary_verif": {
-                    "judge": "The model answers chiken fish pasta ananas apple banana watter juice milk"}
+                    "judge": "The model answers chicken fish pasta ananas apple banana watter juice milk"}
         },
 
         {
             "instruction" : "serve me pasta with watter and ananas",
-            "max_step": 8,
+            "max_step": 11,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -33,7 +33,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","banana","apple","juice","milk"],
+                        "obj_name": ["chicken","fish","banana","apple","juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }

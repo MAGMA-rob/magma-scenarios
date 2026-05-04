@@ -1,9 +1,9 @@
 import time
 import gymnasium as gym
-import magma_scenarios.envs.cooking_env.main
+import magma_scenarios.envs.packaging_env.main
 
 env = gym.make(
-    "Cooking",
+    "Packaging",
     robot_init_qpos_noise=0.02,
     render_mode="human"
 )

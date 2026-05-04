@@ -1,14 +1,14 @@
 from magma_core.base.tasks import BaseBenchmarkTask
 from magma_scenarios.templates.errors.perception_errors import MaskedObjectError
-from .load_tools import CookingTool
+from .load_tools import PackagingTool
 from .attributes import main_course, fruits, drinks
-from .cooking_errors import GraspFoodFailureError, MaskFoodError
+from .packaging_errors import GraspFoodFailureError, MaskFoodError
 
-class cookingBenchmarks(BaseBenchmarkTask) :
-    name: str = "Benshmark cooking"
-    env_id: str = "Cooking"
+class PackagingBenchmarks(BaseBenchmarkTask) :
+    name: str = "Benshmark packaging"
+    env_id: str = "Packaging"
 
-    Tools_cls = CookingTool
+    Tools_cls = PackagingTool
 
     env_options = {}
     all_task_attributes = {

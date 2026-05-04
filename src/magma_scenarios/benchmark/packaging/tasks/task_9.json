@@ -8,8 +8,8 @@
             "expected_behavior": "acknowledge"
         },
         {
-            "instruction" : "serve me the recette of today",
-            "max_step": 3,
+            "instruction" : "serve me the recipe of today",
+            "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -24,7 +24,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta","ananas","apple","banana","watter", "juice"],
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana","watter", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -46,7 +46,7 @@
         },
                 {
             "instruction" : null,
-            "max_step": 3,
+            "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -62,7 +62,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","pasta","ananas","apple","watter", "juice"],
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","watter", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -76,7 +76,7 @@
                 "mode": "runtime_error",
                 "error": "MaskFoodError",
                 "arguments": {
-                    "inaccessible": [
+                    "masked": [
                       "pasta"
                     ]
                 }
@@ -84,7 +84,7 @@
         },
                 {
             "instruction" : null,
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [
                                 {
                     "predicate": "in",
@@ -99,7 +99,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chiken","fish","ananas","apple","watter", "juice"],
+                        "obj_name": ["chicken","fish","ananas","apple","watter", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
