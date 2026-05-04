@@ -5,14 +5,14 @@
     ],
     "stages": [
         {
-            "instruction": "Please store one green cube in the green box.",
+            "instruction": "Please store one yellow cube in the yellow box.",
             "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",
                     "arguments": {
-                        "objects": "green_cube*",
-                        "location": "green_box_pose",
+                        "objects": "yellow_cube*",
+                        "location": "yellow_box_pose",
                         "minimum": 1
                     }
                 }
@@ -22,8 +22,8 @@
                 "multi-steps"
             ],
             "injection": {
-                "mode": "force_recovery",
-                "message": "Temporary gripper controller timeout. Please retry the placement."
+                "mode": "force_failure",
+                "message": "Communication timeout with the robot."
             }
         }
     ]

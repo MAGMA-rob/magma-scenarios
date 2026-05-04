@@ -300,6 +300,7 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
         selected_coffees = random.choices(coffees, k=nb_team)
 
         msg_parts = []
+        benchmark_like_msg_parts = []
         for team_name, coffee in zip(selected_teams, selected_coffees):
             self.constraints.append(
                 TeamCoffeePreferenceConstraint(
@@ -311,12 +312,17 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
             )
             if self.mode == "override":
                 msg_parts.append(f"everyone in team {team_name} likes {coffee} coffee")
+                benchmark_like_msg_parts.append(f"{team_name} team prefer {coffee} coffee")
             else:
                 msg_parts.append(
                     f"by default, members of team {team_name} like {coffee} coffee if they do not already have a known preference"
                 )
+                benchmark_like_msg_parts.append(f"{team_name} team usually drinks {coffee}")
 
-        self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
+        if random.choice([True, False]):
+            self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
+        else:
+            self.constraint_msg = " and ".join(benchmark_like_msg_parts) + "."
 
     def apply_request(self, state: TaskState) -> TaskState:
         state = super().apply_request(state)
@@ -373,6 +379,8 @@ class AskCoffeePerUser(BaseRequest):
 
     def _build_ordered_instruction(self, names: List[str]) -> str:
         if len(names) == 1:
+            if random.choice([True, False]):
+                return f"Can you serve a coffee for {names[0]}?"
             return f"Please make the coffee for {names[0]}."
 
         parts = [f"first the coffee for {names[0]}"]

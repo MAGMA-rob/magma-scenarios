@@ -1,6 +1,6 @@
 {
-  "scenario_name": "Warehouse_Sorting_Simp",
-  "scenario_id": "WS_simp",
+  "scenario_name": "ID_Warehouse",
+  "scenario_id": "ID_WS",
   "scenario_description": "The goal of this task is to evaluate the capacity of the model to launch cycle under target constraints. [PAPER VERSION] Without manufacturing order parameter.",
   "associate_task": "warehouse_sorting.SimpBench",
   "options_mplib": {
@@ -10,10 +10,10 @@
     "control_timesteps": 0
   },
   "criteria": {
-    "c-reasoning": 34,
-    "multi-steps": 9,
-    "lg-memorization": 17,
-    "recovery": 10
+    "c-reasoning": 28,
+    "multi-steps": 5,
+    "lg-memorization": 11,
+    "recovery": 9
   },
   "criteria_tasks": {
     "c-reasoning": [
@@ -23,7 +23,6 @@
       "task_0.json",
       "task_6.json",
       "task_16.json",
-      "task_12.json",
       "task_18.json",
       "task_33.json",
       "task_2.json",
@@ -33,34 +32,25 @@
       "task_35.json",
       "task_15.json",
       "task_10.json",
-      "task_5.json",
       "task_14.json",
-      "task_11.json",
       "task_28.json",
-      "task_20.json",
       "task_30.json",
       "task_19.json",
       "task_9.json",
       "task_3.json",
       "task_26.json",
       "task_25.json",
-      "task_17.json",
       "task_1.json",
       "task_13.json",
       "task_4.json",
-      "task_32.json",
       "task_31.json",
       "task_7.json"
     ],
     "multi-steps": [
       "task_24.json",
-      "task_12.json",
       "task_33.json",
-      "task_11.json",
-      "task_20.json",
       "task_19.json",
       "task_26.json",
-      "task_8.json",
       "task_31.json"
     ],
     "lg-memorization": [
@@ -72,14 +62,8 @@
       "task_29.json",
       "task_35.json",
       "task_10.json",
-      "task_5.json",
       "task_14.json",
-      "task_11.json",
-      "task_20.json",
       "task_30.json",
-      "task_8.json",
-      "task_27.json",
-      "task_32.json",
       "task_31.json"
     ],
     "recovery": [
@@ -91,7 +75,6 @@
       "task_30.json",
       "task_26.json",
       "task_25.json",
-      "task_27.json",
       "task_31.json"
     ]
   },
@@ -99,9 +82,7 @@
     "6": [
       "task_24",
       "task_21",
-      "task_18",
-      "task_5",
-      "task_27"
+      "task_18"
     ],
     "12": [
       "task_34"
@@ -120,32 +101,24 @@
       "task_13",
       "task_7"
     ],
-    "4": [
-      "task_12",
-      "task_22",
-      "task_28",
-      "task_20",
-      "task_17",
-      "task_8",
-      "task_1",
-      "task_4"
-    ],
     "15": [
       "task_33",
       "task_35"
     ],
     "11": [
       "task_29",
-      "task_14",
-      "task_32"
+      "task_14"
     ],
     "8": [
       "task_23",
       "task_10",
       "task_26"
     ],
-    "10": [
-      "task_11"
+    "4": [
+      "task_22",
+      "task_28",
+      "task_1",
+      "task_4"
     ],
     "9": [
       "task_30"

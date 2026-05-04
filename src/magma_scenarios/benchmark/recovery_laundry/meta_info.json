@@ -1,6 +1,6 @@
 {
   "scenario_name": "Recovery_Laundry",
-  "scenario_id": "Laundry_recovery",
+  "scenario_id": "RL",
   "scenario_description": "Short laundry tasks focused on adapting to grasp errors by trying other requested clothes.",
   "associate_task": "laundry.SimpBench",
   "options_mplib": {
@@ -21,8 +21,17 @@
       "task_6",
       "task_3"
     ],
+    "11": [
+      "task_12"
+    ],
+    "13": [
+      "task_10"
+    ],
     "10": [
       "task_5"
+    ],
+    "15": [
+      "task_11"
     ],
     "16": [
       "task_9",
@@ -30,13 +39,15 @@
     ]
   },
   "criteria": {
-    "recovery": 10,
-    "multi-steps": 10
+    "recovery": 11,
+    "multi-steps": 13,
+    "c-reasoning": 3
   },
   "criteria_tasks": {
     "recovery": [
       "task_0.json",
       "task_6.json",
+      "task_12.json",
       "task_2.json",
       "task_5.json",
       "task_9.json",
@@ -49,14 +60,22 @@
     "multi-steps": [
       "task_0.json",
       "task_6.json",
+      "task_12.json",
       "task_2.json",
+      "task_10.json",
       "task_5.json",
+      "task_11.json",
       "task_9.json",
       "task_3.json",
       "task_8.json",
       "task_1.json",
       "task_4.json",
       "task_7.json"
+    ],
+    "c-reasoning": [
+      "task_12.json",
+      "task_10.json",
+      "task_11.json"
     ]
   }
 }
