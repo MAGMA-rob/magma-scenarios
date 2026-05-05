@@ -18,6 +18,50 @@ class CycleRequest(BaseRequest):
         super().__init__()
         self.max_object = max_object_per_cycle_request
 
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("objects", [])) <= 0:
+            return 0
+        if len(state.attributes.get("target_areas", [])) <= 0:
+            return 0
+        if state.properties.get("object_area_needs_application", False):
+            return 8
+        object_assignments = state.relations.get("object_area", {})
+        if len(object_assignments) > 0:
+            return 4
+        return 2
+
+    def _sample_objects_to_sort(self, state: TaskState) -> List[str]:
+        all_objects = state.attributes.get("objects", []).copy()
+        random.shuffle(all_objects)
+        max_objects = min(self.max_object, len(all_objects))
+        nb_obj = random.randint(1, max_objects)
+
+        object_assignments = state.relations.get("object_area", {})
+        assigned_objects = [
+            obj for obj in all_objects
+            if obj in object_assignments
+        ]
+        missing_objects = [
+            obj for obj in all_objects
+            if obj not in object_assignments
+        ]
+
+        selected: List[str] = []
+        if state.properties.get("object_area_needs_application", False) and assigned_objects:
+            selected.append(random.choice(assigned_objects))
+        elif object_assignments and missing_objects and random.random() < 0.5:
+            selected.append(random.choice(missing_objects))
+            if len(selected) < nb_obj and assigned_objects:
+                selected.append(random.choice(assigned_objects))
+
+        for obj in all_objects:
+            if len(selected) >= nb_obj:
+                break
+            if obj not in selected:
+                selected.append(obj)
+
+        return selected
+
     def _create_stages(
             self,
             objects_to_sort : List,
@@ -63,10 +107,12 @@ class CycleRequest(BaseRequest):
         instruction_str = f"Launch a cycle for {objs}."
         has_c = False
         if base_assignement:
-            instruction_str += " And consider "
-            for obj, area in base_assignement.items():
-                instruction_str += f"{obj} to {area}"
-            instruction_str += " as news default assignment."
+            rule_text = ", ".join(
+                f"{obj} to {area}"
+                for obj, area in base_assignement.items()
+            )
+            assignment_word = "assignments" if len(base_assignement) > 1 else "assignment"
+            instruction_str += f" And consider {rule_text} as new default {assignment_word}."
             has_c = True
         cycle_instruction = UserInstruction(instruction_str, has_constraint=has_c)
 
@@ -99,10 +145,11 @@ class CycleRequest(BaseRequest):
                 memory=[],
                 attributes=state.attributes
             ))
-            ins = "For this cycle, "
-            for o, a in missing_assignment.items():
-                ins += f"{o} goes to {a}, "
-            cycle_instruction = UserInstruction(ins)
+            assignment_text = ", ".join(
+                f"{obj} goes to {area}"
+                for obj, area in missing_assignment.items()
+            )
+            cycle_instruction = UserInstruction(f"For this cycle, {assignment_text}.")
         
         append_stage(Cycle(
             assignment=assignement,
@@ -121,10 +168,15 @@ class CycleRequest(BaseRequest):
         if len(all_objects) <= 0 or len(all_areas) <=0:
             raise RuntimeError(f"Failed to build the stage from {self.__class__.__name__} due to empty objects or areas")
         
-        nb_obj = random.randint(1,min(self.max_object, len(all_objects)))
-        random.shuffle(all_objects)
+        return self._create_stages(self._sample_objects_to_sort(state), all_areas, state)
 
-        return self._create_stages(all_objects[:nb_obj], all_areas, state)
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("object_area_needs_application", False):
+            state.properties["object_area_needs_application"] = False
+            state.properties["object_area_applications"] = (
+                state.properties.get("object_area_applications", 0) + 1
+            )
+        return state
 
 class CycleWithPermanentRulesRequest(CycleRequest):
 
@@ -133,6 +185,13 @@ class CycleWithPermanentRulesRequest(CycleRequest):
     def __init__(self, max_object_per_cycle_request: int = 3, max_permanent_rule : int = 2) -> None:
         super().__init__(max_object_per_cycle_request)
         self.max_rules = max_permanent_rule
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("object_area_needs_application", False):
+            return 1
+        if len(state.relations.get("object_area", {})) < 1:
+            return 3
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_objects = state.attributes.get("objects", []).copy()
@@ -167,6 +226,8 @@ class CycleWithPermanentRulesRequest(CycleRequest):
     def apply_request(self, state: TaskState) -> TaskState:
         for c in self.constraints:
             c.apply(state)
+        if len(self.constraints) > 0:
+            state.properties["object_area_needs_application"] = True
         return state
         
 
@@ -174,6 +235,11 @@ class MoveOneObjectRequest(BaseRequest):
 
     def __init__(self) -> None:
         super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get("object_area_needs_application", False):
+            return 0.5
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:        
         all_objects = state.attributes.get("objects", [])
@@ -195,14 +261,16 @@ class MoveOneObjectRequest(BaseRequest):
     
 class CycleByCategoriesRequest(BaseRequest):
 
-    def __init__(self, max_categories_per_cycle_request : int = 2, max_added_objects_per_empty_category : int = 1) -> None:
+    def __init__(self, max_categories_per_cycle_request : int = 2) -> None:
         super().__init__()
         self.max_categories = max_categories_per_cycle_request
-        self.max_added_objects = max_added_objects_per_empty_category
 
     def _get_known_types(self, state: TaskState) -> List[str]:
-        known_types = list(state.relations.get("type_area", {}).keys())
-        for obj_type in state.relations.get("object_type", {}).values():
+        known_objects = set(state.attributes.get("objects", []))
+        known_types = []
+        for obj_name, obj_type in state.relations.get("object_type", {}).items():
+            if obj_name not in known_objects:
+                continue
             if obj_type not in known_types:
                 known_types.append(obj_type)
         return known_types
@@ -214,27 +282,11 @@ class CycleByCategoriesRequest(BaseRequest):
             f"Launch a cycle for all objects from categories {' and '.join(categories)}."
         )
 
-    def _build_category_resolution_instruction(
-            self,
-            forgotten_types : List[str],
-            added_objects_by_type : Dict[str, List[str]]
-        ) -> UserInstruction:
-        parts = []
-        for obj_type in forgotten_types:
-            parts.append(f"Ok, forget category {obj_type} for this cycle")
-        for obj_type, objs in added_objects_by_type.items():
-            obj_str = " and ".join(objs)
-            parts.append(f"For this cycle, consider {obj_str} as {obj_type}")
-        return UserInstruction(". ".join(parts) + ".")
-
     def _build_missing_assignment_instruction(self, missing_type_assignment : Dict[str, str]) -> UserInstruction:
         parts = []
         for obj_type, area in missing_type_assignment.items():
             parts.append(f"For this cycle, category {obj_type} goes to {area}")
         return UserInstruction(". ".join(parts) + ".")
-
-    def _build_area_override_instruction(self) -> UserInstruction:
-        return UserInstruction("Please override these area constraints just for this cycle.")
 
     def sampling_weight(self, state: TaskState) -> float:
         
@@ -247,7 +299,13 @@ class CycleByCategoriesRequest(BaseRequest):
             return 0
         if len(state.attributes.get("target_areas", [])) <= 0:
             return 0
-        return 1
+        if state.properties.get("type_area_needs_application", False):
+            return 8
+        if state.properties.get("object_type_needs_application", False):
+            return 5
+        if len(state.relations.get("type_area", {})) > 0:
+            return 4
+        return 2
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_types : List = self._get_known_types(state)
@@ -265,44 +323,14 @@ class CycleByCategoriesRequest(BaseRequest):
         type_areas = state.relations.get("type_area", {})
 
         type_to_objects = {}
-        available_objects = [o for o in all_objects if not o in list(object_types.keys())]
-        empty_types = []
 
         for obj_type in selected_types:
-            # build tous les objets associé à ce type 
             associated_objects = [
                 obj_name
                 for obj_name, associated_type in object_types.items()
-                if associated_type == obj_type
+                if associated_type == obj_type and obj_name in all_objects
             ]
-
-            if associated_objects:
-                type_to_objects[obj_type] = associated_objects
-            else:
-                empty_types.append(obj_type)
-
-        forgotten_types = [] #type to not use
-        replaced_categories = [] #type to replace forgotten one
-        added_objects_by_type = {} #answer of the human to add object to a type
-
-        if empty_types: # si on a sampler des types sans objets
-            cycle_already_possible = any(type_to_objects.values())
-            if cycle_already_possible: #si on a des cycles qui fonctionnent on oublie juste
-                forgotten_types.extend(empty_types)
-            else:
-                for t in empty_types:
-                    if len(available_objects) > 0:
-                        # on ajoute à une nouvelle categorie
-                        new_objects = random.choices(available_objects,k=random.randint(1,min(self.max_added_objects, len(available_objects))))
-                        added_objects_by_type[t] = new_objects
-                        #clean available
-                        for o in new_objects:
-                            available_objects.remove(o)
-                    else: 
-                        # pas d'objet sans type on oublie juste pour le moment
-                        # TODO: Choisir une categorie au hasard pour remplacer
-                        forgotten_types.append(t)
-                    
+            type_to_objects[obj_type] = associated_objects
 
         if not any(type_to_objects.values()):
             raise RuntimeError(
@@ -316,22 +344,6 @@ class CycleByCategoriesRequest(BaseRequest):
                 stage.linked_to_prev = True
             stages.append(stage)
         current_instruction = self._build_cycle_request_instruction(selected_types)
-
-        if empty_types:
-            empty_types_str = " and ".join(empty_types)
-            verb = "has" if len(empty_types) == 1 else "have"
-            append_stage(
-                ForbiddenElemStage(
-                    instruction=current_instruction,
-                    answer=f"The model must inform that {empty_types_str} {verb} no associated object.",
-                    memory=[],
-                    attributes=state.attributes
-                )
-            )
-            current_instruction = self._build_category_resolution_instruction(
-                forgotten_types=forgotten_types,
-                added_objects_by_type=added_objects_by_type
-            )
 
         # Maintenant on build les assignments par type
         missing_type_assignment = {}
@@ -356,35 +368,6 @@ class CycleByCategoriesRequest(BaseRequest):
                 )
             )
             current_instruction = self._build_missing_assignment_instruction(missing_type_assignment)
-        
-        # on verifie les interdictions
-        # forbidden_object = []
-        # obj_with_forbidden_areas = []
-        # for obj_name, target_area in assignment.items():
-        #     if obj_name in state.properties.get("forbidden_objects", []):
-        #         forbidden_object.append(obj_name)
-        #     if target_area in state.properties.get("forbidden_areas", []):
-        #         obj_with_forbidden_areas.append(obj_name)
-
-        # if obj_with_forbidden_areas or forbidden_object:
-        #     objs = " and ".join(forbidden_object)
-        #     areas = " and ".join([assignment[o] for o in obj_with_forbidden_areas])
-
-        #     answer = "The model must inform that "
-        #     if forbidden_object:
-        #         answer += f"{objs} are forbidden"
-        #     if obj_with_forbidden_areas:
-        #         answer += f"{areas} can not be used."
-
-        #     stages.append(
-        #         ForbiddenElemStage(
-        #             instruction=current_instruction,
-        #             answer=answer,
-        #             memory=[],
-        #             attributes=state.attributes
-        #         )
-        #     )
-        #     current_instruction = self._build_area_override_instruction()
 
         append_stage(Cycle(
             assignment=assignment,
@@ -394,6 +377,16 @@ class CycleByCategoriesRequest(BaseRequest):
         ))
 
         return stages
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get("object_type_needs_application", False):
+            state.properties["object_type_needs_application"] = False
+        if state.properties.get("type_area_needs_application", False):
+            state.properties["type_area_needs_application"] = False
+        state.properties["category_cycle_applications"] = (
+            state.properties.get("category_cycle_applications", 0) + 1
+        )
+        return state
 
 class AddAreas(AddValueToListRequest):
 
@@ -440,6 +433,12 @@ class RemoveAreas(RemoveValueToListRequest):
 
     def __init__(self, max_update : int = 2) -> None:
         super().__init__(["target_areas"], max_update = max_update)
+
+    def sampling_weight(self, state: TaskState) -> float:
+        target_areas = state.attributes.get("target_areas", [])
+        if len(target_areas) <= 1:
+            return 0
+        return super().sampling_weight(state)
     
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         
@@ -449,6 +448,8 @@ class RemoveAreas(RemoveValueToListRequest):
         self.att_state = deepcopy(state.attributes)
 
         for _ in range(n):
+            if len(self.att_state["target_areas"]) == 1:
+                break
             out = self._get_random_key_value(["target_areas"], self.att_state)
             if out is None:
                 break

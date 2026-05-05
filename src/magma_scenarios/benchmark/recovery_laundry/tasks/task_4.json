@@ -1,0 +1,112 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Please clean jeans, pants and cap with detergent_OMO.",
+            "max_step": 4,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "jeans",
+                            "pants",
+                            "cap"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "blouse",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "detergent_PERSIL",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "jeans",
+                        "pants"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 8,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "pants",
+                            "cap",
+                            "detergent_OMO"
+                        ],
+                        "location": "washing_machine_basket"
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "shirt",
+                            "blouse",
+                            "short",
+                            "socks",
+                            "boxer",
+                            "panties",
+                            "detergent_PERSIL",
+                            "detergent_SKIP"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {
+                            "clothes": [
+                                "jeans",
+                                "pants",
+                                "cap"
+                            ],
+                            "detergent": [
+                                "detergent_OMO"
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

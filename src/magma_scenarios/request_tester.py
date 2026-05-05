@@ -19,6 +19,10 @@ python -m magma_scenarios.request_tester \f
     warehouse_sorting.SimpleSortingDefinition \
     --request RemoveAreas \
     --state-file /tmp/custom_state.json
+
+python -m magma_scenarios.request_tester \
+    warehouse_sorting.SimpleSortingDefinition \
+    --sample 50
 """
 
 from __future__ import annotations
@@ -27,8 +31,9 @@ import argparse
 import copy
 import json
 import random
+import traceback
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from magma_core.base.state import TaskState
 from .registry_loader import load_definition
@@ -41,6 +46,7 @@ STATE_OVERRIDE_KEYS = {
     "relations",
     "properties",
 }
+DEFAULT_MAX_TOTAL_TARGET_STEPS = 15
 
 
 def parse_args() -> argparse.Namespace:
@@ -107,7 +113,26 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print an example JSON state override and exit.",
     )
+    parser.add_argument(
+        "--sample",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "Generate N random tasks from the definition, restarting from the "
+            "original TaskState for each task. Errors are printed with context."
+        ),
+    )
     return parser.parse_args()
+
+
+def validate_args(args: argparse.Namespace) -> None:
+    if args.sample is not None and args.sample <= 0:
+        raise ValueError("--sample must be a positive integer.")
+    if args.sample is not None and args.request is not None:
+        raise ValueError("--sample generates full random tasks; do not combine it with --request.")
+
+
 def load_state_override(args: argparse.Namespace) -> Dict[str, Any]:
     data: Dict[str, Any] = {}
 
@@ -217,6 +242,51 @@ def print_stages(stages: List[Any]) -> None:
         # print(f"  attributes: {json.dumps(situation.attributes, ensure_ascii=True, indent=2)}")
 
 
+def get_weight(request: Any, state: TaskState) -> float:
+    weight = request.sampling_weight(state.clone())
+    if weight < 0:
+        raise ValueError(
+            f"{request.__class__.__name__}.sampling_weight returned a negative weight: {weight}"
+        )
+    return weight
+
+
+def select_weighted_request(
+    definition: Any,
+    state: TaskState,
+) -> Tuple[Optional[int], Optional[Any], List[Dict[str, Any]]]:
+    requests = get_request_catalog(definition)
+    eligible: List[Tuple[int, Any]] = []
+    weights: List[float] = []
+    errors: List[Dict[str, Any]] = []
+
+    for request_index, request in enumerate(requests):
+        try:
+            weight = get_weight(request, state)
+        except Exception as exc:
+            errors.append(
+                {
+                    "request_index": request_index,
+                    "request_name": request.__class__.__name__,
+                    "phase": "sampling_weight",
+                    "error": f"{exc.__class__.__name__}: {exc}",
+                    "traceback": traceback.format_exc(),
+                }
+            )
+            continue
+
+        if weight > 0:
+            eligible.append((request_index, request))
+            weights.append(weight)
+
+    if not eligible:
+        return None, None, errors
+
+    selected_position = random.choices(range(len(eligible)), weights=weights, k=1)[0]
+    request_index, request = eligible[selected_position]
+    return request_index, request, errors
+
+
 def execute_request(state: TaskState, request: Any, base_state: TaskState) -> Tuple[List[Any], TaskState]:
     sampled_request = copy.deepcopy(request)
     stages = sampled_request.create_stages(state)
@@ -243,6 +313,150 @@ def run_request(
     return next_state
 
 
+def print_task_error(
+    sample_error: Dict[str, Any],
+) -> None:
+    print(
+        f"\nTask [{sample_error['task_index']}] ERROR "
+        f"seed={sample_error['task_seed']} "
+        f"phase={sample_error['phase']} "
+        f"request={sample_error['request_label']}"
+    )
+    print(f"  {sample_error['error']}")
+
+    if sample_error["request_history"]:
+        print("  Requests already sampled in this task:")
+        for request_label in sample_error["request_history"]:
+            print(f"    - {request_label}")
+
+    print("  State before error:")
+    for line in sample_error["state"].splitlines():
+        print(f"    {line}")
+
+    if sample_error.get("traceback"):
+        print("  Traceback:")
+        for line in sample_error["traceback"].rstrip().splitlines():
+            print(f"    {line}")
+
+
+def run_sampling(
+    definition: Any,
+    initial_state: TaskState,
+    sample_count: int,
+    seed: int,
+    max_total_target_steps: int = DEFAULT_MAX_TOTAL_TARGET_STEPS,
+) -> None:
+    errors: List[Dict[str, Any]] = []
+    successes = 0
+
+    print("\n=== Random task sampling ===")
+    print(f"Tasks to generate: {sample_count}")
+    print(f"State handling: restart from the same initial TaskState for every task")
+    print(f"Max total target steps per task: {max_total_target_steps}")
+
+    for task_index in range(sample_count):
+        task_seed = seed + task_index
+        random.seed(task_seed)
+
+        base_state = initial_state.clone()
+        state = base_state.clone()
+        task = definition.build_default_task()
+        task.stages = []
+        total_target_steps = 0
+        request_history: List[str] = []
+        failed = False
+
+        while total_target_steps < max_total_target_steps:
+            request_index, request, selection_errors = select_weighted_request(definition, state)
+
+            if selection_errors:
+                selection_error = selection_errors[0]
+                request_label = (
+                    f"[{selection_error['request_index']}] {selection_error['request_name']}"
+                )
+                sample_error = {
+                    "task_index": task_index,
+                    "task_seed": task_seed,
+                    "request_label": request_label,
+                    "phase": selection_error["phase"],
+                    "error": selection_error["error"],
+                    "request_history": request_history,
+                    "state": state.to_human_readable(),
+                    "traceback": selection_error["traceback"],
+                }
+                errors.append(sample_error)
+                print_task_error(sample_error)
+                failed = True
+                break
+
+            if request is None:
+                break
+
+            request_label = f"[{request_index}] {request.__class__.__name__}"
+            state_before_request = state.clone()
+            try:
+                stages, next_state = execute_request(state, request, base_state)
+                sampled_target_steps = sum(stage.target_steps for stage in stages)
+            except Exception as exc:
+                sample_error = {
+                    "task_index": task_index,
+                    "task_seed": task_seed,
+                    "request_label": request_label,
+                    "phase": "create/apply",
+                    "error": f"{exc.__class__.__name__}: {exc}",
+                    "request_history": request_history,
+                    "state": state_before_request.to_human_readable(),
+                    "traceback": traceback.format_exc(),
+                }
+                errors.append(sample_error)
+                print_task_error(sample_error)
+                failed = True
+                break
+
+            if task.stages and total_target_steps + sampled_target_steps > max_total_target_steps:
+                break
+
+            task.stages.extend(stages)
+            total_target_steps += sampled_target_steps
+            state = next_state
+            request_history.append(
+                f"{request_label} -> {len(stages)} stage(s), {sampled_target_steps} target step(s)"
+            )
+
+        if failed:
+            print(f"Task [{task_index}] FAILED seed={task_seed}")
+            continue
+
+        successes += 1
+        print(
+            f"Task [{task_index}] OK seed={task_seed} "
+            f"stages={len(task.stages)} target_steps={total_target_steps} "
+            f"requests={len(request_history)}"
+        )
+
+    print("\n=== Sampling summary ===")
+    print(f"Successful tasks: {successes}/{sample_count}")
+    print(f"Errors: {len(errors)}")
+    if not errors:
+        return
+
+    grouped: Dict[Tuple[str, str, str], int] = {}
+    for sample_error in errors:
+        key = (
+            sample_error["request_label"],
+            sample_error["phase"],
+            sample_error["error"],
+        )
+        grouped[key] = grouped.get(key, 0) + 1
+
+    print("\nGrouped errors:")
+    for (request_label, phase, error), count in sorted(
+        grouped.items(),
+        key=lambda item: (-item[1], item[0][0], item[0][1], item[0][2]),
+    ):
+        print(f"- {count}x {request_label} | {phase} | {error}")
+
+
 def print_state_template() -> None:
     template = {
         "memory": ["Optional memory line"],
@@ -266,6 +480,7 @@ def print_state_template() -> None:
 
 def main() -> int:
     args = parse_args()
+    validate_args(args)
 
     if args.print_state_template:
         print_state_template()
@@ -288,12 +503,21 @@ def main() -> int:
     print_state("Initial state", state)
     print_request_list(definition, state)
 
-    if args.request is None:
-        return 0
-
     for selector in args.setup_request:
         request_index, request = resolve_request(get_request_catalog(definition), selector)
         state = run_request("Setup request", state, request, request_index, base_state)
+
+    if args.sample is not None:
+        run_sampling(
+            definition=definition,
+            initial_state=state,
+            sample_count=args.sample,
+            seed=args.seed,
+        )
+        return 0
+
+    if args.request is None:
+        return 0
 
     request_index, request = resolve_request(get_request_catalog(definition), args.request)
     run_request("Target request", state, request, request_index, base_state)

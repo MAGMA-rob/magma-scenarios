@@ -1,14 +1,14 @@
 from magma_core.base.errors import BaseError
 from torch._tensor import Tensor
 import torch
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.data_structures import Instruction, Log, Situation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.goals import BaseGoal, ExactCountAt, MaxAt
 
-from .color_sorting_errors import MaskRemainingCubesError
+from .color_sorting_errors import MaskRemainingCubesError, GraspCubeFailureError
 
 
 class MaxSortedColor(MaxAt):
@@ -55,7 +55,7 @@ class SortByColorStage(BaseTaskStage):
     target_steps = 3
     acceptance_steps = 1
 
-    possible_errors = [MaskRemainingCubesError()]
+    possible_errors = [MaskRemainingCubesError(2), GraspCubeFailureError(2)]
 
     def __init__(
             self,
@@ -63,7 +63,7 @@ class SortByColorStage(BaseTaskStage):
             nb_good_place : int,
             attributes : Dict,
             last : bool, 
-            max_assignment : Dict = {}
+            max_assignment : Optional[Dict] = None,
         ) -> None:            
         self.situation = Situation(
             memory=[],
@@ -72,9 +72,14 @@ class SortByColorStage(BaseTaskStage):
             flag_answer_to_user=last,
             instruction=instruction
         )
+        error_assignment = {} if max_assignment is None else max_assignment.copy()
+        self.possible_errors = [
+            MaskRemainingCubesError(2, error_assignment),
+            GraspCubeFailureError(2, error_assignment),
+        ]
 
         g : List[BaseGoal] = [CountCubes(nb_good_place,colors=attributes["known_box_color"])]
-        for color, max_nb in max_assignment.items():
+        for color, max_nb in (max_assignment or {}).items():
             g.append(MaxSortedColor(color,max_nb))
         
         super().__init__(
@@ -99,6 +104,11 @@ class ExactSortByColorStage(BaseTaskStage):
         if assignment == {}:
             raise RuntimeError("Got an empty assignment")
         
+        self.possible_errors = [
+            MaskRemainingCubesError(2, assignment),
+            GraspCubeFailureError(2, assignment),
+        ]
+
         msg = []
         g : List[BaseGoal] = []
         for color, nb in assignment.items():

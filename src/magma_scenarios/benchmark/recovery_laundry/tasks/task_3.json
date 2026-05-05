@@ -1,24 +1,23 @@
 {
     "criteria": [
-        "multi-steps",
-        "c-reasoning"
+        "recovery",
+        "multi-steps"
     ],
     "stages": [
         {
-            "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction": "Wash the white clothes ",
-            "max_step": 3,
+            "instruction": "Please clean shirt, blouse and socks with detergent_PERSIL.",
+            "max_step": 4,
             "action_goal": [
                 {
-                    "predicate": "in",
+                    "predicate": "count",
                     "arguments": {
-                        "obj_name": [
-                            "panties"
+                        "objects": [
+                            "shirt",
+                            "blouse",
+                            "socks"
                         ],
-                        "location": "washing_machine_basket"
+                        "location": "washing_machine_basket",
+                        "minimum": 1
                     }
                 },
                 {
@@ -26,12 +25,12 @@
                     "arguments": {
                         "obj_name": [
                             "jeans",
-                            "blouse",
-                            "cap",
                             "pants",
                             "short",
                             "boxer",
-                            "detergent_PERSIL",
+                            "panties",
+                            "cap",
+                            "detergent_OMO",
                             "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
@@ -39,8 +38,8 @@
                     }
                 }
             ],
-            "complementary_verif": {},
             "keys_evaluator": [
+                "recovery",
                 "multi-steps"
             ],
             "injection": {
@@ -49,24 +48,25 @@
                 "arguments": {
                     "inaccessible": [
                         "shirt",
-                        "socks",
-                        "detergent_OMO"
+                        "blouse"
                     ]
                 }
             }
         },
         {
             "instruction": null,
-            "max_step": 3,
+            "max_step": 4,
             "action_goal": [
                 {
-                    "predicate": "in",
+                    "predicate": "count",
                     "arguments": {
-                        "obj_name": [
+                        "objects": [
                             "shirt",
-                            "panties"
+                            "blouse",
+                            "socks"
                         ],
-                        "location": "washing_machine_basket"
+                        "location": "washing_machine_basket",
+                        "minimum": 2
                     }
                 },
                 {
@@ -74,12 +74,12 @@
                     "arguments": {
                         "obj_name": [
                             "jeans",
-                            "blouse",
-                            "cap",
                             "pants",
                             "short",
                             "boxer",
-                            "detergent_PERSIL",
+                            "panties",
+                            "cap",
+                            "detergent_OMO",
                             "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
@@ -87,8 +87,8 @@
                     }
                 }
             ],
-            "complementary_verif": {},
             "keys_evaluator": [
+                "recovery",
                 "multi-steps"
             ],
             "injection": {
@@ -96,9 +96,7 @@
                 "error": "GraspClothesFailureError",
                 "arguments": {
                     "inaccessible": [
-                        "socks",
-                        "detergent_OMO"
-                            
+                        "shirt"
                     ]
                 }
             }
@@ -112,9 +110,9 @@
                     "arguments": {
                         "obj_name": [
                             "shirt",
+                            "blouse",
                             "socks",
-                            "detergent_OMO",
-                            "panties"
+                            "detergent_PERSIL"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -124,12 +122,12 @@
                     "arguments": {
                         "obj_name": [
                             "jeans",
-                            "blouse",
-                            "cap",
                             "pants",
                             "short",
                             "boxer",
-                            "detergent_PERSIL",
+                            "panties",
+                            "cap",
+                            "detergent_OMO",
                             "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
@@ -137,23 +135,26 @@
                     }
                 }
             ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
             "complementary_verif": {
                 "logs": [
                     {
                         "content": {
                             "clothes": [
                                 "shirt",
-                                "socks",
-                                "panties"
+                                "blouse",
+                                "socks"
                             ],
-                            "detergent": "detergent_OMO"
+                            "detergent": [
+                                "detergent_PERSIL"
+                            ]
                         }
                     }
                 ]
-            },
-            "keys_evaluator": [
-                "multi-steps"
-            ]
+            }
         }
     ]
 }

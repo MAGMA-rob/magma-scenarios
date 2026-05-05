@@ -4,7 +4,7 @@
 import heapq
 from copy import deepcopy
 from itertools import combinations
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.state import TaskState
@@ -87,7 +87,7 @@ def copy_precedence_graph(state: TaskState) -> Dict[str, List[str]]:
     }
 
 
-def get_prefix_button(state: TaskState) -> str | None:
+def get_prefix_button(state: TaskState) -> Optional[str]:
     """Return the active prefix button if one exists."""
     relation = state.relations.get(BUTTON_SEQUENCE_PREFIX_KEY, {})
     if not isinstance(relation, dict):
@@ -202,7 +202,7 @@ def valid_group_candidates(
     return candidates
 
 
-def button_number(button_name: str) -> int | None:
+def button_number(button_name: str) -> Optional[int]:
     """Extract the numeric suffix of names like sw0, sw1, ..."""
     digits = "".join(char for char in button_name if char.isdigit())
     if not digits:
@@ -257,13 +257,13 @@ def has_any_button_rule(state: TaskState) -> bool:
     return count_active_rules(state) > 0
 
 
-def available_forget_targets(state: TaskState) -> List[Tuple[str, str | None]]:
+def available_forget_targets(state: TaskState) -> List[Tuple[str, Optional[str]]]:
     """Return all valid forget actions from the current rule state."""
     rule_specs = copy_rule_specs(state)
     if not rule_specs:
         return []
 
-    targets: List[Tuple[str, str | None]] = [("all", None)]
+    targets: List[Tuple[str, Optional[str]]] = [("all", None)]
 
     if any(spec.get("kind") == "prefix" for spec in rule_specs):
         targets.append(("prefix", None))
@@ -322,7 +322,7 @@ def write_rule_specs(state: TaskState, rule_specs: Sequence[Dict]) -> None:
 
     new_rule_specs: List[Dict] = []
     new_graph: Dict[str, List[str]] = {}
-    prefix_button: str | None = None
+    prefix_button: Optional[str] = None
 
     for raw_spec in rule_specs:
         if not isinstance(raw_spec, dict):
@@ -529,7 +529,7 @@ class ButtonSequencePrefixConstraint(BaseConstraint):
 class ForgetButtonRulesConstraint(BaseConstraint):
     """Clear all rules or a targeted subset of them."""
 
-    def __init__(self, mode: str = "all", button_name: str | None = None) -> None:
+    def __init__(self, mode: str = "all", button_name: Optional[str] = None) -> None:
         super().__init__()
         self.mode = mode
         self.button_name = button_name

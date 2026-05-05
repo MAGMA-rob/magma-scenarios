@@ -1,22 +1,30 @@
 [
   {
-    "scenario_name": "Debug",
-    "folder_name": "debug",
+    "scenario_name": "Color_Sorting",
+    "folder_name": "color_sorting",
     "criteria": [
-      "lg-memorization",
+      "multi-steps",
       "recovery",
       "c-reasoning",
-      "multi-steps"
+      "lg-memorization"
     ]
   },
   {
-    "scenario_name": "Warehouse_Sorting_Simp",
-    "folder_name": "warehouse_sort_simp",
+    "scenario_name": "Make_coffee_Benchmark",
+    "folder_name": "make_coffee",
     "criteria": [
+      "multi-steps",
       "c-reasoning",
-      "lg-memorization",
+      "recovery"
+    ]
+  },
+  {
+    "scenario_name": "Recovery_Color_Sorting",
+    "folder_name": "recovery_color_sorting",
+    "criteria": [
       "recovery",
-      "multi-steps"
+      "multi-steps",
+      "c-reasoning"
     ]
   },
   {
@@ -29,22 +37,21 @@
     ]
   },
   {
-    "scenario_name": "Color_Sorting",
-    "folder_name": "color_sorting",
+    "scenario_name": "Warehouse_Sorting_Simp",
+    "folder_name": "warehouse_sort_simp",
     "criteria": [
-      "multi-steps",
       "c-reasoning",
+      "multi-steps",
       "lg-memorization",
       "recovery"
     ]
   },
   {
-    "scenario_name": "Make_coffee_Benchmark",
-    "folder_name": "make_coffee",
+    "scenario_name": "Recovery_Laundry",
+    "folder_name": "recovery_laundry",
     "criteria": [
-      "multi-steps",
-      "c-reasoning",
-      "recovery"
+      "recovery",
+      "multi-steps"
     ]
   },
   {

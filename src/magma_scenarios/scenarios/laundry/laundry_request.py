@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from magma_core.base.data_structures import EmptyInstruction, UserInstruction
 from magma_core.base.stage import BaseTaskStage
@@ -31,6 +31,11 @@ class AssignClotheDetergentRequest(GiveRelationAssignmentRequest):
             constraint_builder=ClotheDetergentConstraint,
             constraint_message_builder=_build_grouped_assignment_message,
         )
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get(f"{CLOTHE_DETERGENT_KEY}_needs_application", False):
+            return 0.25
+        return super().sampling_weight(state)
 
 
 def _join_clothes(clothes: List[str]) -> str:
@@ -140,7 +145,7 @@ def _build_all_groups_resolution_instruction(groups: List[Tuple[str, List[str]]]
 def _build_wash_stages(
         detergent: str,
         clothes: List[str],
-        instruction: str | None = None,
+        instruction: Optional[str] = None,
     ) -> List[BaseTaskStage]:
     stages: List[BaseTaskStage] = []
     first_instruction = EmptyInstruction() if instruction is None else UserInstruction(instruction)
@@ -161,7 +166,14 @@ class AskLaundryRequest(BaseRequest):
         self.max_clothes = max_clothes
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if len(_get_known_clothes(state)) > 0 else 0
+        if len(_get_known_clothes(state)) == 0:
+            return 0
+        if state.properties.get(f"{CLOTHE_DETERGENT_KEY}_needs_application", False):
+            return 8
+        relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
+        if len(set(relations.values())) > 1:
+            return 4
+        return 2
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         clothes = _sample_clothes(state, self.max_clothes)
@@ -210,6 +222,14 @@ class AskLaundryRequest(BaseRequest):
                 stages[-1].situation.flag_answer_to_user = False
         return stages
 
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get(f"{CLOTHE_DETERGENT_KEY}_needs_application", False):
+            state.properties[f"{CLOTHE_DETERGENT_KEY}_needs_application"] = False
+            state.properties[f"{CLOTHE_DETERGENT_KEY}_applications"] = (
+                state.properties.get(f"{CLOTHE_DETERGENT_KEY}_applications", 0) + 1
+            )
+        return state
+
 
 class AskLaundryByDetergentRequest(BaseRequest):
     """Ask to wash all clothes for one detergent plus clothes with no assignment."""
@@ -223,7 +243,7 @@ class AskLaundryByDetergentRequest(BaseRequest):
             return 0
 
         relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
-        return 1 if len(set(relations.values())) > 0 else 0
+        return 5 if len(set(relations.values())) > 0 else 0
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
@@ -272,6 +292,14 @@ class AskLaundryByDetergentRequest(BaseRequest):
         )
         return stages
 
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get(f"{CLOTHE_DETERGENT_KEY}_needs_application", False):
+            state.properties[f"{CLOTHE_DETERGENT_KEY}_needs_application"] = False
+            state.properties[f"{CLOTHE_DETERGENT_KEY}_applications"] = (
+                state.properties.get(f"{CLOTHE_DETERGENT_KEY}_applications", 0) + 1
+            )
+        return state
+
 
 class AskDirectLaundryRequest(BaseRequest):
     """Directly ask to wash a compatible group of clothes with one detergent."""
@@ -281,19 +309,18 @@ class AskDirectLaundryRequest(BaseRequest):
         self.max_clothes = max_clothes
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 0.5
+        if state.properties.get(f"{CLOTHE_DETERGENT_KEY}_needs_application", False):
+            return 0.25
+        if len(state.relations.get(CLOTHE_DETERGENT_KEY, {})) > 0:
+            return 0.75
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-        relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
-        detergents = sorted(set(relations.values()))
         clothes = state.attributes.get("clothes", [])
-
-        if len(detergents) == 0:
-            raise RuntimeError("Failed to sample a detergent")
         
         nb_clothes = random.randint(1, min(self.max_clothes, len(clothes)))
 
-        selected_detergent = random.choice(detergents)
+        selected_detergent = random.choice(state.attributes["detergents"])
         selected_clothes = random.sample(clothes, k=nb_clothes)
 
         return _build_wash_stages(

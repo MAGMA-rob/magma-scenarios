@@ -5,7 +5,7 @@
     "c-nb": 2,
     "stages": [
         {
-            "instruction": "Today, all objects must go to area1!",
+            "instruction": "Today, the default assignment for all objects is area1!",
             "expected_behavior": "acknowledge"
         },
         {

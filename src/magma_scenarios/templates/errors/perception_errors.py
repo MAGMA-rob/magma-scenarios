@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 
 from magma_core.base.data_structures.observation import Observation
 from magma_core.base.data_structures.tools import ToolResult, ToolExecution
@@ -20,7 +20,7 @@ class MaskedObjectError(BaseError):
         super().__init__()
         self.target_key = tool_execution_target_key
 
-    def initialize(self, obs: Observation, env_id: int) -> Dict[str, Any] | None:
+    def initialize(self, obs: Observation, env_id: int) -> Optional[Dict[str, Any]]:
         raise NotImplementedError("This class msut be defined in child class")
 
     def apply_pre_exec(self, tool_execution: ToolExecution, arguments: Dict[str, Any]):
@@ -42,7 +42,7 @@ class MaskedObjectError(BaseError):
     def apply_post_verif(self, tool_result: ToolResult, arguments: Dict[str, Any]):
         raise NotImplementedError("This function must be defined in the child class to allow custom modification")
 
-    def get_description(self, arguments: Dict[str, Any] | None) -> str:
+    def get_description(self, arguments: Optional[Dict[str, Any]]) -> str:
         if arguments is None or arguments.get("masked") is None or len(arguments['masked']) == 0:
             return ""
         return f"Masked objects from perception: {arguments['masked']}. One solution is to take another objects that still resolves the instruction."

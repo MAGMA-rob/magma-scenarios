@@ -1,77 +1,70 @@
 {
     "criteria": [
-        "multi-steps",
-        "c-reasoning"
+        "recovery",
+        "multi-steps"
     ],
     "stages": [
         {
-            "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction": "Wash the white clothes.",
-            "max_step": 10,
+            "instruction": "Please clean blouse, panties and cap with detergent_PERSIL.",
+            "max_step": 4,
             "action_goal": [
                 {
-                    "predicate": "in",
+                    "predicate": "count",
                     "arguments": {
-                        "obj_name": [
-                            "shirt",
-                            "socks",
+                        "objects": [
+                            "blouse",
                             "panties",
-                            "detergent_OMO"
+                            "cap"
                         ],
-                        "location": "washing_machine_basket"
+                        "location": "washing_machine_basket",
+                        "minimum": 1
                     }
                 },
                 {
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
+                            "shirt",
                             "jeans",
-                            "blouse",
-                            "cap",
                             "pants",
                             "short",
+                            "socks",
                             "boxer",
-                            "detergent_SKIP",
-                            "detergent_PERSIL"
+                            "detergent_OMO",
+                            "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
                     }
                 }
             ],
-            "complementary_verif": {
-                "logs": [
-                    {
-                        "content": {
-                            "clothes": [
-                                "shirt",
-                                "socks",
-                                "panties"
-                            ],
-                            "detergent": "detergent_OMO"
-                        }
-                    }
-                ]
-            },
             "keys_evaluator": [
+                "recovery",
                 "multi-steps"
             ],
-            "should_reset_env": true,
-            "flag_answer_user": true
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "blouse",
+                        "panties"
+                    ]
+                }
+            }
         },
         {
-            "instruction": "Actually cap is white, not colored, wash it.",
-            "max_step": 6,
+            "instruction": null,
+            "max_step": 8,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
+                            "blouse",
+                            "panties",
                             "cap",
-                            "detergent_OMO"
+                            "detergent_PERSIL"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -80,39 +73,40 @@
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
-                            "blouse",
                             "shirt",
-                            "socks",
-                            "panties",
+                            "jeans",
                             "pants",
                             "short",
+                            "socks",
                             "boxer",
-                            "detergent_SKIP",
-                            "detergent_PERSIL"
+                            "detergent_OMO",
+                            "detergent_SKIP"
                         ],
                         "locations": "washing_machine_basket",
                         "strict": false
                     }
                 }
             ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
             "complementary_verif": {
                 "logs": [
                     {
                         "content": {
                             "clothes": [
+                                "blouse",
+                                "panties",
                                 "cap"
                             ],
-                            "detergent": "detergent_OMO"
+                            "detergent": [
+                                "detergent_PERSIL"
+                            ]
                         }
                     }
                 ]
-            },
-            "keys_evaluator": [
-                "c-reasoning"
-            ],
-            "should_reset_env": true
+            }
         }
-         
     ]
 }

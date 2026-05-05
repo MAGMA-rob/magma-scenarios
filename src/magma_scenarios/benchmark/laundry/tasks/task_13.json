@@ -1,0 +1,93 @@
+{
+    "criteria": [
+        "recovery",
+        "multi-steps",
+        "c-reasoning"
+    ],
+    "stages": [
+        {
+        "instruction": "Please clean shirt and panties.",
+        "expected_behavior": "answer",
+        "complementary_verif": {
+            "judge": "The model must ask which detergent to use."
+        },
+        "keys_evaluator": ["c-reasoning"]
+        },
+        {
+            "instruction": "Use OMO",
+            "max_step": 3,
+            "action_goal": [
+                {
+                    "predicate": "count",
+                    "arguments": {
+                        "objects": [
+                            "shirt",
+                            "panties"
+                        ],
+                        "location": "washing_machine_basket",
+                        "minimum": 1
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspClothesFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "shirt"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction": null,
+            "max_step": 7,
+            "action_goal": [
+                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": ["shirt", "panties", "detergent_OMO"],
+                        "location": "washing_machine_basket"}
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": [
+                            "jeans",
+                            "blouse",
+                            "cap",
+                            "pants",
+                            "short",
+                            "boxer"
+                        ],
+                        "locations": "washing_machine_basket",
+                        "strict": false
+                    }
+                }
+            ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ]
+        }
+    ]
+}

@@ -1,36 +1,35 @@
 {
     "criteria": [
-        "multi-steps",
-        "c-reasoning"
+        "recovery",
+        "multi-steps"
     ],
     "stages": [
         {
-            "instruction": "Rule: white clothes (shirt, socks, panties) use OMO. Colored clothes (jeans, blouse, cap) use PERSIL. The rest use SKIP.",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction": "Wash the white clothes ",
-            "max_step": 3,
+            "instruction": "Please clean shirt, jeans, short and socks with detergent_OMO.",
+            "max_step": 4,
             "action_goal": [
                 {
-                    "predicate": "in",
+                    "predicate": "count",
                     "arguments": {
-                        "obj_name": [
-                            "panties"
+                        "objects": [
+                            "shirt",
+                            "jeans",
+                            "short",
+                            "socks"
                         ],
-                        "location": "washing_machine_basket"
+                        "location": "washing_machine_basket",
+                        "minimum": 1
                     }
                 },
                 {
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
                             "blouse",
-                            "cap",
                             "pants",
-                            "short",
                             "boxer",
+                            "panties",
+                            "cap",
                             "detergent_PERSIL",
                             "detergent_SKIP"
                         ],
@@ -39,8 +38,8 @@
                     }
                 }
             ],
-            "complementary_verif": {},
             "keys_evaluator": [
+                "recovery",
                 "multi-steps"
             ],
             "injection": {
@@ -49,36 +48,38 @@
                 "arguments": {
                     "inaccessible": [
                         "shirt",
-                        "socks",
-                        "detergent_OMO"
+                        "jeans",
+                        "short"
                     ]
                 }
             }
         },
         {
             "instruction": null,
-            "max_step": 3,
+            "max_step": 4,
             "action_goal": [
                 {
-                    "predicate": "in",
+                    "predicate": "count",
                     "arguments": {
-                        "obj_name": [
+                        "objects": [
                             "shirt",
-                            "panties"
+                            "jeans",
+                            "short",
+                            "socks"
                         ],
-                        "location": "washing_machine_basket"
+                        "location": "washing_machine_basket",
+                        "minimum": 2
                     }
                 },
                 {
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
                             "blouse",
-                            "cap",
                             "pants",
-                            "short",
                             "boxer",
+                            "panties",
+                            "cap",
                             "detergent_PERSIL",
                             "detergent_SKIP"
                         ],
@@ -87,8 +88,8 @@
                     }
                 }
             ],
-            "complementary_verif": {},
             "keys_evaluator": [
+                "recovery",
                 "multi-steps"
             ],
             "injection": {
@@ -96,25 +97,25 @@
                 "error": "GraspClothesFailureError",
                 "arguments": {
                     "inaccessible": [
-                        "socks",
-                        "detergent_OMO"
-                            
+                        "shirt",
+                        "jeans"
                     ]
                 }
             }
         },
         {
             "instruction": null,
-            "max_step": 6,
+            "max_step": 8,
             "action_goal": [
                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
                             "shirt",
+                            "jeans",
+                            "short",
                             "socks",
-                            "detergent_OMO",
-                            "panties"
+                            "detergent_OMO"
                         ],
                         "location": "washing_machine_basket"
                     }
@@ -123,12 +124,11 @@
                     "predicate": "not_in",
                     "arguments": {
                         "obj_name": [
-                            "jeans",
                             "blouse",
-                            "cap",
                             "pants",
-                            "short",
                             "boxer",
+                            "panties",
+                            "cap",
                             "detergent_PERSIL",
                             "detergent_SKIP"
                         ],
@@ -137,23 +137,27 @@
                     }
                 }
             ],
+            "keys_evaluator": [
+                "recovery",
+                "multi-steps"
+            ],
             "complementary_verif": {
                 "logs": [
                     {
                         "content": {
                             "clothes": [
                                 "shirt",
-                                "socks",
-                                "panties"
+                                "jeans",
+                                "short",
+                                "socks"
                             ],
-                            "detergent": "detergent_OMO"
+                            "detergent": [
+                                "detergent_OMO"
+                            ]
                         }
                     }
                 ]
-            },
-            "keys_evaluator": [
-                "multi-steps"
-            ]
+            }
         }
     ]
 }

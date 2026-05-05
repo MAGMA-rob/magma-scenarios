@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 
 from magma_core.base.data_structures.observation import Observation
 from magma_core.base.data_structures.tools import ToolResult, ToolExecution
@@ -34,7 +34,7 @@ class GraspFailureError(BaseError):
                 f"Failed to grasp: {target_name}. The object is unreachable right now."
             )
 
-    def get_description(self, arguments: Dict[str, Any] | None) -> str:
+    def get_description(self, arguments: Optional[Dict[str, Any]]) -> str:
         if arguments is None or arguments.get("inaccessible") is None or len(arguments["inaccessible"]) == 0:
             return "Make some object impossible to take"
         return f"These objects are impossible to take right now: {arguments['inaccessible']}. Try to grasp another objects that also allows to complete the instruction."
