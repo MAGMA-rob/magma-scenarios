@@ -10,21 +10,8 @@
     "control_timesteps": 0
   },
   "tasks_horizon": {
-<<<<<<< HEAD
-    "12": [
-      "task_11",
-      "task_8",
-      "task_9"
-    ],
-    "20": [
-      "task_2"
-    ],
-    "6": [
-      "task_10"
-=======
     "5": [
       "task_0"
->>>>>>> main
     ],
     "11": [
       "task_6",

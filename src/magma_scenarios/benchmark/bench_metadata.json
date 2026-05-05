@@ -1,5 +1,14 @@
 [
   {
+    "scenario_name": "Packaging_benchmark",
+    "folder_name": "packaging",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning",
+      "recovery"
+    ]
+  },
+  {
     "scenario_name": "Color_Sorting",
     "folder_name": "color_sorting",
     "criteria": [
@@ -52,15 +61,6 @@
     "criteria": [
       "recovery",
       "multi-steps"
-    ]
-  },
-  {
-    "scenario_name": "Packaging_benchmark",
-    "folder_name": "packaging",
-    "criteria": [
-      "multi-steps",
-      "recovery",
-      "c-reasoning"
     ]
   }
 ]
