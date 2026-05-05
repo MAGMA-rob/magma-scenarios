@@ -25,8 +25,6 @@ class PackagingEnv(DefaultEnv):
     z_half_tray_size = 0.005
 
 
-    agent: Union[Panda, Fetch]
-
     def __init__(self,*args,robot_uids="panda",robot_init_qpos_noise=0,**kwargs) :
         super().__init__(*args,robot_uids=robot_uids,robot_init_qpos_noise=robot_init_qpos_noise, **kwargs)
 
@@ -180,9 +178,6 @@ class PackagingEnv(DefaultEnv):
                     obj_pose = Pose.create_from_pq(p=xyz, q=q)
                     
                     elem.set_pose(obj_pose)
-
-        p_batched = torch.tensor(self.tray_centre).repeat(b,1)
-        self.tray.set_pose(Pose.create_from_pq(p=p_batched,q=q))
 
     def _get_obs_extra(self, info: Dict):
         obs = dict(

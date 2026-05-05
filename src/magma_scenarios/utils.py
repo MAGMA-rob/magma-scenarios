@@ -93,7 +93,6 @@ def compute_drop_trajectory(agent : BaseAgent, drop_pose: Union[np.ndarray, torc
     
 
     poses = [approach_pose, drop_pose, "OPEN", approach_pose]
-    print(f"poses : {poses}")
     if final_pose and isinstance(final_pose,sapien.Pose):
         poses.append(final_pose)
 

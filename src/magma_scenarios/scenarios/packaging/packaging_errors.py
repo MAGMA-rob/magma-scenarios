@@ -20,7 +20,6 @@ def _get_remaining_food(obs : Observation, env_id : int) -> List[str]:
     return remaining
 
 
-
 class GraspFoodFailureError(GraspFailureError):
     recovery_extra_steps = 1
     def __init__(self,all_requested_objects : List[str] = [],max_masking = 2) -> None:

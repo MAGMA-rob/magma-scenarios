@@ -2,7 +2,7 @@ from magma_core.base.stage import ConstraintBaseStage
 from magma_core.base.data_structures import Log, ToolResult
 from magma_core.utils.env_utils import is_object_inside_target
 
-
+## DUMMY STAGE JUSTE FOR LAUNCH THE PRESET ON TOOL TESTING
 class SimplePutOnTrayStage(ConstraintBaseStage):
     """
     Goal: put at least 1 object on tray

@@ -1,7 +1,7 @@
 from magma_core.base.tasks import BaseTask
 from magma_core.base.tasks_style import TaskStyle
 from .simple_stage import SimplePutOnTrayStage
-from magma_scenarios.scenarios.packaging.load_tools import PackagingTool
+from magma_scenarios.scenarios.packaging.packaging_tools import PackagingTool
 import sapien
 
 

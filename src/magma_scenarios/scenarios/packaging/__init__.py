@@ -5,7 +5,7 @@ SCENARIO_NAME = "packaging"
 
 TASK_PRESETS = {
 
-    "SimplepackagingPreset": "simple_preset:SimplePackagingPreset",
+    "DebugPreset": "simple_preset:SimplePackagingPreset",
 
     "SimpBench" : "benchmark:PackagingBenchmarks"
 }

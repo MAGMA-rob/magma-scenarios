@@ -18,9 +18,6 @@ class PackagingTool(BaseToolsAPI):
     table_gride_centre = [-0.1,-0.2,0]
     tray_gride_center = [-0.1, 0.12,0]
 
-    perceived_objects = None
-    has_seen_world = False
-
     def _world_to_grid(self,center_target_position : list , object_world_position : list)-> tuple:
         i = np.round((object_world_position[0]-center_target_position[0])/self.r)
         j = np.round((object_world_position[1]-center_target_position[1])/self.r)        
@@ -52,7 +49,6 @@ class PackagingTool(BaseToolsAPI):
             occupide.append(grid_object_position)
         for grid_position in gride :
             if grid_position not in occupide :
-                print(grid_position)
                 return grid_position
         return None
 
@@ -76,9 +72,6 @@ class PackagingTool(BaseToolsAPI):
                 detected_obj["table"][name] = pos[env_id][:3]
             else :
                 detected_obj["tray"][name] = pos[env_id][:3]
-            
-        self.perceived_objects = detected_obj
-        self.has_seen_world = True
 
         def verifier(new_obs: Dict) -> ToolResult:
             s = "this is the position of existing object : "
@@ -110,27 +103,14 @@ class PackagingTool(BaseToolsAPI):
 
         name = params["name"]
 
-        if self.perceived_objects is None or self.has_seen_world == False :
-            return ToolExecution(
-            poses=[],
-            verifier=None,
-            reason="You must call detect before acting."
-        )
-
-        perceived = self.perceived_objects 
-
-        obj_pose = None
-        for area in ["table", "tray"]:
-            if name in perceived.get(area, {}):
-                obj_pose = perceived[area][name]
-                break
-
-        if obj_pose is None:
+        if not name in obs.maniskill_obs["extra"]:
             return ToolExecution(
                 poses=[],
                 verifier=None,
-                reason=f"{name} is not visible in perceived world"
+                reason=f"{name} is not detected"
             )
+
+        obj_pose = obs.maniskill_obs["extra"][name][env_id]
 
         poses = compute_grasp_trajectory(self.get_agent(),obj_pose.cpu().numpy())
 
@@ -163,17 +143,21 @@ class PackagingTool(BaseToolsAPI):
 
         if obj_in_gripper is None:
             return ToolExecution(
-                poses = [], verifier= None, reason = "No food in gripper"
+                poses = [], verifier= None, reason = "The gripper is empty. Aborting."
             )
 
         if params["target"] == "table" :
             target_center = self.table_gride_centre
         elif params["target"] == "tray" :
             target_center = self.tray_gride_center
+        else:
+            return ToolExecution(
+                poses = [], verifier= None, reason = f"Unknow {params['target']} used as target. Use only tray or table."
+            )
 
         target_cell = self._get_free_cell(obs,env_id,target_center)
         if target_cell is None :
-            r = f"there is no place in the {params["target"]}"
+            r = f"there is no place in the {params['target']}"
             return ToolExecution(
                 poses = [], verifier= None, reason = r
             )
@@ -186,7 +170,6 @@ class PackagingTool(BaseToolsAPI):
             drop_seuil = 0.03,
             approach_seuil = 0.1
         ))
-        self.has_seen_world = False
         def verifier(new_obs: dict) -> ToolResult:
             new_extra = new_obs["extra"]
             obj_pose = new_extra[obj_in_gripper][env_id]
