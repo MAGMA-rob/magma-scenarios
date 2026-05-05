@@ -49,6 +49,7 @@
       "instruction": "In which teams are Lee and Scott?",
       "max_step": 2,
       "expected_behavior": "answer",
+      "allows_tools": true,
       "complementary_verif": {
         "judge": "The model answers that Lee and Scott are both in MAC."
       }

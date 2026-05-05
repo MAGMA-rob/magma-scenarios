@@ -8,6 +8,8 @@
     {
       "instruction": "Who is in the RAP team?",
       "expected_behavior": "answer",
+      "allows_tools": true,
+      "max_step": 2,
       "complementary_verif": {
         "judge": "The model answers that RAP team contains Lopez, Perez, Williams, Jackson."
       },
