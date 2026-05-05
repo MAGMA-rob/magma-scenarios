@@ -33,7 +33,7 @@
       "injection": {
         "mode": "runtime_error",
         "error": "GraspCapsuleFailureError",
-        "arguments": {"inaccessible": ["white_capsule"]}
+        "arguments": {"inaccessible": ["white"]}
       },
       "keys_evaluator": ["multi-steps", "c-reasoning"],
       "flag_answer_to_user": false,

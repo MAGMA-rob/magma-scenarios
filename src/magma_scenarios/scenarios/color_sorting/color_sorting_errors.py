@@ -111,7 +111,6 @@ class MaskRemainingCubesError(MaskedObjectError):
             ),
             "colors": colors
         }
-        print(d)
         return d
 
     def apply_post_verif(self, tool_result: ToolResult, arguments: Dict[str, Any]):

@@ -48,7 +48,7 @@
       "injection": {
         "mode": "runtime_error",
         "error": "GraspCapsuleFailureError",
-        "arguments": {"inaccessible": ["white_capsule"]}
+        "arguments": {"inaccessible": ["white"]}
       }
     },
     {

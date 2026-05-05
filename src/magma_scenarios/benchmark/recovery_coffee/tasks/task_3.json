@@ -33,7 +33,7 @@
             "injection": {
                 "mode": "runtime_error",
                 "error": "GraspCapsuleFailureError",
-                "arguments": {"inaccessible": ["black_capsule"]}
+                "arguments": {"inaccessible": ["black"]}
             },
             "should_reset_env": true
         },
@@ -67,7 +67,7 @@
             "injection": {
                 "mode": "runtime_error",
                 "error": "GraspCapsuleFailureError",
-                "arguments": {"inaccessible": ["white_capsule"]}
+                "arguments": {"inaccessible": ["white"]}
             },
             "should_reset_env": true
         },
