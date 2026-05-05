@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage, AskingBaseStage
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
 from magma_core.base.goals import At, NotAt
 from magma_core.base.data_structures.situation import Instruction
@@ -91,3 +91,35 @@ class RemoveLocationStage(ModifAttributesBaseStage):
     def __init__(self, instruction: Instruction, val_name: str, memory: List[str], attributes: Dict, flag_answer_to_user: bool = True) -> None:
         super().__init__("REMOVE", instruction, val_name, "target_areas", memory, [], attributes, flag_answer_to_user)
     
+class AskObjectAreaAssignementStage(AskingBaseStage):
+    """
+    Q&A stage testing object-to-area assignment retrieval.
+    The agent must identify which objects belong to a given area using state relations.
+    No tools are allowed; answer is fully derived from object_area mapping.
+    """
+    def __init__(
+        self,
+        object_to_area : Dict[str,str],
+        target_area : str) -> None:
+
+        question = f"Which objects are associated to {target_area}?"
+
+        objects = [ obj for obj ,area in object_to_area.items() 
+            if area == target_area]
+            
+        if len(objects) == 0:
+            answer = f"No objects are associated to {target_area}."
+        else :
+            answer = f"{', '.join(objects)} are assigned to {target_area}"
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes={
+                "mapping" : object_to_area,
+                "target_area" : target_area
+            },
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+            )

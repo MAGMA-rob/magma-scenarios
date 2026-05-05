@@ -15,3 +15,10 @@ all_detergents = [
     "detergent_PERSIL",
     "detergent_SKIP"
 ]
+
+all_categories = [
+    "everyday",
+    "formal",
+    "sport",
+    "sleepwear"
+]

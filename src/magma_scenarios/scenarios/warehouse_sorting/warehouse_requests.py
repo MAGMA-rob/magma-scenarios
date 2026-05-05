@@ -7,12 +7,15 @@ from magma_core.base.user_request import BaseRequest, BaseConstraintRequest
 from magma_core.base.state import TaskState
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
-
-from .stages import ObjectToZone
+from magma_scenarios.templates.requests import GiveRelationAssignmentRequest
+from .stages import ObjectToZone, AskObjectAreaAssignementStage
 from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage, Cycle
 from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 from magma_scenarios.templates.requests import AddValueToListRequest, RemoveValueToListRequest
-
+from .constraints import(
+    ObjectAreaContrait,
+    OBJECTS_AREA_KEY
+)
 
 def _join_values(values: List[str]) -> str:
     if len(values) == 1:
@@ -25,6 +28,17 @@ def _join_values(values: List[str]) -> str:
 def _is_or_are(values: List[str]) -> str:
     return "is" if len(values) == 1 else "are"
 
+class AssignObjectsAreaRequest(GiveRelationAssignmentRequest):
+    def __init__(self,max_clothes_assignment : int = 3) -> None:
+        super().__init__(
+            relation_key = OBJECTS_AREA_KEY,
+            source_attribute_key="objects",
+            target_attribute_key="target_areas",
+            max_simultaneous_change=max_clothes_assignment,
+            intro_message="Hello, please remember that ",
+            assignment_template="{source} goes to {target}",
+            constraint_builder=ObjectAreaContrait
+        )
 
 class ForbidObjectConstraint(BaseConstraint):
     """Persistently mark one object as forbidden for future cycles."""
@@ -677,3 +691,37 @@ class RemoveAreas(RemoveValueToListRequest):
                 ins = EmptyInstruction()
         
         return stages
+
+def _get_known_objects(state: TaskState) -> List[str]:
+    objects = state.attributes.get("objects", [])
+    area = state.attributes.get("target_areas", [])
+    relations: Dict[str, str] = state.relations.get(OBJECTS_AREA_KEY, {})
+    return [
+        obj
+        for obj in objects
+        if obj in relations and relations[obj] in area
+    ]
+
+class AskObjectAreaAssignementRequest(BaseRequest):
+    def __init__(self, max_objects: int = 3) -> None:
+        super().__init__()
+        self.max_objects = max_objects
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1 if len(_get_known_objects(state)) > 0 else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+
+        relations : Dict[str,str] = state.relations.get(OBJECTS_AREA_KEY, {})
+
+        if len(relations) == 0 :
+            raise RuntimeError("No object-area relations available")
+
+        target_area = random.choice(list(set(relations.values())))
+
+        return [
+            AskObjectAreaAssignementStage(
+                object_to_area = relations,
+                target_area = target_area
+            )
+        ]    

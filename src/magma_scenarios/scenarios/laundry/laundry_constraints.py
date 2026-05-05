@@ -6,6 +6,7 @@ from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 
 
 CLOTHE_DETERGENT_KEY = "clothe_detergent"
+CLOTHE_CATEGORY_KEY = "clothe_category"
 
 
 def get_clothe_detergent_relations(state: TaskState) -> Dict[str, str]:
@@ -26,4 +27,14 @@ class ClotheDetergentConstraint(RelationAssignmentConstraint):
         )
 
 
+class ClotheCategoryContraint(RelationAssignmentConstraint) :
+    def __init__(self, clothe: str, category: str) -> None:
+        super().__init__(
+            source_value=clothe,
+            target_value=category,
+            relation_key=CLOTHE_CATEGORY_KEY,
+            source_attribute_key="clothes",
+            target_attribute_key="categories",
+            
+        )
 ClotheDetergentConstraints = ClotheDetergentConstraint

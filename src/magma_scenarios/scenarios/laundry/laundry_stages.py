@@ -1,7 +1,7 @@
 import random
 from typing import List, Dict
 import torch
-
+from magma_core.base.stage.stage_template import AskingBaseStage
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage
 from magma_core.base.data_structures import Situation, EmptyInstruction, UserInstruction, Instruction, Log
@@ -114,3 +114,35 @@ class RefuseLaundryStage(BaseTaskStage):
         )
 
         self.verification_prompt = verif_prompt
+
+class AskClothesCategoryStage(AskingBaseStage):
+    """
+    Q&A stage testing clothes-to-category retrieval (e.g. everyday, sport).
+    The agent must list clothes belonging to a given category from state relations.
+    No tools are allowed; answer is fully derived from clothes_to_category mapping.
+    """
+    def __init__(
+        self,
+        clothes_to_category : Dict[str, str],
+        target_category : str ) -> None :
+
+        question = f"Wich clothes are considered '{target_category}' ?"
+        clothes = [ cloth for cloth,category in clothes_to_category.items() 
+            if category == target_category ]
+            
+        if len(clothes) == 0:
+            answer = f"No clothes are categorized as {target_category}."
+        else :
+            answer = f"{target_category} clothes are {', '.join(clothes)}"
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes={
+                "mapping" : clothes_to_category,
+                "target_category" : target_category
+            },
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )
