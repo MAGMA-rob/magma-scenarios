@@ -9,6 +9,8 @@
     {
       "instruction": "What team Rodriguez belogs to ",
       "expected_behavior": "answer",
+      "allows_tools": true,
+      "max_step": 2,
       "complementary_verif": {
         "judge": "The model answers that Rodriguez belogs to GEPETTO team."
       }
@@ -44,6 +46,8 @@
     {
       "instruction": "who is in RAP team",
       "expected_behavior": "answer",
+      "allows_tools": true,
+      "max_step": 2,
       "complementary_verif": {
         "judge": "The model answer that RAP contains Lopez, Perez, Williams, Jackson."
       }

@@ -25,7 +25,7 @@
       "injection": {
         "mode": "runtime_error",
         "error": "GraspCapsuleFailureError",
-        "arguments": {"inaccessible": ["milky_capsule"]}
+        "arguments": {"inaccessible": ["milky"]}
       },
       "keys_evaluator": ["multi-steps"],
       "flag_answer_to_user": false,

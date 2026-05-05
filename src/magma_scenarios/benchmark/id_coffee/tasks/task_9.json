@@ -8,6 +8,8 @@
     {
       "instruction": "What team does Hill belong to?",
       "expected_behavior": "answer",
+      "allows_tools": true,
+      "max_step": 2,
       "complementary_verif": {
         "judge": "The model answers that Hill belongs to the RIS team."
       },
