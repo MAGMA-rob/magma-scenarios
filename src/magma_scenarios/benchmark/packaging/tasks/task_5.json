@@ -4,14 +4,14 @@
     ],
     "stages" : [
         {
-            "instruction" : "serve me chicken, watter and ananas",
+            "instruction" : "serve me chicken, water and ananas",
             "max_step": 4,
             "action_goal" : [
                                 {
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "watter"
+                            "water"
                         ],
                         "location": "tray",
                         "thresh" :  0.2
@@ -49,7 +49,7 @@
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "watter","ananas"
+                            "water","ananas"
                         ],
                         "location": "tray",
                         "thresh" :  0.2
@@ -86,7 +86,7 @@
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "watter",
+                            "water",
                             "ananas",
                             "chicken"
                         ],
@@ -107,7 +107,7 @@
             "complementary_verif": {                
                 "logs": [
                     {
-                        "content": {"fruits" : ["ananas"], "drinks": ["watter"], "main_course": ["chicken"]}
+                        "content": {"fruits" : ["ananas"], "drinks": ["water"], "main_course": ["chicken"]}
                     }
                 ]},
             "keys_evaluator": [

@@ -11,11 +11,11 @@
             "instruction": "what options are available for today ",
             "expected_behavior": "answer",
             "complementary_verif": {
-                    "judge": "The model answers chicken fish pasta ananas apple banana watter juice milk"}
+                    "judge": "The model answers chicken fish pasta ananas apple banana water juice milk"}
         },
 
         {
-            "instruction" : "serve me pasta with watter and ananas",
+            "instruction" : "serve me pasta with water and ananas",
             "max_step": 11,
             "action_goal" : [
                                 {
@@ -24,7 +24,7 @@
                         "obj_name": [
                             "ananas",
                             "pasta",
-                            "watter"
+                            "water"
                         ],
                         "location": "tray",
                         "thresh" :  0.2
@@ -42,7 +42,7 @@
             "complementary_verif": {
                 "logs": [
                     {
-                        "content": {"fruits" : ["ananas"], "drinks": ["watter"], "main_course": ["pasta"]}
+                        "content": {"fruits" : ["ananas"], "drinks": ["water"], "main_course": ["pasta"]}
                     }
                 ]
             },

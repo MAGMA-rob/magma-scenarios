@@ -15,7 +15,7 @@ from mani_skill.utils.structs import Pose
 @register_env("Packaging", max_episode_steps = 200)
 class PackagingEnv(DefaultEnv):
 
-    tray_centre = [-0.1, 0.12,0]
+    tray_centre = [-0.2, 0.25]
     table_center = [-0.1,-0.2]
 
     fruits_size = 0.018
@@ -43,7 +43,7 @@ class PackagingEnv(DefaultEnv):
                 color=np.array([211, 211, 211, 255]) / 255,
                 name="tray",
                 body_type="static",
-                initial_pose=sapien.Pose(p=[-0.2, 0, self.z_half_tray_size]),
+                initial_pose=sapien.Pose(p=[self.tray_centre[0], self.tray_centre[1], self.z_half_tray_size]),
             )
         
         self.fruits = [
@@ -86,7 +86,7 @@ class PackagingEnv(DefaultEnv):
                 self.scene,
                 half_size=self.drinks_size,
                 color=np.array([185, 206, 235, 255]) / 255,
-                name="watter",
+                name="water",
                 body_type="dynamic",
                 initial_pose=sapien.Pose(p=[0.02, -0.16, self.drinks_size]),
             ),

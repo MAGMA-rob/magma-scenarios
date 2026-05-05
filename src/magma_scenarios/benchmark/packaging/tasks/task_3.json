@@ -30,7 +30,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["pasta","watter","fish","banana","apple","juice","milk"],
+                        "obj_name": ["pasta","water","fish","banana","apple","juice","milk"],
                         "locations": "tray",
                         "strict": false
                     }

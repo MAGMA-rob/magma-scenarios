@@ -26,7 +26,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["pasta","fish","apple","juice","milk","watter","ananas"],
+                        "obj_name": ["pasta","fish","apple","juice","milk","water","ananas"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -58,7 +58,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["ananas","pasta","chicken","apple","juice","milk","watter"],
+                        "obj_name": ["ananas","pasta","chicken","apple","juice","milk","water"],
                         "locations": "tray",
                         "strict": false
                     }

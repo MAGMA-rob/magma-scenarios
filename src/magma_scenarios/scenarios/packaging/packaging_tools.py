@@ -16,7 +16,7 @@ class PackagingTool(BaseToolsAPI):
 
     r = 0.11
     table_gride_centre = [-0.1,-0.2,0]
-    tray_gride_center = [-0.1, 0.12,0]
+    tray_gride_center = [-0.2, 0.25,0]
 
     def _world_to_grid(self,center_target_position : list , object_world_position : list)-> tuple:
         i = np.round((object_world_position[0]-center_target_position[0])/self.r)
@@ -86,7 +86,7 @@ class PackagingTool(BaseToolsAPI):
             else :
                 s += ", and the tray contain " + ', '.join(f"{name}" for name in detected_obj["tray"].keys())
 
-            return ToolResult(True,s,context = detected_obj, logs = Log(""))
+            return ToolResult(True,s,context = detected_obj)
 
         return ToolExecution(poses = ["OK"], verifier=verifier)
 

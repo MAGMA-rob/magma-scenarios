@@ -4,64 +4,12 @@
     ],
     "stages" : [
         {
-            "instruction" : "serve me banana then milk",
-            "max_step": 5,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "banana"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta", 
-                        "ananas","apple", "watter","juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {
-                "logs": [
-                    {
-                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
-                    }
-                ]
-            },
-            "keys_evaluator": [
-                "multi-steps"
-            ]
+            "instruction" : "The default recipe is to have banana and milk on tray, understood?",
+            "expected_behavior": "acknowledge"
         },
         {
-            "instruction" : null,
+            "instruction" : "Ok please organize the current plate and valide it.",
             "max_step": 5,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "banana","milk"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta", 
-                        "ananas","apple", "watter","juice"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
             "complementary_verif": {
                 "logs": [
                     {

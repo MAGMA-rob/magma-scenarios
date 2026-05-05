@@ -24,7 +24,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana","watter", "juice"],
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana","water", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -62,7 +62,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chicken","fish","pasta","ananas","apple","watter", "juice"],
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","water", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
@@ -99,7 +99,7 @@
                 {
                     "predicate": "not_in",
                     "arguments": {
-                        "obj_name": ["chicken","fish","ananas","apple","watter", "juice"],
+                        "obj_name": ["chicken","fish","ananas","apple","water", "juice"],
                         "locations": "tray",
                         "strict": false
                     }
