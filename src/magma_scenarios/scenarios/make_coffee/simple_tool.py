@@ -118,7 +118,6 @@ class MakingCoffeeTool(BaseToolsAPI):
             )
         
         mug_pose = obs.maniskill_obs["extra"]["mug"][env_id].cpu().numpy()
-        print(f"drop pose {drop_pose}")
         poses = compute_grasp_drop_trajectory(
             self.get_agent(), obj_pose=mug_pose[:3], drop_pose=drop_pose,
             final_pose=base_pose, drop_approach_pose=base_pose)
