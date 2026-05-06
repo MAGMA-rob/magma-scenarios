@@ -1,0 +1,63 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "DISCO team only drinks black. RIS team only drinks white.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "What team does Hill belong to?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model answers that Hill belongs to the RIS team."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "Serve Hill.",
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "white"}
+              ]
+            }
+          }
+        ]
+      },
+      "injection": {
+        "mode": "runtime_error",
+        "error": "GraspCapsuleFailureError",
+        "arguments": {"inaccessible": ["white"]}
+      },
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "flag_answer_to_user": false,
+      "should_reset_env": true
+    },
+    {
+      "instruction": null,
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "white"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}
