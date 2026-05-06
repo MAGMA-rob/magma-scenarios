@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-SCENARIO_NAME = "delivery_box"
+SCENARIO_NAME = "delivery"
 
 TASK_DEFINITIONS = {
     "EvolvingRecipeDefinition": "delivery_definition:EvolvingRecipeDefinition",
