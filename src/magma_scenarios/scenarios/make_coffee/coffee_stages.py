@@ -10,7 +10,7 @@ from .coffee_errors import GraspCapsuleFailureError
 
 import sapien, torch, random
 from collections import defaultdict
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class MugAndCapsuleGoal(BaseGoal):
     """Specific coffee scenario goal. Adding a relative add to the position for the target"""
@@ -236,8 +236,9 @@ class AskPeopleInTeamStage(AskingBaseStage):
             memory=[],
             attributes=att,
             linked_to_prev=True,
-            allow_tools_before_answer=True
+            allow_tools_before_answer=True,
         )
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
 
 
 class AskTeamsForPeopleStage(AskingBaseStage):
@@ -270,6 +271,36 @@ class AskTeamsForPeopleStage(AskingBaseStage):
             allow_tools_before_answer=True
         )
         self.target_steps = len(requested_people) + 1
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
+
+
+class AskCoffeePreferenceForUserStage(AskingBaseStage):
+
+    acceptance_steps = 0
+    target_steps = 1
+
+    def __init__(self, requested_person: str, coffee_preference: Optional[str]) -> None:
+        if requested_person == "":
+            raise ValueError("requested_person must not be empty")
+
+        question = random.choice([
+            f"What coffee does {requested_person} like?",
+            f"What is {requested_person}'s coffee preference?",
+            f"Which coffee should I prepare for {requested_person}?",
+        ])
+
+        if coffee_preference is None:
+            answer = f"{requested_person} does not have any known coffee preference."
+        else:
+            answer = f"{requested_person} likes {coffee_preference} coffee."
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+        )
 
 
 class AskTeamCoffeePreferencesStage(AskingBaseStage):
@@ -299,6 +330,7 @@ class AskTeamCoffeePreferencesStage(AskingBaseStage):
             allow_tools_before_answer=True,
             allowed_tools=["people_from_team"],
         )
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
 
     def _build_question(self, requested_team: str, focus: str) -> str:
         if focus == "all":

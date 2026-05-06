@@ -12,6 +12,7 @@ from .coffee_stages import (
     CoffeeCompositeStage,
     AskPeopleInTeamStage,
     AskTeamsForPeopleStage,
+    AskCoffeePreferenceForUserStage,
     AskTeamCoffeePreferencesStage,
 )
 
@@ -661,6 +662,44 @@ class AskPeopleInTeam(BaseRequest):
         members = self.team_assignment[team_name]
 
         return [AskPeopleInTeamStage(team_name, members)]
+
+
+class AskCoffeePreferenceForUser(BaseRequest):
+
+    def __init__(self, possible_names: List[str]) -> None:
+        super().__init__()
+        self.possible_names = possible_names
+
+    def _get_people_with_known_preference(self, state: TaskState) -> List[str]:
+        preferences: Dict[str, str] = state.relations.get("coffee_preference", {})
+        return [
+            name
+            for name in self.possible_names
+            if name in preferences
+        ]
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(self._get_people_with_known_preference(state)) == 0:
+            return 0
+        if state.properties.get("coffee_preference_needs_application", False):
+            return 2
+        if state.properties.get("team_coffee_preference_needs_application", False):
+            return 1.5
+        return 1
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        preferences: Dict[str, str] = state.relations.get("coffee_preference", {})
+        known_people = self._get_people_with_known_preference(state)
+        if len(known_people) == 0:
+            raise RuntimeError("Failed to sample a person because no coffee preference is known")
+
+        requested_person = random.choice(known_people)
+        return [
+            AskCoffeePreferenceForUserStage(
+                requested_person,
+                preferences[requested_person],
+            )
+        ]
 
 
 class AskCoffeePreferenceInTeam(BaseRequest):

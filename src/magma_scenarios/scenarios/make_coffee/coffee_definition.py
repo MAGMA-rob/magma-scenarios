@@ -17,6 +17,7 @@ from .coffee_request import (
     AskCoffeePerUser,
     AskPeopleInTeam,
     AskPeopleTeam,
+    AskCoffeePreferenceForUser,
     AskCoffeePreferenceInTeam,
     ToggleCoffeeAvailability,
 )
@@ -34,6 +35,7 @@ class SimpleDefinition(TaskDefinition):
     active_requests = [
         GiveCoffeePreference(people),
         ToggleCoffeeAvailability(),
+        AskCoffeePreferenceForUser(people),
         AskCoffeeRequest(),
         AskCoffeePerUser(people, force_order=True)
     ]
