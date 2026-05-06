@@ -1,38 +1,44 @@
 {
-    "criteria" : [
-        "multi-steps"
-    ],
-    "stages" : [
-        {
-            "instruction" : "serve me all the fruits",
-            "max_step": 11,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "banana","ananas","apple"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta","water", "juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "injection": {
-              "mode": "force_recovery",
-              "message": "Planning error: failed to grasp, retry please."
-            },
-            "keys_evaluator": ["multi-steps"]
-        }
-
-    ]
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "only professors are allowed to order fish. students are restricted to chicken and pasta for main_course. drinks and fruits remain available for everyone. Serve costumers by puting the prepare the order on the tray and valide it",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "i'm a prof Steve, i want fish and water",
+      "max_step": 7,
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"fruits": [],"drinks": ["water"],"main_course": ["fish"]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    },
+    {
+      "instruction": "i'm student Tom, can you prepare me like prof Steve",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model refuses because students are not allowed to order fish and are restricted to chicken and pasta."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "change my order to pasta instead of fish",
+      "max_step": 6,
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {"fruits": [],"drinks": ["water"],"main_course": ["pasta"]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"]
+    }
+  ]
 }

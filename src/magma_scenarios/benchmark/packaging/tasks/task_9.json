@@ -1,120 +1,41 @@
 {
-    "criteria" : [
-        "multi-steps"
-    ],
-    "stages" : [
-        {
-            "instruction": "avaiable food for today pasta, milk, banana",
-            "expected_behavior": "acknowledge"
-        },
-        {
-            "instruction" : "serve me the recipe of today",
-            "max_step": 4,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "milk"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana","water", "juice"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "GraspFoodFailureError",
-                "arguments": {
-                    "inaccessible": [
-                        "banana","pasta"
-                    ]
-                }
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "today the kitchen uses hidden meaning orders: customers don't directly name foods. instead, they use codes: 'A' = chicken, water and apple, 'B' = fish, juice and banana, 'C' = pasta, milk and ananas. always prepare the tray and valide it.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Hello, what is included in B?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model should answer: fish, juice and banana."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "i want order B",
+      "max_step": 9,
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {
+              "fruits": ["banana"],
+              "drinks": ["juice"],
+              "main_course": ["fish"]
             }
-        },
-                {
-            "instruction" : null,
-            "max_step": 4,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "milk",
-                            "banana"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta","ananas","apple","water", "juice"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "MaskFoodError",
-                "arguments": {
-                    "masked": [
-                      "pasta"
-                    ]
-                }
-            }
-        },
-                {
-            "instruction" : null,
-            "max_step": 5,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "milk","pasta","banana"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","ananas","apple","water", "juice"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {                
-                "logs": [
-                    {
-                        "content": {"fruits" : ["banana"], "drinks": ["milk"], "main_course": ["pasta"]}
-                    }
-                ]},
-            "keys_evaluator": [
-                "multi-steps"
-            ]
-        }
-
-    ]
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"]
+    },
+    {
+      "instruction": "Which code should I use for chicken, water and apple?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model should answer: code A."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    }
+  ]
 }

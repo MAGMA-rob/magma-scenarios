@@ -9,7 +9,7 @@
         },
         {
             "instruction" : "Ok please organize the current plate and valide it.",
-            "max_step": 5,
+            "max_step": 7,
             "complementary_verif": {
                 "logs": [
                     {

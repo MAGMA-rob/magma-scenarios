@@ -4,112 +4,22 @@
     ],
     "stages" : [
         {
-            "instruction" : "serve me chicken, water and ananas",
-            "max_step": 4,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "water"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana", "juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "GraspFoodFailureError",
-                "arguments": {
-                    "inaccessible": [
-                        "chicken",
-                        "ananas"
-                    ]
-                }
-            }
-        },
-        {
-            "instruction" : null,
-            "max_step": 4,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "water","ananas"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","pasta","apple","banana", "juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {},
-            "keys_evaluator": [
-                "multi-steps"
-            ],
-            "injection": {
-                "mode": "runtime_error",
-                "error": "GraspFoodFailureError",
-                "arguments": {
-                    "inaccessible": [
-                        "chicken"
-                    ]
-                }
-            }
-        },
-        {
-            "instruction" : null,
+            "instruction" : "I want you to put a fruit on the tray and valide it",
             "max_step": 5,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "water",
-                            "ananas",
-                            "chicken"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["fish","pasta", 
-                        "ananas","apple","banana", "juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
-            "complementary_verif": {                
+            "action_goal" : [],
+            "complementary_verif": {
                 "logs": [
                     {
-                        "content": {"fruits" : ["ananas"], "drinks": ["water"], "main_course": ["chicken"]}
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": []}
+                    },
+                    {
+                        "content": {"fruits" : ["ananas"], "drinks": [], "main_course": []}
+                    },
+                    {
+                        "content": {"fruits" : ["apple"], "drinks": [], "main_course": []}
                     }
-                ]},
+                ]
+            },
             "keys_evaluator": [
                 "multi-steps"
             ]

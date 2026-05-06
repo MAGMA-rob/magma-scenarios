@@ -4,34 +4,14 @@
     ],
     "stages": [
         {
-            "instruction": "today you offert banana to every custumer ",
+            "instruction": "Today, every customer automatically receives a banana. For each request, pick the selected items, place them on a tray, and valide the order",
             "expected_behavior": "acknowledge"
         },
 
         {
-            "instruction" : "serve me chicken and ananas",
-            "max_step": 8,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "chicken",
-                            "banana"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["pasta","fish","apple","juice","milk","water","ananas"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
+            "instruction" : "I would like chicken and ananas. ",
+            "max_step": 7,
+            "action_goal" : [],
             "complementary_verif": {
                 "logs": [
                     {
@@ -44,26 +24,8 @@
             ]
         },
                 {
-            "instruction" : "replace me the chicken by fish",
-            "max_step": 8,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": ["fish","banana"],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["ananas","pasta","chicken","apple","juice","milk","water"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
+            "instruction" : "replace the chicken by fish and update my order",
+            "max_step": 6,
             "complementary_verif": {
                 "logs": [
                     {

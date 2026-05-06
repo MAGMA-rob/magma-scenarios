@@ -5,7 +5,7 @@
     "stages" : [
         {
             "instruction" : "I want you to put a banana on the tray and valide it",
-            "max_step": 4,
+            "max_step": 5,
             "action_goal" : [],
             "complementary_verif": {
                 "logs": [

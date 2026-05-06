@@ -4,41 +4,22 @@
     ],
     "stages": [
         {
-            "instruction": "you can't serve more the one food from each categorie (fruits/drinks/main_course) ",
+            "instruction": "You can only choose one item from each category (fruits, drinks, main course), okay?",
             "expected_behavior": "acknowledge"
         },
         {
-            "instruction": "what options are available for today ",
+            "instruction": "What options are available today?",
+            "max_step": 2,
             "expected_behavior": "answer",
             "complementary_verif": {
-                    "judge": "The model answers chicken fish pasta ananas apple banana water juice milk"}
+                    "judge": "The model should answer: chicken, fish, pasta, ananas, apple, banana, water, juice, milk."},
+            "allows_tools" : true
         },
 
         {
-            "instruction" : "serve me pasta with water and ananas",
-            "max_step": 11,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "ananas",
-                            "pasta",
-                            "water"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["chicken","fish","banana","apple","juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
+            "instruction" : "Steven wants pasta with water and ananas. Prepare the order on a tray and valide it",
+            "max_step": 9,
+            "action_goal" : [],
             "complementary_verif": {
                 "logs": [
                     {

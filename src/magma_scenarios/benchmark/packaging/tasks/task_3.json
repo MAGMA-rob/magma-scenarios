@@ -2,40 +2,22 @@
     "criteria": ["multi-steps", "c-reasoning"],
     "stages": [
         {
-            "instruction": "you can't serve more the one food from each categorie (fruits/drinks/main_course) ",
+            "instruction": "You can only serve one item from each category (fruits, drinks, main_course).",
             "expected_behavior": "acknowledge"
         },
         {
-            "instruction": "what fruits are available for today ",
+            "instruction": "What fruits are available today? ",
+            "max_step": 2,
             "expected_behavior": "answer",
             "complementary_verif": {
-                    "judge": "The model answers ananas apple banana"}
+                    "judge": "The model should answer: ananas, apple, banana."},
+            "allows_tools" : true
         },
 
         {
-            "instruction" : "serve me chicken and ananas",
-            "max_step": 8,
-            "action_goal" : [
-                                {
-                    "predicate": "in",
-                    "arguments": {
-                        "obj_name": [
-                            "ananas",
-                            "chicken"
-                        ],
-                        "location": "tray",
-                        "thresh" :  0.2
-                    }
-                },
-                {
-                    "predicate": "not_in",
-                    "arguments": {
-                        "obj_name": ["pasta","water","fish","banana","apple","juice","milk"],
-                        "locations": "tray",
-                        "strict": false
-                    }
-                }
-            ],
+            "instruction" : "I would like chicken and ananas, please prepare them on a tray.",
+            "max_step": 7,
+            "action_goal" : [],
             "complementary_verif": {
                 "logs": [
                     {
@@ -48,10 +30,10 @@
             ]
         },
         {
-            "instruction": "i want also an apple please",
+            "instruction": "I would also like an apple, please.",
             "expected_behavior": "answer",
             "complementary_verif": {
-                "judge": "The model refuses because he is not allowed to serve more then one food from each category"
+                "judge": "The model should refuse because it is not allowed to serve more than one item from each category."
             },
             "keys_evaluator": ["c-reasoning"]
         }
