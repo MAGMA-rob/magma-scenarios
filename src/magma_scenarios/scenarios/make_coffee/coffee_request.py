@@ -357,8 +357,8 @@ class AskCoffeePerUser(BaseRequest):
     def _build_missing_preference_answer(self, missing_names: List[str]) -> str:
         joined_names = self._join_names(missing_names)
         if len(missing_names) == 1:
-            return f"The model must inform that {joined_names} does not have any coffee preference"
-        return f"The model must inform that {joined_names} do not have any coffee preference"
+            return f"The model must inform that {joined_names} does not have any coffee preference OR ask for coffee preference for them."
+        return f"The model must inform that {joined_names} do not have any coffee preference OR ask for his coffee preference."
 
     def _build_preference_resolution(self, missing_assignment: Dict[str, str]) -> str:
         if len(missing_assignment) == 0:
