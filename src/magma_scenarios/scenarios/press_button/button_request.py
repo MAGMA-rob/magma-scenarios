@@ -18,6 +18,7 @@ from .button_constraints import (
     available_forget_targets,
     available_buttons,
     button_list_to_text,
+    get_prefix_button,
     can_add_rule,
     count_active_rules,
     has_any_button_rule,
@@ -210,6 +211,11 @@ class AskButtonsInExactOrderRequest(BaseRequest):
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         requested_buttons = _sample_requested_buttons(state, self.max_nb_btn)
+        pref = get_prefix_button(state)
+        if pref and pref in requested_buttons:
+            requested_buttons.remove(pref)
+        if len(requested_buttons) == 0:
+            return []
         effective_order = resolve_prefix_only_order(state, requested_buttons)
         instruction = _build_exact_order_instruction(requested_buttons)
         return _build_press_stages(effective_order, instruction)
