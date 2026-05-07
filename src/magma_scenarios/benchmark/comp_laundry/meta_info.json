@@ -46,7 +46,8 @@
   "criteria": {
     "multi-steps": 14,
     "c-reasoning": 10,
-    "recovery": 5
+    "recovery": 5,
+    "lg-memorization": 1
   },
   "criteria_tasks": {
     "multi-steps": [
@@ -82,6 +83,9 @@
       "task_10.json",
       "task_9.json",
       "task_8.json",
+      "task_7.json"
+    ],
+    "lg-memorization": [
       "task_7.json"
     ]
   }
