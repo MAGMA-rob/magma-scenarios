@@ -1,0 +1,41 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "today the kitchen uses hidden meaning orders: customers don't directly name foods. instead, they use codes: 'A' = chicken, water and apple, 'B' = fish, juice and banana, 'C' = pasta, milk and ananas. always prepare the tray and valide it.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Hello, what is included in B?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model should answer: fish, juice and banana."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    },
+    {
+      "instruction": "i want order B",
+      "max_step": 9,
+      "complementary_verif": {
+        "logs": [
+          {
+            "content": {
+              "fruits": ["banana"],
+              "drinks": ["juice"],
+              "main_course": ["fish"]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"]
+    },
+    {
+      "instruction": "Which code should I use for chicken, water and apple?",
+      "expected_behavior": "answer",
+      "complementary_verif": {
+        "judge": "The model should answer: code A."
+      },
+      "keys_evaluator": ["c-reasoning"]
+    }
+  ]
+}

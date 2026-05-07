@@ -30,7 +30,7 @@ class PressButtonDefinition(TaskDefinition):
     active_requests = [
         AskButtonsRequest(),
         AskButtonsInExactOrderRequest(),
-        GiveButtonGroupOrderRequest(),
+        GiveButtonGroupOrderRequest(1),
         GiveEvenOddOrderRequest(),
         GiveSequencePrefixRequest(),
         ForgetButtonRulesRequest(),

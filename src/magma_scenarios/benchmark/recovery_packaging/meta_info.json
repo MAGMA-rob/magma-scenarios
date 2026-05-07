@@ -1,0 +1,70 @@
+{
+  "scenario_name": "Packaging_recovery_benchmark",
+  "scenario_id": "Packaging_recovery",
+  "scenario_description": "The goal is to evaluate the model capacity to serve tray, respecting assignment rules that may be updated mid-task.",
+  "associate_task": "packaging.SimpBench",
+  "options_mplib": {
+    "robot": "panda_v2",
+    "join_vel_limit": 0.9,
+    "join_acc_limit": 0.9,
+    "control_timesteps": 0
+  },
+  "tasks_horizon": {
+    "11": [
+      "task_0"
+    ],
+    "10": [
+      "task_6",
+      "task_8",
+      "task_7"
+    ],
+    "9": [
+      "task_2",
+      "task_5",
+      "task_9"
+    ],
+    "6": [
+      "task_3"
+    ],
+    "14": [
+      "task_1"
+    ],
+    "12": [
+      "task_4"
+    ]
+  },
+  "criteria": {
+    "multi-steps": 10,
+    "recovery": 10,
+    "c-reasoning": 1
+  },
+  "criteria_tasks": {
+    "multi-steps": [
+      "task_0.json",
+      "task_6.json",
+      "task_2.json",
+      "task_5.json",
+      "task_9.json",
+      "task_3.json",
+      "task_8.json",
+      "task_1.json",
+      "task_4.json",
+      "task_7.json"
+    ],
+    "recovery": [
+      "task_0.json",
+      "task_6.json",
+      "task_2.json",
+      "task_5.json",
+      "task_9.json",
+      "task_3.json",
+      "task_8.json",
+      "task_1.json",
+      "task_4.json",
+      "task_7.json"
+    ],
+    "c-reasoning": [
+      "task_9.json"
+    ]
+  }
+}

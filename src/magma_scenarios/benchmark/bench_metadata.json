@@ -1,5 +1,13 @@
 [
   {
+    "scenario_name": "Packaging_benchmark",
+    "folder_name": "packaging",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning"
+    ]
+  },
+  {
     "scenario_name": "ID_Coffee",
     "folder_name": "id_coffee",
     "criteria": [
@@ -36,6 +44,15 @@
     ]
   },
   {
+    "scenario_name": "Packaging_recovery_benchmark",
+    "folder_name": "recovery_packaging",
+    "criteria": [
+      "multi-steps",
+      "recovery",
+      "c-reasoning"
+    ]
+  },
+  {
     "scenario_name": "ID_Color",
     "folder_name": "id_color_sorting",
     "criteria": [
@@ -68,7 +85,8 @@
     "criteria": [
       "multi-steps",
       "c-reasoning",
-      "recovery"
+      "recovery",
+      "lg-memorization"
     ]
   }
 ]

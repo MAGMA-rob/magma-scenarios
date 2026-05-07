@@ -10,7 +10,7 @@ from .coffee_errors import GraspCapsuleFailureError
 
 import sapien, torch, random
 from collections import defaultdict
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class MugAndCapsuleGoal(BaseGoal):
     """Specific coffee scenario goal. Adding a relative add to the position for the target"""
@@ -92,21 +92,22 @@ class MakeOneCoffeStage(BaseTaskStage):
             attributes=att,
             flag_answer_to_user=flag_answer,
             preserved_memory_indices=[]
-        )    
+        )
+        self.capsule = capsule
     
     def verif_log_completion(self, stage_log : List[Log], full_log : List[Log]) -> int:
         """
         Check if the press button correctly happens after mug and pods placed.
-        """        
-        is_pods_load = False
+        """
+        loaded_pods = []
         is_mug_placed = False
 
         for l in stage_log:
             task_name = l.function
-            if task_name == "load_capsule": is_pods_load = True
+            if task_name == "load_capsule": loaded_pods.append(l.content)
             if task_name == "place_mug": is_mug_placed = True
             if task_name == "press_button":
-                if is_mug_placed and is_pods_load:
+                if is_mug_placed and loaded_pods == [self.capsule]:
                     return 1
                 return -1
         return 0
@@ -152,17 +153,20 @@ class CoffeeCompositeStage(BaseStageComposite):
     
     def _count_completion(self, full_log: List[Log]) -> Dict[str,int]:
         cpt = {k:0 for k in self.coffee_desired}
-        pod = None
+        loaded_pods = []
         for l in full_log:
             if l.function == "load_capsule":
-                pod = l.content
+                loaded_pods.append(l.content)
             if l.function == "press_button":
-                if pod is None:
+                if len(loaded_pods) == 0:
                     raise RuntimeError("Impossible fail")
+                if len(loaded_pods) > 1:
+                    raise RuntimeError(f"Too many pods have been loaded before pressing: {loaded_pods}")
+                pod = loaded_pods[0]
                 if not pod in cpt:
                     raise RuntimeError(f"A no desired pod have been done : {pod} --> {cpt}")
                 cpt[pod] += 1
-                pod = None
+                loaded_pods = []
         return cpt
 
     def is_fully_completed(self, full_log: List[Log]) -> int:
@@ -232,8 +236,9 @@ class AskPeopleInTeamStage(AskingBaseStage):
             memory=[],
             attributes=att,
             linked_to_prev=True,
-            allow_tools_before_answer=True
+            allow_tools_before_answer=True,
         )
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
 
 
 class AskTeamsForPeopleStage(AskingBaseStage):
@@ -266,6 +271,36 @@ class AskTeamsForPeopleStage(AskingBaseStage):
             allow_tools_before_answer=True
         )
         self.target_steps = len(requested_people) + 1
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
+
+
+class AskCoffeePreferenceForUserStage(AskingBaseStage):
+
+    acceptance_steps = 0
+    target_steps = 1
+
+    def __init__(self, requested_person: str, coffee_preference: Optional[str]) -> None:
+        if requested_person == "":
+            raise ValueError("requested_person must not be empty")
+
+        question = random.choice([
+            f"What coffee does {requested_person} like?",
+            f"What is {requested_person}'s coffee preference?",
+            f"Which coffee should I prepare for {requested_person}?",
+        ])
+
+        if coffee_preference is None:
+            answer = f"{requested_person} does not have any known coffee preference."
+        else:
+            answer = f"{requested_person} likes {coffee_preference} coffee."
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=att,
+            linked_to_prev=True,
+        )
 
 
 class AskTeamCoffeePreferencesStage(AskingBaseStage):
@@ -295,6 +330,7 @@ class AskTeamCoffeePreferencesStage(AskingBaseStage):
             allow_tools_before_answer=True,
             allowed_tools=["people_from_team"],
         )
+        self.stage_goal_description = f"The goal of the stage is to ensure that the model call the tool to fetch team information before answering that : {self.verification_prompt}"
 
     def _build_question(self, requested_team: str, focus: str) -> str:
         if focus == "all":

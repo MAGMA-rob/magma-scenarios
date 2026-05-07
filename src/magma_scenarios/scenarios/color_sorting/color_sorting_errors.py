@@ -108,10 +108,8 @@ class MaskRemainingCubesError(MaskedObjectError):
                 colors,
                 self.assignment,
                 self.max_nb,
-            ),
-            "colors": colors
+            )
         }
-        print(d)
         return d
 
     def apply_post_verif(self, tool_result: ToolResult, arguments: Dict[str, Any]):
@@ -127,14 +125,12 @@ class MaskRemainingCubesError(MaskedObjectError):
             if m in remaining_objects:
                 remaining_objects.remove(m)
 
-        colors = arguments.get("colors",[])
         reason = "This is the position of existing objects: "
-        for color in colors:
-            key = f"{color}_box"
+        for key in tool_result.context:
             if len(tool_result.context[key]) == 0:
-                reason += f"{color}_box is empty. "
+                reason += f"{key} is empty. "
             else:
-                reason += ",".join(tool_result.context[key]) + f" are in the {color}_box. "
+                reason += ",".join(tool_result.context[key]) + f" are in the {key}. "
 
         if len(remaining_objects) > 0:
             reason += ",".join(remaining_objects) + " are not sorted."
