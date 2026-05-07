@@ -1,0 +1,26 @@
+{
+    "criteria" : [
+        "multi-steps"
+    ],
+    "stages" : [
+        {
+            "instruction" : "The default recipe is to have banana and milk on tray, understood?",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction" : "Ok please organize the current plate and valide it.",
+            "max_step": 7,
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": ["milk"], "main_course": []}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+
+    ]
+}

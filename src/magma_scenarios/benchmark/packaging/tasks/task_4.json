@@ -1,0 +1,41 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "Today, every customer automatically receives a banana. For each request, pick the selected items, place them on a tray, and valide the order",
+            "expected_behavior": "acknowledge"
+        },
+
+        {
+            "instruction" : "I would like chicken and ananas. ",
+            "max_step": 7,
+            "action_goal" : [],
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": ["chicken"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        },
+                {
+            "instruction" : "replace the chicken by fish and update my order",
+            "max_step": 6,
+            "complementary_verif": {
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": ["fish"]}
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,81 @@
+{
+    "criteria" : [
+        "multi-steps","recovery"
+    ],
+    "stages" : [
+        {
+        "instruction": "when processing an order, you must always follow this fixed sequence: first main_course, then drink, then fruit. always place items on the tray and validate the order.",
+        "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction" : "give me banana and chicken",
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": ["chicken"],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["water","fish","pasta","ananas","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps","recovery"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [
+                        "banana"
+                    ]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": [
+                            "banana",
+                            "chicken"
+                        ],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["fish","pasta","apple", "juice","milk","water","ananas"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                
+                "logs": [
+                    {
+                        "content": {"fruits" : ["banana"], "drinks": [], "main_course": ["chicken"]}
+                    }
+                ]},
+            "keys_evaluator": [
+                "multi-steps","recovery"
+            ]
+        }
+
+    ]
+}

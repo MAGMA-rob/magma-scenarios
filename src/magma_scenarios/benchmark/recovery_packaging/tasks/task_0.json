@@ -1,0 +1,105 @@
+{
+    "criteria" : [
+        "multi-steps","recovery"
+    ],
+    "stages" : [
+        {
+            "instruction" : "Put the chicken, water, and ananas on the tray, and don’t forget to validate the order at the end.",
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": ["water"],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chicken","fish","pasta","ananas","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps","recovery"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": ["chicken", "ananas"]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 3,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": ["water","ananas"],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["chicken","fish","pasta","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {},
+            "keys_evaluator": [
+                "multi-steps","recovery"
+            ],
+            "injection": {
+                "mode": "runtime_error",
+                "error": "GraspFoodFailureError",
+                "arguments": {
+                    "inaccessible": [ "chicken"]
+                }
+            }
+        },
+        {
+            "instruction" : null,
+            "max_step": 4,
+            "action_goal" : [
+                                {
+                    "predicate": "in",
+                    "arguments": {
+                        "obj_name": ["water","ananas", "chicken"],
+                        "location": "tray",
+                        "thresh" :  0.2
+                    }
+                },
+                {
+                    "predicate": "not_in",
+                    "arguments": {
+                        "obj_name": ["fish","pasta","apple","banana", "juice","milk"],
+                        "locations": "tray",
+                        "strict": false
+                    }
+                }
+            ],
+            "complementary_verif": {                
+                "logs": [
+                    {
+                        "content": {"fruits" : ["ananas"], "drinks": ["water"], "main_course": ["chicken"]}
+                    }
+                ]},
+            "keys_evaluator": [
+                "multi-steps","recovery"
+            ]
+        }
+
+    ]
+}
