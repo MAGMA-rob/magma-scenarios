@@ -3,14 +3,216 @@ import random
 from copy import deepcopy
 
 from magma_core.base.stage import BaseTaskStage, ModifAttributesBaseStage
-from magma_core.base.user_request import BaseRequest
+from magma_core.base.user_request import BaseRequest, BaseConstraintRequest
 from magma_core.base.state import TaskState
+from magma_core.base.constraints import BaseConstraint
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
 from .stages import ObjectToZone
 from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage, Cycle
 from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 from magma_scenarios.templates.requests import AddValueToListRequest, RemoveValueToListRequest
+
+
+def _join_values(values: List[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+def _is_or_are(values: List[str]) -> str:
+    return "is" if len(values) == 1 else "are"
+
+
+class ForbidObjectConstraint(BaseConstraint):
+    """Persistently mark one object as forbidden for future cycles."""
+
+    def __init__(self, object_name: str) -> None:
+        super().__init__()
+        self.object_name = object_name
+
+    def apply(self, state: TaskState):
+        super().apply(state)
+        if self.object_name not in state.attributes.get("objects", []):
+            raise RuntimeError(f"The {self.__class__.__name__} failed to be applied")
+        state.properties["forbidden_objects"] = [self.object_name]
+
+    def outdated(self, state: TaskState) -> bool:
+        return self.object_name not in state.attributes.get("objects", [])
+
+
+class AllowObjectConstraint(BaseConstraint):
+    """Remove the current object interdiction."""
+
+    def __init__(self, object_name: str) -> None:
+        super().__init__()
+        self.object_name = object_name
+
+    def apply(self, state: TaskState):
+        super().apply(state)
+        state.properties["forbidden_objects"] = []
+
+    def outdated(self, state: TaskState) -> bool:
+        return self.object_name not in state.attributes.get("objects", [])
+
+
+class ForbidObjectsRequest(BaseConstraintRequest):
+    """Toggle a single persistent object interdiction."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        all_objects = state.attributes.get("objects", [])
+        if len(all_objects) <= 0:
+            return 0
+        if state.properties.get("forbidden_objects"):
+            return 0.75
+        if len(all_objects) <= 1:
+            return 0
+        return 1
+
+    def initialize_constraints(self, state: TaskState):
+        self.constraints = []
+        forbidden_objects = [
+            obj
+            for obj in state.properties.get("forbidden_objects", [])
+            if obj in state.attributes.get("objects", [])
+        ]
+        if forbidden_objects:
+            object_name = forbidden_objects[0]
+            self.constraints = [AllowObjectConstraint(object_name)]
+            templates = (
+                f"{object_name} can be used again now.",
+                f"From now on, {object_name} is available again for sorting cycles.",
+                f"The maintenance is done: you can manipulate {object_name} again.",
+            )
+            self.constraint_msg = random.choice(templates)
+            return
+
+        available_objects = [
+            obj
+            for obj in state.attributes.get("objects", [])
+        ]
+        if len(available_objects) <= 1:
+            raise RuntimeError(
+                f"Failed to build the stage from {self.__class__.__name__} "
+                "due to too few available objects"
+            )
+
+        object_name = random.choice(available_objects)
+        self.constraints = [ForbidObjectConstraint(object_name)]
+
+        templates = (
+            f"Please remember that {object_name} must not be manipulated for now.",
+            f"New safety rule: do not sort {object_name} until I say otherwise.",
+            f"From now on, {object_name} cannot be used in sorting cycles.",
+        )
+        self.constraint_msg = random.choice(templates)
+
+
+class TemporaryObjectAssignmentCycleRequest(BaseRequest):
+    """Launch a cycle with a one-shot assignment that does not update defaults."""
+
+    def __init__(
+            self,
+            max_object_per_cycle_request: int = 3,
+            all_objects_probability: float = 0.7,
+        ) -> None:
+        super().__init__()
+        self.max_object = max_object_per_cycle_request
+        self.all_objects_probability = all_objects_probability
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("objects", [])) <= 0:
+            return 0
+        if len(state.attributes.get("target_areas", [])) <= 0:
+            return 0
+        if state.properties.get("object_area_needs_application", False):
+            return 0.5
+        return 2
+
+    def _sample_objects(self, objects: List[str]) -> List[str]:
+        if random.random() < self.all_objects_probability:
+            return objects.copy()
+        shuffled_objects = objects.copy()
+        random.shuffle(shuffled_objects)
+        nb_objects = random.randint(1, min(self.max_object, len(shuffled_objects)))
+        return shuffled_objects[:nb_objects]
+
+    def _build_instruction(
+            self,
+            objects_to_sort: List[str],
+            target_area: str,
+            all_objects: List[str],
+        ) -> UserInstruction:
+        if len(objects_to_sort) == len(all_objects):
+            templates = (
+                f"Launch a cycle sending all objects to {target_area}.",
+                f"For this cycle, send every object to {target_area}.",
+                f"Right now, all objects should go to {target_area}.",
+            )
+        else:
+            obj_text = _join_values(objects_to_sort)
+            templates = (
+                f"Launch a cycle sending {obj_text} to {target_area}.",
+                f"For this cycle, send {obj_text} to {target_area}.",
+                f"Right now, {obj_text} should go to {target_area}.",
+            )
+        return UserInstruction(random.choice(templates), has_constraint=True)
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        all_objects = state.attributes.get("objects", []).copy()
+        all_areas = state.attributes.get("target_areas", [])
+        if len(all_objects) <= 0 or len(all_areas) <= 0:
+            raise RuntimeError(
+                f"Failed to build the stage from {self.__class__.__name__} "
+                "due to empty objects or areas"
+            )
+
+        objects_to_sort = self._sample_objects(all_objects)
+        target_area = random.choice(all_areas)
+        instruction = self._build_instruction(objects_to_sort, target_area, all_objects)
+
+        forbidden_objects = [
+            obj
+            for obj in objects_to_sort
+            if obj in state.properties.get("forbidden_objects", [])
+        ]
+        if forbidden_objects:
+            return [
+                ForbiddenElemStage(
+                    instruction=instruction,
+                    answer=(
+                        f"The model must inform that {_join_values(forbidden_objects)} "
+                        f"{_is_or_are(forbidden_objects)} forbidden"
+                    ),
+                    memory=[],
+                    attributes=state.attributes,
+                )
+            ]
+
+        if target_area in state.properties.get("forbidden_areas", []):
+            return [
+                ForbiddenElemStage(
+                    instruction=instruction,
+                    answer=f"The model must inform that {target_area} can not be used.",
+                    memory=[],
+                    attributes=state.attributes,
+                )
+            ]
+
+        return [
+            Cycle(
+                assignment={obj: target_area for obj in objects_to_sort},
+                known_areas=all_areas,
+                flag_answer=True,
+                instruction=instruction,
+            )
+        ]
+
 
 class CycleRequest(BaseRequest):
 
@@ -122,7 +324,7 @@ class CycleRequest(BaseRequest):
 
             answer = "The model must inform that "
             if forbidden_object:
-                answer+= f"{objs} are forbidden"
+                answer+= f"{objs} {_is_or_are(forbidden_object)} forbidden"
             if obj_with_forbidden_areas:
                 answer+= f"{areas} can not be used."
 
@@ -133,9 +335,7 @@ class CycleRequest(BaseRequest):
                 attributes=state.attributes
             )
             append_stage(s)
-
-            # TO DO: Random override (to keep rules respect some times)
-            cycle_instruction = UserInstruction("Please override these orders just for my cycle")
+            return stages
 
         if missing_assignment:
             objs = " and ".join(missing_assignment.keys())

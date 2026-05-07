@@ -1,0 +1,55 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "RAP team only drinks milky coffee.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Serve Lopez.",
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "milky"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "flag_answer_to_user": true,
+      "should_reset_env": true
+    },
+    {
+      "instruction": "Update: RAP prefer black coffee now..",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Can i have a coffee for Jackson?",
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "black"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true,
+      "flag_answer_to_user": true
+    }
+  ]
+}

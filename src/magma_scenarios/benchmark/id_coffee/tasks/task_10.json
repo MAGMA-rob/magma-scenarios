@@ -1,0 +1,29 @@
+{
+  "criteria": ["multi-steps"],
+  "stages": [
+    {
+      "instruction": "MAC team accepts any coffee, GEPETTO and DISCO like their coffee white.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Make a coffee for Scott.",
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}

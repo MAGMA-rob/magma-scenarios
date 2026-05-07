@@ -6,7 +6,7 @@
     "stages": [
         {
             "instruction": "Please store one green cube in the green box.",
-            "max_step": 3,
+            "max_step": 4,
             "action_goal": [
                 {
                     "predicate": "count",

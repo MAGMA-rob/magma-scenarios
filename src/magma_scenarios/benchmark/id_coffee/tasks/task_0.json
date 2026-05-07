@@ -1,0 +1,39 @@
+{
+    "criteria": [
+        "multi-steps"
+    ],
+    "stages": [
+        {
+            "instruction": "The GEPETTO team prefer black coffee.",
+            "expected_behavior": "acknowledge"
+        },
+        {
+            "instruction": "Can you serve a coffee for Thomas?",
+            "max_step": 4,
+            "complementary_verif": {
+                "log_rules": [
+                    {
+                        "rule_name": "requires_before",
+                        "arguments": {
+                            "event": {
+                                "function_name": "press_button"
+                            },
+                            "required_before": [
+                                {
+                                    "function_name": "place_mug"
+                                },
+                                {
+                                    "function_name": "load_capsule",
+                                    "content": "black"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "keys_evaluator": [
+                "multi-steps"
+            ]
+        }
+    ]
+}

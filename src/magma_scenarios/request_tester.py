@@ -23,6 +23,11 @@ python -m magma_scenarios.request_tester \f
 python -m magma_scenarios.request_tester \
     warehouse_sorting.SimpleSortingDefinition \
     --sample 50
+
+python -m magma_scenarios.request_tester \
+    warehouse_sorting.SimpleSortingDefinition \
+    --sample 3 \
+    --detailled
 """
 
 from __future__ import annotations
@@ -123,6 +128,16 @@ def parse_args() -> argparse.Namespace:
             "original TaskState for each task. Errors are printed with context."
         ),
     )
+    parser.add_argument(
+        "--detailed",
+        "--detailled",
+        dest="sample_detailed",
+        action="store_true",
+        help=(
+            "With --sample, print each sampled request, generated stages, "
+            "instructions, goals, and resulting attributes/properties state."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -131,6 +146,8 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ValueError("--sample must be a positive integer.")
     if args.sample is not None and args.request is not None:
         raise ValueError("--sample generates full random tasks; do not combine it with --request.")
+    if args.sample is None and args.sample_detailed:
+        raise ValueError("--detailed/--detailled must be used with --sample.")
 
 
 def load_state_override(args: argparse.Namespace) -> Dict[str, Any]:
@@ -204,6 +221,15 @@ def print_state(title: str, state: TaskState) -> None:
     print(state.to_human_readable())
 
 
+def print_compact_state(title: str, state: TaskState) -> None:
+    print(f"\n=== {title} ===")
+    state_data = {
+        "attributes": state.attributes,
+        "properties": state.properties,
+    }
+    print(json.dumps(state_data, ensure_ascii=True, indent=2, default=repr))
+
+
 def print_request_list(definition, state: TaskState) -> None:
     print("\n=== Available requests ===")
     for index, request in enumerate(get_request_catalog(definition)):
@@ -231,6 +257,7 @@ def print_stages(stages: List[Any]) -> None:
         print(f"\n[{index}] {stage.__class__.__name__}")
         print(f"  goal_description: {stage.stage_goal_description}")
         print(f"  instruction: {instruction if instruction else '<EMPTY>'}")
+        print(f"  target_steps: {stage.target_steps}")
         print(f"  reset_at_end: {stage.reset_at_end}")
         print(f"  additive_stage: {getattr(stage, 'additive_stage', False)}")
         print(f"  flag_answer_to_user: {situation.flag_answer_to_user}")
@@ -240,6 +267,23 @@ def print_stages(stages: List[Any]) -> None:
         # print(f"  memory: {situation.memory}")
         # print(f"  preserved_memory_indices: {situation.preserved_memory_indices}")
         # print(f"  attributes: {json.dumps(situation.attributes, ensure_ascii=True, indent=2)}")
+
+
+def print_sample_stages(stages: List[Any]) -> None:
+    print(f"\nGenerated stages: {len(stages)}")
+    if not stages:
+        print("No stage generated.")
+        return
+
+    for index, stage in enumerate(stages):
+        situation = stage.situation
+        instruction = situation.instruction.get_content()
+        print(f"\n[{index}] {stage.__class__.__name__}")
+        print(f"  instruction: {instruction if instruction else '<EMPTY>'}")
+        print(f"  goal_description: {stage.stage_goal_description}")
+        print(f"  goals: {format_goal_names(stage.goals)}")
+        print(f"  flag_answer_to_user: {situation.flag_answer_to_user}")
+        print(f"  reset_at_end: {stage.reset_at_end}")
 
 
 def get_weight(request: Any, state: TaskState) -> float:
@@ -344,6 +388,7 @@ def run_sampling(
     initial_state: TaskState,
     sample_count: int,
     seed: int,
+    detailed: bool = False,
     max_total_target_steps: int = DEFAULT_MAX_TOTAL_TARGET_STEPS,
 ) -> None:
     errors: List[Dict[str, Any]] = []
@@ -353,6 +398,8 @@ def run_sampling(
     print(f"Tasks to generate: {sample_count}")
     print(f"State handling: restart from the same initial TaskState for every task")
     print(f"Max total target steps per task: {max_total_target_steps}")
+    if detailed:
+        print("Detailed logging: enabled")
 
     for task_index in range(sample_count):
         task_seed = seed + task_index
@@ -365,6 +412,9 @@ def run_sampling(
         total_target_steps = 0
         request_history: List[str] = []
         failed = False
+
+        if detailed:
+            print(f"\n=== Task [{task_index}] detail seed={task_seed} ===")
 
         while total_target_steps < max_total_target_steps:
             request_index, request, selection_errors = select_weighted_request(definition, state)
@@ -390,6 +440,8 @@ def run_sampling(
                 break
 
             if request is None:
+                if detailed:
+                    print("No eligible request remains for this state.")
                 break
 
             request_label = f"[{request_index}] {request.__class__.__name__}"
@@ -414,7 +466,18 @@ def run_sampling(
                 break
 
             if task.stages and total_target_steps + sampled_target_steps > max_total_target_steps:
+                if detailed:
+                    print(
+                        f"\nStopping before {request_label}: "
+                        f"{total_target_steps} + {sampled_target_steps} target steps "
+                        f"would exceed max {max_total_target_steps}."
+                    )
                 break
+
+            if detailed:
+                print(f"\n--- Sampled request {request_label} ---")
+                print_sample_stages(stages)
+                print_compact_state(f"State after {request.__class__.__name__}", next_state)
 
             task.stages.extend(stages)
             total_target_steps += sampled_target_steps
@@ -500,7 +563,10 @@ def main() -> int:
 
     print(f"Definition: {definition_cls.__module__}.{definition_cls.__name__}")
     print(f"Seed: {args.seed}")
-    print_state("Initial state", state)
+    if args.sample_detailed:
+        print_compact_state("Initial state", state)
+    else:
+        print_state("Initial state", state)
     print_request_list(definition, state)
 
     for selector in args.setup_request:
@@ -513,6 +579,7 @@ def main() -> int:
             initial_state=state,
             sample_count=args.sample,
             seed=args.seed,
+            detailed=args.sample_detailed,
         )
         return 0
 

@@ -1,0 +1,50 @@
+{
+  "criteria": ["multi-steps", "c-reasoning"],
+  "stages": [
+    {
+      "instruction": "GEPETTO team only drinks black coffee, MAC drinks white and DISCO milky.",
+      "expected_behavior": "acknowledge"
+    },
+    {
+      "instruction": "Serve Mitchell a white coffee please.",
+      "max_step": 4,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "white"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps", "c-reasoning"],
+      "flag_answer_to_user": true,
+      "should_reset_env": true
+    },
+    {
+      "instruction": "Hello can you serve a coffee to Mitchell according his default preference?",
+      "max_step": 5,
+      "complementary_verif": {
+        "log_rules": [
+          {
+            "rule_name": "requires_before",
+            "arguments": {
+              "event": {"function_name": "press_button"},
+              "required_before": [
+                {"function_name": "place_mug"},
+                {"function_name": "load_capsule", "content": "black"}
+              ]
+            }
+          }
+        ]
+      },
+      "keys_evaluator": ["multi-steps"],
+      "should_reset_env": true
+    }
+  ]
+}

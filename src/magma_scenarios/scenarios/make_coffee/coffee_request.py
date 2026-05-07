@@ -15,12 +15,85 @@ from .coffee_stages import (
     AskTeamCoffeePreferencesStage,
 )
 
-from magma_scenarios.templates.stages import MissingInformationStage
+from magma_scenarios.templates.stages import MissingInformationStage, ForbiddenElemStage
 
 from .coffee_constraints import (
+    CoffeeAvailableConstraint,
+    CoffeeUnavailableConstraint,
     CoffeePreferenceConstraint,
     TeamCoffeePreferenceConstraint,
+    get_available_coffee_pods,
+    get_unavailable_coffee_pods,
 )
+
+def _join_values(values: List[str]) -> str:
+    if len(values) == 0:
+        return ""
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+def _is_or_are(values: List[str]) -> str:
+    return "is" if len(values) == 1 else "are"
+
+
+class ToggleCoffeeAvailability(BaseConstraintRequest):
+    """Toggle one persistent coffee pod unavailability."""
+
+    def __init__(self, max_unavailable: int = 1) -> None:
+        super().__init__()
+        if max_unavailable != 1:
+            raise ValueError("Only one unavailable coffee pod is supported for now")
+        self.max_unavailable = max_unavailable
+
+    def sampling_weight(self, state: TaskState) -> float:
+        pods = state.attributes.get("coffee_pod", [])
+        if len(pods) <= 0:
+            return 0
+        if get_unavailable_coffee_pods(state):
+            return 0.75
+        if len(pods) <= self.max_unavailable:
+            return 0
+        return 1
+
+    def initialize_constraints(self, state: TaskState):
+        self.constraints = []
+        unavailable_pods = get_unavailable_coffee_pods(state)
+
+        if unavailable_pods:
+            coffee = unavailable_pods[0]
+            self.constraints = [CoffeeAvailableConstraint(coffee)]
+            templates = (
+                f"{coffee} coffee is available again.",
+                f"We have {coffee} capsules again now.",
+                f"The {coffee} capsules have been restocked.",
+                f"You can use {coffee} coffee again now.",
+            )
+            self.constraint_msg = random.choice(templates)
+            return
+
+        pods = state.attributes.get("coffee_pod", [])
+        if len(pods) <= self.max_unavailable:
+            raise RuntimeError(
+                f"Failed to build the stage from {self.__class__.__name__} "
+                "because too few coffee pods are known"
+            )
+
+        coffee = random.choice(pods)
+        remaining_pods = [pod for pod in pods if pod != coffee]
+        self.constraints = [CoffeeUnavailableConstraint(coffee)]
+
+        templates = (
+            f"{coffee} coffee is not available anymore.",
+            f"There are no {coffee} capsules left for now.",
+            f"Only {_join_values(remaining_pods)} capsules are left.",
+            f"We are out of {coffee} capsules until further notice.",
+        )
+        self.constraint_msg = random.choice(templates)
+
 
 class AskCoffeeRequest(BaseRequest):
 
@@ -49,14 +122,66 @@ class AskCoffeeRequest(BaseRequest):
         pods_seq = random.choices(pods,k=n)
         stages = []
         coffee_str = ' and '.join(pods_seq)
-        instruction = f"Hello, please make thse coffee in this exact order: {coffee_str}"
-        for i in range(n):
-            stages.append(MakeOneCoffeStage(
-                pods_seq[i],
+        instruction = f"Hello, please make these coffees in this exact order: {coffee_str}"
+
+        unavailable_pods = set(get_unavailable_coffee_pods(state))
+        blocked_pods = list(dict.fromkeys(
+            pod
+            for pod in pods_seq
+            if pod in unavailable_pods
+        ))
+        if blocked_pods:
+            refusal_stage = ForbiddenElemStage(
+                UserInstruction(instruction),
+                (
+                    f"The model must refuse because {_join_values(blocked_pods)} coffee "
+                    f"{_is_or_are(blocked_pods)} unavailable"
+                ),
+                state.memory,
+                state.attributes,
+            )
+            stages.append(refusal_stage)
+
+            available_pods = get_available_coffee_pods(state)
+            if len(pods_seq) == 1 or len(available_pods) == 0:
+                return stages
+
+            valid_pods_seq = [
+                pod
+                for pod in pods_seq
+                if pod not in unavailable_pods
+            ]
+            should_skip_unavailable = len(valid_pods_seq) > 0 and random.choice([True, False])
+
+            if should_skip_unavailable:
+                pods_seq = valid_pods_seq
+                coffee_str = " and ".join(pods_seq)
+                instruction = (
+                    f"Do not make the {_join_values(blocked_pods)} coffee. "
+                    f"Please make only these coffees in this exact order: {coffee_str}."
+                )
+            else:
+                replacement_pod = random.choice(available_pods)
+                pods_seq = [
+                    replacement_pod if pod in unavailable_pods else pod
+                    for pod in pods_seq
+                ]
+                coffee_str = " and ".join(pods_seq)
+                instruction = (
+                    f"Use {replacement_pod} coffee instead of {_join_values(blocked_pods)}. "
+                    f"Please make these coffees in this exact order: {coffee_str}."
+                )
+
+        for i, pod in enumerate(pods_seq):
+            stage = MakeOneCoffeStage(
+                pod,
                 instruction,
                 [],
-                flag_answer=i==n-1
-            ))
+                flag_answer=i==len(pods_seq)-1
+            )
+            if stages:
+                stage.linked_to_prev = True
+            stages.append(stage)
             instruction="none"
 
         return stages
@@ -175,6 +300,7 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
         selected_coffees = random.choices(coffees, k=nb_team)
 
         msg_parts = []
+        benchmark_like_msg_parts = []
         for team_name, coffee in zip(selected_teams, selected_coffees):
             self.constraints.append(
                 TeamCoffeePreferenceConstraint(
@@ -186,12 +312,17 @@ class GiveTeamCoffeePreference(BaseConstraintRequest):
             )
             if self.mode == "override":
                 msg_parts.append(f"everyone in team {team_name} likes {coffee} coffee")
+                benchmark_like_msg_parts.append(f"{team_name} team prefer {coffee} coffee")
             else:
                 msg_parts.append(
                     f"by default, members of team {team_name} like {coffee} coffee if they do not already have a known preference"
                 )
+                benchmark_like_msg_parts.append(f"{team_name} team usually drinks {coffee}")
 
-        self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
+        if random.choice([True, False]):
+            self.constraint_msg = "Hello, please remember that " + ", and ".join(msg_parts) + "."
+        else:
+            self.constraint_msg = " and ".join(benchmark_like_msg_parts) + "."
 
     def apply_request(self, state: TaskState) -> TaskState:
         state = super().apply_request(state)
@@ -248,6 +379,8 @@ class AskCoffeePerUser(BaseRequest):
 
     def _build_ordered_instruction(self, names: List[str]) -> str:
         if len(names) == 1:
+            if random.choice([True, False]):
+                return f"Can you serve a coffee for {names[0]}?"
             return f"Please make the coffee for {names[0]}."
 
         parts = [f"first the coffee for {names[0]}"]
@@ -260,6 +393,63 @@ class AskCoffeePerUser(BaseRequest):
             ordered_names = ", ".join(parts[:-1]) + f", and {parts[-1]}"
 
         return f"Please make {ordered_names}."
+
+    def _build_unavailable_preference_answer(
+            self,
+            blocked_names: List[str],
+            capsule_by_name: Dict[str, str],
+        ) -> str:
+        names_by_pod = defaultdict(list)
+        for name in blocked_names:
+            names_by_pod[capsule_by_name[name]].append(name)
+
+        parts = [
+            (
+                f"{_join_values(names)} cannot be served because "
+                f"{pod} coffee is unavailable"
+            )
+            for pod, names in names_by_pod.items()
+        ]
+        return "The model must refuse and inform that " + _join_values(parts) + "."
+
+    def _build_cancel_instruction(
+            self,
+            blocked_names: List[str],
+            served_names: List[str],
+        ) -> str:
+        return (
+            f"Do not make the coffee for {_join_values(blocked_names)}. "
+            f"Please prepare only the coffee for {_join_values(served_names)}."
+        )
+
+    def _build_substitution_instruction(
+            self,
+            blocked_names: List[str],
+            replacement_pod: str,
+            served_names: List[str],
+        ) -> str:
+        return (
+            f"Use {replacement_pod} coffee instead for {_join_values(blocked_names)}. "
+            f"{self._build_ordered_instruction(served_names)}"
+        )
+
+    def _append_make_stages(
+            self,
+            stages: List[BaseTaskStage],
+            names: List[str],
+            capsule_by_name: Dict[str, str],
+            first_instruction: str,
+        ) -> None:
+        for i, name in enumerate(names):
+            stage = MakeOneCoffeStage(
+                capsule_by_name[name],
+                first_instruction if i == 0 else "none",
+                [],
+                i == len(names) - 1
+            )
+            if stages:
+                stage.linked_to_prev = True
+            stages.append(stage)
 
     def _sample_requested_users(self, state: TaskState) -> tuple[List[str], Dict[str, str]]:
         pods = state.attributes.get("coffee_pod", [])
@@ -320,32 +510,82 @@ class AskCoffeePerUser(BaseRequest):
 
         ordered_instruction = self._build_ordered_instruction(names)
         resolution_instruction = self._build_preference_resolution(missing_assignment)
+        capsule_by_name = {
+            name: self._get_capsule(name, preference, missing_assignment)
+            for name in names
+        }
+
+        unavailable_pods = set(get_unavailable_coffee_pods(state))
+        blocked_names = [
+            name
+            for name in names
+            if capsule_by_name[name] in unavailable_pods
+        ]
+
+        if blocked_names:
+            first_instruction = ordered_instruction
+            if resolution_instruction:
+                first_instruction = f"{resolution_instruction} {ordered_instruction}"
+
+            refusal_stage = ForbiddenElemStage(
+                UserInstruction(first_instruction, has_constraint=bool(resolution_instruction)),
+                self._build_unavailable_preference_answer(blocked_names, capsule_by_name),
+                state.memory,
+                state.attributes,
+            )
+            if stages:
+                refusal_stage.linked_to_prev = True
+            stages.append(refusal_stage)
+
+            available_pods = get_available_coffee_pods(state)
+            if len(names) == 1 or len(available_pods) == 0:
+                return stages
+
+            valid_names = [
+                name
+                for name in names
+                if name not in blocked_names
+            ]
+            should_cancel_blocked = len(valid_names) > 0 and random.choice([True, False])
+
+            if should_cancel_blocked:
+                self._append_make_stages(
+                    stages,
+                    valid_names,
+                    capsule_by_name,
+                    self._build_cancel_instruction(blocked_names, valid_names),
+                )
+                return stages
+
+            replacement_pod = random.choice(available_pods)
+            replacement_capsules = capsule_by_name.copy()
+            for name in blocked_names:
+                replacement_capsules[name] = replacement_pod
+
+            self._append_make_stages(
+                stages,
+                names,
+                replacement_capsules,
+                self._build_substitution_instruction(blocked_names, replacement_pod, names),
+            )
+            return stages
 
         if self.force_order:
             first_instruction = ordered_instruction
             if resolution_instruction:
                 first_instruction = f"{resolution_instruction} {ordered_instruction}"
 
-            for i, name in enumerate(names):
-                capsule = self._get_capsule(name, preference, missing_assignment)
-                stages.append(MakeOneCoffeStage(
-                    capsule,
-                    first_instruction if i == 0 else "none",
-                    [],
-                    i == len(names) - 1
-                ))
+            self._append_make_stages(stages, names, capsule_by_name, first_instruction)
             return stages
 
         if len(names) == 1:
-            name = names[0]
-            capsule = self._get_capsule(name, preference, missing_assignment)
             instruction = resolution_instruction if resolution_instruction else request_instruction
-            stages.append(MakeOneCoffeStage(capsule, instruction, [], True))
+            self._append_make_stages(stages, names, capsule_by_name, instruction)
             return stages
 
         number = defaultdict(int)
         for name in names:
-            number[self._get_capsule(name, preference, missing_assignment)] += 1
+            number[capsule_by_name[name]] += 1
         stages.append(CoffeeCompositeStage(dict(number)))
 
         return stages

@@ -96,7 +96,12 @@ class MakingCoffeeTool(BaseToolsAPI):
                 False,
                 f"Failed to load the {coffee_name} capsule. You can retry.")
 
-        return ToolExecution(poses=poses, verifier=verifier, reason=r)
+        return ToolExecution(
+            poses=poses,
+            verifier=verifier,
+            reason=r,
+            context={"target_name": pods_name},
+        )
     
     @register_tool(
             description="Place the mug in the coffee maker, under the coffee outlet, so the brewed drink is dispensed into it.",

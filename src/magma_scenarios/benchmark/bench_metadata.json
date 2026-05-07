@@ -13,18 +13,7 @@
     "folder_name": "color_sorting",
     "criteria": [
       "multi-steps",
-      "recovery",
-      "c-reasoning",
-      "lg-memorization"
-    ]
-  },
-  {
-    "scenario_name": "Make_coffee_Benchmark",
-    "folder_name": "make_coffee",
-    "criteria": [
-      "multi-steps",
-      "c-reasoning",
-      "recovery"
+      "c-reasoning"
     ]
   },
   {
@@ -37,17 +26,8 @@
     ]
   },
   {
-    "scenario_name": "Laundry_Benchmark",
-    "folder_name": "laundry",
-    "criteria": [
-      "multi-steps",
-      "c-reasoning",
-      "recovery"
-    ]
-  },
-  {
-    "scenario_name": "Warehouse_Sorting_Simp",
-    "folder_name": "warehouse_sort_simp",
+    "scenario_name": "ID_Warehouse",
+    "folder_name": "id_warehouse_sort",
     "criteria": [
       "c-reasoning",
       "multi-steps",
@@ -56,11 +36,48 @@
     ]
   },
   {
+    "scenario_name": "Unseen_Coffee",
+    "folder_name": "us_coffee",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning",
+      "recovery"
+    ]
+  },
+  {
+    "scenario_name": "ID_Color",
+    "folder_name": "id_color_sorting",
+    "criteria": [
+      "multi-steps",
+      "recovery",
+      "c-reasoning",
+      "lg-memorization"
+    ]
+  },
+  {
+    "scenario_name": "RECOVERY_Coffee",
+    "folder_name": "recovery_coffee",
+    "criteria": [
+      "multi-steps",
+      "recovery"
+    ]
+  },
+  {
     "scenario_name": "Recovery_Laundry",
     "folder_name": "recovery_laundry",
     "criteria": [
       "recovery",
-      "multi-steps"
+      "multi-steps",
+      "c-reasoning"
+    ]
+  },
+  {
+    "scenario_name": "COMP_Laundry",
+    "folder_name": "comp_laundry",
+    "criteria": [
+      "multi-steps",
+      "c-reasoning",
+      "recovery"
     ]
   }
 ]
