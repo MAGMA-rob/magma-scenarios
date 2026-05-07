@@ -19,7 +19,7 @@
                     "predicate": "in",
                     "arguments": {
                         "obj_name": [
-                            "paties",
+                            "panties",
                             "cap",
                             "detergent_PERSIL"
                         ],
@@ -50,7 +50,7 @@
                     {
                         "content": {
                             "clothes": [
-                                "paties",
+                                "panties",
                                 "cap"
                             ],
                             "detergent": "detergent_PERSIL"

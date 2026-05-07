@@ -127,6 +127,8 @@ class MaskRemainingCubesError(MaskedObjectError):
 
         reason = "This is the position of existing objects: "
         for key in tool_result.context:
+            if key == "table":
+                continue
             if len(tool_result.context[key]) == 0:
                 reason += f"{key} is empty. "
             else:

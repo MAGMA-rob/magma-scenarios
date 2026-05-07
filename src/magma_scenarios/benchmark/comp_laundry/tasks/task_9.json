@@ -40,7 +40,7 @@
         },
         {
           "predicate": "not_in",
-          "arguments": {"obj_name": ["blouse", "panties", "jean", "boxer", "cap", "shirt", "pants", "short", "detergent_OMO"], "locations": "washing_machine_basket",
+          "arguments": {"obj_name": ["blouse", "panties", "jeans", "boxer", "cap", "shirt", "pants", "short", "detergent_OMO"], "locations": "washing_machine_basket",
                         "strict": false}
         }
       ],
