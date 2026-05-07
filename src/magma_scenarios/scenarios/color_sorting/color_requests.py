@@ -7,7 +7,7 @@ from magma_core.base.user_request import BaseConstraintRequest, BaseRequest
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
-from .color_sorting_stages import SortByColorStage, ExactSortByColorStage
+from .color_sorting_stages import SortByColorStage, ExactSortByColorStage, AskColorStateStage
 
 constraint_type = ["alternate", "first-color", "second-color"]
 
@@ -239,3 +239,46 @@ class AskForCycle(BaseRequest):
                 state.properties.get("constraint_order_applications", 0) + 1
             )
         return state
+
+
+class AskColorStateRequest(BaseRequest):
+
+    def __init__(self, max_objects: int = 4):
+        super().__init__()
+        self.max_objects = max_objects
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1
+
+    def _generate_state(self, colors: List[str]) -> Dict:
+        detected = {f"{c}_box": [] for c in colors}
+        detected["table"] = []
+
+        nb_objects = random.randint(1, self.max_objects)
+
+        for i in range(nb_objects):
+            obj = f"cube_{i+1}"
+            location = random.choice(colors + ["table"])
+
+            if location == "table":
+                detected["table"].append(obj)
+            else:
+                detected[f"{location}_box"].append(obj)
+
+        return detected
+        
+
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+
+        colors = state.attributes["known_box_color"]
+
+        detected = self._generate_state(colors)
+
+
+        return [
+            AskColorStateStage(
+                detected_obj=detected,
+                colors=colors
+            )
+        ]

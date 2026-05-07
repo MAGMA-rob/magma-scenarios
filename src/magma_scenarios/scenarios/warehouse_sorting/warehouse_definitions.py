@@ -15,9 +15,8 @@ from .warehouse_requests import (
     AddAreas,
     RemoveAreas,
     CycleByCategoriesRequest,
-    AskObjectAreaAssignementRequest,
-    AssignObjectsAreaRequest
-)
+    AskObjectAreaAssignementRequest
+    )
 
 from .att import OBJECTS, AREAS
 from .tools import WithoutManufacturingOrder
@@ -33,8 +32,7 @@ class SimpleSortingDefinition(TaskDefinition):
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
         CycleWithPermanentRulesRequest(),
-        AskObjectAreaAssignementRequest(),
-        AssignObjectsAreaRequest()
+        AskObjectAreaAssignementRequest()
     ]
     Tools_cls = WithoutManufacturingOrder
     env_id = "SortingCubesWarehouse-v1"

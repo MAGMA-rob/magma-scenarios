@@ -123,3 +123,59 @@ class AskObjectAreaAssignementStage(AskingBaseStage):
             linked_to_prev=True,
             allow_tools_before_answer=False
             )
+
+def _join_values(values: List[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+def _is_or_are(values: List[str]) -> str:
+    return "is" if len(values) == 1 else "are"
+
+class AskObjectAreaAssignementStageInverse(AskingBaseStage):
+
+    def __init__(
+        self,
+        object_to_area: Dict[str, str],
+        target_objects: List[str]
+    ) -> None:
+
+        question = (
+            f"Which areas are associated with {_join_values(target_objects)}?"
+        )
+
+        grouped_objects = {}
+
+        for obj in target_objects:
+            area = object_to_area.get(obj)
+
+            if area is None:
+                continue
+
+            grouped_objects.setdefault(area, []).append(obj)
+
+        if len(grouped_objects) == 0:
+            answer = (
+                f"No areas are associated with "
+                f"{_join_values(target_objects)}."
+            )
+        else:
+            answer = ", ".join(
+                f"{_join_values(objects)} {_is_or_are(objects)} assigned to {area}"
+                for area, objects in grouped_objects.items()
+            )
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes={
+                "mapping": object_to_area,
+                "target_objects": target_objects
+            },
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )

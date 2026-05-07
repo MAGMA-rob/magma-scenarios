@@ -115,33 +115,89 @@ class RefuseLaundryStage(BaseTaskStage):
 
         self.verification_prompt = verif_prompt
 
-class AskClothesCategoryStage(AskingBaseStage):
+class AskClothesDetergentStage(AskingBaseStage):
     """
-    Q&A stage testing clothes-to-category retrieval (e.g. everyday, sport).
-    The agent must list clothes belonging to a given category from state relations.
-    No tools are allowed; answer is fully derived from clothes_to_category mapping.
+    Q&A stage testing clothes-to-detergent.
+    The agent must list clothes belonging to a given detergent from state relations.
+    No tools are allowed; answer is fully derived from clothes_to_detergent mapping.
     """
     def __init__(
         self,
-        clothes_to_category : Dict[str, str],
-        target_category : str ) -> None :
+        clothes_to_detergent : Dict[str, str],
+        target_detergent : str ) -> None :
 
-        question = f"Wich clothes are considered '{target_category}' ?"
-        clothes = [ cloth for cloth,category in clothes_to_category.items() 
-            if category == target_category ]
+        question = f"Wich clothes are considered '{target_detergent}' ?"
+        clothes = [ cloth for cloth,detergent in clothes_to_detergent.items() 
+            if detergent == target_detergent ]
             
         if len(clothes) == 0:
-            answer = f"No clothes are categorized as {target_category}."
+            answer = f"No clothes are categorized as {target_detergent}."
         else :
-            answer = f"{target_category} clothes are {', '.join(clothes)}"
+            answer =  f"Clothes categorized as '{target_detergent}' are: {', '.join(clothes)}"
 
         super().__init__(
             question=question,
             answer=answer,
             memory=[],
             attributes={
-                "mapping" : clothes_to_category,
-                "target_category" : target_category
+                "mapping" : clothes_to_detergent,
+                "target_detergent" : target_detergent
+            },
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )
+
+def _join_values(values: List[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+def _plural(word: str, values: List[str]) -> str:
+    return word + "s" if len(values) > 1 else word
+
+
+class AskClothesDetergentStageInverse(AskingBaseStage):
+
+    def __init__(
+        self,
+        clothes_to_detergent: Dict[str, str],
+        clothes: List[str]
+    ) -> None:
+
+        question = (
+            f"What {_plural('detergent', clothes)} can wash {_join_values(clothes)}?"
+        )
+
+        grouped_clothes = {}
+
+        for cloth in clothes:
+            detergent = clothes_to_detergent.get(cloth)
+
+            if detergent is None:
+                continue
+
+            grouped_clothes.setdefault(detergent, []).append(cloth)
+
+        if len(grouped_clothes) == 0:
+            answer = (
+                f"No detergent is associated with {_join_values(clothes)}."
+            )
+        else:
+            answer = ", ".join(
+                f"{_join_values(clothes_list)} can be washed with {detergent}"
+                for detergent, clothes_list in grouped_clothes.items()
+            )
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes={
+                "mapping": clothes_to_detergent,
+                "target_clothes": clothes
             },
             linked_to_prev=True,
             allow_tools_before_answer=False

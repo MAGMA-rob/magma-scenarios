@@ -3,7 +3,7 @@ from torch._tensor import Tensor
 import torch
 from typing import List, Dict, Optional
 
-from magma_core.base.stage import BaseTaskStage
+from magma_core.base.stage import BaseTaskStage, AskingBaseStage
 from magma_core.base.data_structures import Instruction, Log, Situation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.goals import BaseGoal, ExactCountAt, MaxAt
@@ -146,3 +146,47 @@ class DetectionStage(BaseTaskStage):
             if l.function != "get_object_state":
                 return -1
         return 1
+
+class AskColorStateStage(AskingBaseStage):
+
+    def __init__(self, detected_obj: Dict, colors: List[str]):
+
+        question = "Which objects are in each color box?"
+
+        def format_answer():
+            parts = []
+
+            for c in colors:
+                objs = detected_obj[f"{c}_box"]
+
+                if len(objs) == 0:
+                    parts.append(f"There are no objects in the {c} box")
+                else:
+                    if len(objs) == 1:
+                        parts.append(f"{objs[0]} is in the {c} box")
+                    else:
+                        obj_list = ", ".join(objs[:-1]) + f" and {objs[-1]}"
+                        parts.append(f"{obj_list} are in the {c} box")
+
+            if detected_obj["table"]:
+                objs = detected_obj["table"]
+                if len(objs) == 1:
+                    parts.append(f"{objs[0]} is on the table")
+                else:
+                    obj_list = ", ".join(objs[:-1]) + f" and {objs[-1]}"
+                    parts.append(f"{obj_list} are on the table")
+
+            return " ".join(parts) + "."
+
+        answer = format_answer()
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes={
+                "mapping": detected_obj
+            },
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )
