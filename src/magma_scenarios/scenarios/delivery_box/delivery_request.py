@@ -10,6 +10,10 @@ from magma_core.utils.env_utils import craft_random_manu_order
 from .attributes import MAX_NB_PER_RECIPE
 from .delivery_stages import CycleStage
 
+RECIPE_NEEDS_APPLICATION_KEY = "recipe_needs_application"
+RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY = "recipe_override_needs_application"
+RECIPE_APPLICATIONS_KEY = "recipe_applications"
+
 
 def build_recipe_instruction(products: List[str], action: Optional[str] = None) -> str:
     recipe_counts: Dict[str, int] = {}
@@ -35,12 +39,15 @@ class RecipeConstraints(BaseConstraint):
         self.overridde = overridde
 
     def apply(self, state: TaskState):
+        super().apply(state)
         if self.overridde:
             state.properties["recipe"] = self.to_add.copy()
+            state.properties[RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY] = True
         else:
             for r in self.to_remove:
                 state.properties["recipe"].remove(r) # Will raise an exception if not valid
             state.properties["recipe"].extend(self.to_add.copy())
+        state.properties[RECIPE_NEEDS_APPLICATION_KEY] = True
     
 
 class GiveRecipe(BaseConstraintRequest):
@@ -48,6 +55,17 @@ class GiveRecipe(BaseConstraintRequest):
     def __init__(self, max_recipe_lenght : int = 3):
         super().__init__()
         self.max_lenght = max_recipe_lenght
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if state.properties.get(RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY, False):
+            return 0
+        if len(state.attributes.get("product_type", [])) <= 0:
+            return 0
+        if len(state.properties.get("recipe", [])) <= 0:
+            return 4
+        if state.properties.get(RECIPE_NEEDS_APPLICATION_KEY, False):
+            return 0.5
+        return 1
 
     def initialize_constraints(self, state: TaskState):
         all_type = 2*state.attributes.get("product_type",[]).copy()
@@ -65,6 +83,16 @@ class UpdateRecipe(BaseConstraintRequest):
         super().__init__()
         self.max_lenght = max_update
 
+    def sampling_weight(self, state: TaskState) -> float:
+        cur_recipe = state.properties.get("recipe", [])
+        product_types = state.attributes.get("product_type", [])
+        can_add = any(
+            cur_recipe.count(product_name) < MAX_NB_PER_RECIPE
+            for product_name in product_types
+        )
+        can_remove = len(cur_recipe) > 1
+        return 1 if can_add or can_remove else 0
+
     def initialize_constraints(self, state: TaskState):
         cur_recipe : List[str] = state.properties.get("recipe",[]).copy()
         possible = []
@@ -76,9 +104,13 @@ class UpdateRecipe(BaseConstraintRequest):
         to_add = []
         to_remove = []
         for _ in range(n):
-            if len(cur_recipe) <= 1:
+            can_add = len(possible) > 0
+            can_remove = len(cur_recipe) > 1
+            if not can_add and not can_remove:
+                break
+            if not can_remove:
                 ac = 1
-            elif len(possible) <= 1:
+            elif not can_add:
                 ac = 0
             else:   
                 ac = random.randint(0,1)
@@ -87,10 +119,12 @@ class UpdateRecipe(BaseConstraintRequest):
                 select = random.choice(possible)
                 possible.remove(select)
                 to_add.append(select)
+                cur_recipe.append(select)
             else:
                 select = random.choice(cur_recipe)
                 cur_recipe.remove(select)
                 to_remove.append(select)
+                possible.append(select)
 
         self.constraints = [RecipeConstraints(add=to_add,remove=to_remove)]
         actions = []
@@ -109,6 +143,8 @@ class AskForCycle(BaseRequest):
     def sampling_weight(self, state: TaskState) -> float:
         if len(state.properties.get("recipe",[])) <= 0:
             return 0
+        if state.properties.get(RECIPE_NEEDS_APPLICATION_KEY, False):
+            return 8
         return 2
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
@@ -120,11 +156,27 @@ class AskForCycle(BaseRequest):
         return [
             CycleStage(recipe,manu,nb,f"Hello, I need {nb} deliveries under manufacturing order {manu}",True)
         ]
+
+    def apply_request(self, state: TaskState) -> TaskState:
+        if state.properties.get(RECIPE_NEEDS_APPLICATION_KEY, False):
+            state.properties[RECIPE_NEEDS_APPLICATION_KEY] = False
+            state.properties[RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY] = False
+            state.properties[RECIPE_APPLICATIONS_KEY] = (
+                state.properties.get(RECIPE_APPLICATIONS_KEY, 0) + 1
+            )
+        return state
     
 class AskForCycleWithOverride(BaseRequest):
 
     def __init__(self) -> None:
         super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.attributes.get("product_type", [])) <= 0:
+            return 0
+        if state.properties.get(RECIPE_NEEDS_APPLICATION_KEY, False):
+            return 0.25
+        return 1
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_types = state.attributes.get("product_type",[]).copy()
