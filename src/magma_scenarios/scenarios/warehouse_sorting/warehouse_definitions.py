@@ -15,7 +15,8 @@ from .warehouse_requests import (
     AddAreas,
     RemoveAreas,
     CycleByCategoriesRequest,
-    AskObjectAreaAssignementRequest
+    AskObjectAreaAssignementRequest,
+    AskObjectAreaAssignementRequestInverse
     )
 
 from .att import OBJECTS, AREAS
@@ -32,7 +33,8 @@ class SimpleSortingDefinition(TaskDefinition):
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
         CycleWithPermanentRulesRequest(),
-        AskObjectAreaAssignementRequest()
+        AskObjectAreaAssignementRequest(),
+        AskObjectAreaAssignementRequestInverse()
     ]
     Tools_cls = WithoutManufacturingOrder
     env_id = "SortingCubesWarehouse-v1"
@@ -56,6 +58,8 @@ class SortingWithInterdictionsDefinition(TaskDefinition):
         ForbidObjectsRequest(),
         TemporaryObjectAssignmentCycleRequest(all_objects_probability=0.8),
         CycleRequest(),
+        AskObjectAreaAssignementRequest(),
+        AskObjectAreaAssignementRequestInverse()
     ]
     Tools_cls = WithoutManufacturingOrder
     env_id = "SortingCubesWarehouse-v1"

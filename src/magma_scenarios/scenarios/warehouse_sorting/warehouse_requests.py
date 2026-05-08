@@ -680,13 +680,10 @@ class RemoveAreas(RemoveValueToListRequest):
 
 
 class AskObjectAreaAssignementRequest(BaseRequest):
-    def __init__(self, max_objects: int = 3) -> None:
-        super().__init__()
-        self.max_objects = max_objects
 
     def sampling_weight(self, state: TaskState) -> float:
         relations = state.relations.get("object_area", {})
-        return 1 if len(relations) > 0 else 0
+        return 0.7 if len(relations) > 0 else 0
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
 
@@ -695,28 +692,27 @@ class AskObjectAreaAssignementRequest(BaseRequest):
         if len(relations) == 0 :
             raise RuntimeError("No object-area relations available")
 
-        selected_objects = random.sample(list(relations.keys()),
-        k = min(self.max_objects,len(relations)))
-        
-        target_area = relations[selected_objects[0]]
+        selected_object = random.choice(list(relations.keys()))
+        target_area = relations[selected_object]
 
         return [
             AskObjectAreaAssignementStage(
-                object_to_area = {obj : relations[obj] for obj in selected_objects},
-                target_area = target_area
+                object_to_area = relations,
+                target_area = target_area,
+                attributes = state.attributes
             )
         ]    
 
     
 class AskObjectAreaAssignementRequestInverse(BaseRequest):
 
-    def __init__(self, max_objects: int = 3) -> None:
+    def __init__(self, max_objects: int = 2) -> None:
         super().__init__()
         self.max_objects = max_objects
 
     def sampling_weight(self, state: TaskState) -> float:
         relations = state.relations.get("object_area", {})
-        return 1 if len(relations) > 0 else 0
+        return 0.7 if len(relations) > 0 else 0
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
 
@@ -738,6 +734,7 @@ class AskObjectAreaAssignementRequestInverse(BaseRequest):
         return [
             AskObjectAreaAssignementStageInverse(
                 object_to_area=relations,
-                target_objects=selected_objects
+                target_objects=selected_objects,
+                attributes = state.attributes
             )
         ]

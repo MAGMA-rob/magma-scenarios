@@ -100,7 +100,8 @@ class AskObjectAreaAssignementStage(AskingBaseStage):
     def __init__(
         self,
         object_to_area : Dict[str,str],
-        target_area : str) -> None:
+        target_area : str,
+        attributes : Dict) -> None:
 
         question = f"Which objects are associated to {target_area}?"
 
@@ -116,10 +117,7 @@ class AskObjectAreaAssignementStage(AskingBaseStage):
             question=question,
             answer=answer,
             memory=[],
-            attributes={
-                "mapping" : object_to_area,
-                "target_area" : target_area
-            },
+            attributes=attributes,
             linked_to_prev=True,
             allow_tools_before_answer=False
             )
@@ -140,7 +138,8 @@ class AskObjectAreaAssignementStageInverse(AskingBaseStage):
     def __init__(
         self,
         object_to_area: Dict[str, str],
-        target_objects: List[str]
+        target_objects: List[str],
+        attributes : Dict
     ) -> None:
 
         question = (
@@ -172,10 +171,7 @@ class AskObjectAreaAssignementStageInverse(AskingBaseStage):
             question=question,
             answer=answer,
             memory=[],
-            attributes={
-                "mapping": object_to_area,
-                "target_objects": target_objects
-            },
+            attributes=attributes,
             linked_to_prev=True,
             allow_tools_before_answer=False
         )
