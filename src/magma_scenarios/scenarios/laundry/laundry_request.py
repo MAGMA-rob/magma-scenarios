@@ -336,7 +336,7 @@ class AskClothesDetergentRequest(BaseRequest):
         self.max_clothes = max_clothes
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if len(_get_known_clothes(state)) > 0 else 0
+        return 0.6 if len(_get_known_clothes(state)) > 0 else 0
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
 
@@ -361,7 +361,7 @@ class AskClothesDetergentRequestInverse(BaseRequest):
         self.max_clothes = max_clothes
 
     def sampling_weight(self, state: TaskState) -> float:
-        return 1 if len(_get_known_clothes(state)) > 0 else 0
+        return 0.6 if len(_get_known_clothes(state)) > 0 else 0
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
 

@@ -126,22 +126,22 @@ class AskClothesDetergentStage(AskingBaseStage):
         clothes_to_detergent : Dict[str, str],
         target_detergent : str ) -> None :
 
-        question = f"Wich clothes are considered '{target_detergent}' ?"
+        question = f"Wich clothes use '{target_detergent}' ?"
         clothes = [ cloth for cloth,detergent in clothes_to_detergent.items() 
             if detergent == target_detergent ]
             
         if len(clothes) == 0:
-            answer = f"No clothes are categorized as {target_detergent}."
+            answer = f"No clothes use {target_detergent}."
         else :
-            answer =  f"Clothes categorized as '{target_detergent}' are: {', '.join(clothes)}"
+            answer =  f"Clothes using '{target_detergent}' are: {', '.join(clothes)}"
 
         super().__init__(
             question=question,
             answer=answer,
             memory=[],
             attributes={
-                "mapping" : clothes_to_detergent,
-                "target_detergent" : target_detergent
+                "all_clothes" : all_clothes.copy(),
+                "all_detergents" : all_detergents.copy()
             },
             linked_to_prev=True,
             allow_tools_before_answer=False
@@ -196,8 +196,8 @@ class AskClothesDetergentStageInverse(AskingBaseStage):
             answer=answer,
             memory=[],
             attributes={
-                "mapping": clothes_to_detergent,
-                "target_clothes": clothes
+                "all_clothes" : all_clothes.copy(),
+                "all_detergents" : all_detergents.copy()
             },
             linked_to_prev=True,
             allow_tools_before_answer=False

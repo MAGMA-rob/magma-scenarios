@@ -14,7 +14,8 @@ from .laundry_request import (
     AskLaundryByDetergentRequest,
     AskDirectLaundryRequest,
     AskLaundryRequest,
-    AskClothesDetergentRequest
+    AskClothesDetergentRequest,
+    AskClothesDetergentRequestInverse
 )
 
 
@@ -32,6 +33,7 @@ class LaundryDefinition(TaskDefinition):
         AskLaundryRequest(),
         AskLaundryByDetergentRequest(),
         AskClothesDetergentRequest(),
+        AskClothesDetergentRequestInverse()
     ]
 
     def __init__(self) -> None:
