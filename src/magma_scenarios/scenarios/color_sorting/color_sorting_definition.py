@@ -7,7 +7,7 @@ from magma_core.base.tasks import TaskDefinition
 from magma_core.base.state import TaskState
 
 from .detection_tool import ColorDetectionTools
-from .color_requests import AskForCycle, GiveOrderConstraint
+from .color_requests import AskForCycle, GiveOrderConstraint, AskColorStateRequest
 from .attributes import available_colors
 
 class SortingDefinition(TaskDefinition):
@@ -22,6 +22,7 @@ class SortingDefinition(TaskDefinition):
     active_requests = [
         GiveOrderConstraint(),
         AskForCycle(3),
+        # AskColorStateRequest() NOT YET READY
     ]
 
     def __init__(self):

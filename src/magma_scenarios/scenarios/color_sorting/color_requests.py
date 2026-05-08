@@ -7,7 +7,14 @@ from magma_core.base.user_request import BaseConstraintRequest, BaseRequest
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
-from .color_sorting_stages import SortByColorStage, ExactSortByColorStage, AskColorStateStage
+from .color_sorting_stages import (
+    SortByColorStage,
+    ExactSortByColorStage,
+    AskColorStateStage,
+    AskColorTableStateStage,
+    AskColorBoxStateStage,
+    AskColorCountStage,
+)
 
 constraint_type = ["alternate", "first-color", "second-color"]
 
@@ -243,10 +250,6 @@ class AskForCycle(BaseRequest):
 
 class AskColorStateRequest(BaseRequest):
 
-    def __init__(self, max_objects: int = 4):
-        super().__init__()
-        self.max_objects = max_objects
-
     def sampling_weight(self, state: TaskState) -> float:
         return 1
 
@@ -254,31 +257,41 @@ class AskColorStateRequest(BaseRequest):
         detected = {f"{c}_box": [] for c in colors}
         detected["table"] = []
 
-        nb_objects = random.randint(1, self.max_objects)
-
-        for i in range(nb_objects):
-            obj = f"cube_{i+1}"
-            location = random.choice(colors + ["table"])
-
-            if location == "table":
-                detected["table"].append(obj)
-            else:
-                detected[f"{location}_box"].append(obj)
+        raise NotImplementedError("We need something able to call detect_object or to reset the env to count")
 
         return detected
-        
-
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
-
-        colors = state.attributes["known_box_color"]
-
+        attributes, colors = _resolve_attributes_and_colors(state)
         detected = self._generate_state(colors)
 
+        r = random.random()
+        if r < 0.2:
+            return [AskColorStateStage(detected_obj=detected, attributes=attributes)]
 
-        return [
-            AskColorStateStage(
+        should_count = int(r*10) % 2 == 0
+        color = random.choice(colors)
+        
+        if r > 0.7:
+            sampler_type = "table"
+        else:
+            sampler_type = "box"
+
+        if should_count:
+            return [AskColorCountStage(
                 detected_obj=detected,
-                colors=colors
-            )
-        ]
+                attributes=attributes,
+                sampler_type=sampler_type,
+                color=color,
+            )]
+    
+        if sampler_type == "table":
+            return [AskColorTableStateStage(detected_obj=detected, attributes=attributes)]
+        
+        return [AskColorBoxStateStage(
+            detected_obj=detected,
+            attributes=attributes,
+            color=color,
+        )
+]
+
