@@ -29,11 +29,11 @@ class SimpleSortingDefinition(TaskDefinition):
     active_requests = [
         AddAreas(AREAS),
         RemoveAreas(),
-        MoveOneObjectRequest(),
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         CycleRequest(),
         CycleWithPermanentRulesRequest(),
         AskObjectAreaAssignementRequest(),
+        TemporaryObjectAssignmentCycleRequest(),
         AskObjectAreaAssignementRequestInverse()
     ]
     Tools_cls = WithoutManufacturingOrder
@@ -56,8 +56,9 @@ class SortingWithInterdictionsDefinition(TaskDefinition):
     active_requests = [
         GiveObjectAssignmentRequest(max_simultaneous_change=2),
         ForbidObjectsRequest(),
-        TemporaryObjectAssignmentCycleRequest(all_objects_probability=0.8),
+        CycleWithPermanentRulesRequest(),
         CycleRequest(),
+        MoveOneObjectRequest(),
         AskObjectAreaAssignementRequest(),
         AskObjectAreaAssignementRequestInverse()
     ]

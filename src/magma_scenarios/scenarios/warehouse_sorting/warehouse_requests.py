@@ -114,15 +114,17 @@ class ForbidObjectsRequest(BaseConstraintRequest):
 
 
 class TemporaryObjectAssignmentCycleRequest(BaseRequest):
-    """Launch a cycle with a one-shot assignment that does not update defaults."""
+    """Launch one or more one-shot assignment cycles without updating defaults."""
 
     def __init__(
             self,
             max_object_per_cycle_request: int = 3,
+            max_nb_cycle : int = 2,
             all_objects_probability: float = 0.7,
         ) -> None:
         super().__init__()
         self.max_object = max_object_per_cycle_request
+        self.max_nb_cycle = max_nb_cycle
         self.all_objects_probability = all_objects_probability
 
     def sampling_weight(self, state: TaskState) -> float:
@@ -142,26 +144,103 @@ class TemporaryObjectAssignmentCycleRequest(BaseRequest):
         nb_objects = random.randint(1, min(self.max_object, len(shuffled_objects)))
         return shuffled_objects[:nb_objects]
 
-    def _build_instruction(
+    def _format_cycle_assignment(
             self,
             objects_to_sort: List[str],
             target_area: str,
             all_objects: List[str],
-        ) -> UserInstruction:
+        ) -> str:
         if len(objects_to_sort) == len(all_objects):
-            templates = (
-                f"Launch a cycle sending all objects to {target_area}.",
-                f"For this cycle, send every object to {target_area}.",
-                f"Right now, all objects should go to {target_area}.",
+            return f"all objects to {target_area}"
+        return f"{_join_values(objects_to_sort)} to {target_area}"
+
+    def _build_instruction(
+            self,
+            cycle_plan: List[Dict[str, Any]],
+            all_objects: List[str],
+        ) -> UserInstruction:
+        first_assignment = self._format_cycle_assignment(
+            cycle_plan[0]["objects"],
+            cycle_plan[0]["target_area"],
+            all_objects,
+        )
+
+        if len(cycle_plan) == 1:
+            objects_to_sort = cycle_plan[0]["objects"]
+            target_area = cycle_plan[0]["target_area"]
+            if len(objects_to_sort) == len(all_objects):
+                templates = (
+                    f"Launch a cycle sending all objects to {target_area}.",
+                    f"For this cycle, send every object to {target_area}.",
+                    f"Right now, all objects should go to {target_area}.",
+                )
+            else:
+                obj_text = _join_values(objects_to_sort)
+                templates = (
+                    f"Launch a cycle sending {obj_text} to {target_area}.",
+                    f"For this cycle, send {obj_text} to {target_area}.",
+                    f"Right now, {obj_text} should go to {target_area}.",
+                )
+            return UserInstruction(random.choice(templates), has_constraint=True)
+
+        if len(cycle_plan) == 2:
+            second_assignment = self._format_cycle_assignment(
+                cycle_plan[1]["objects"],
+                cycle_plan[1]["target_area"],
+                all_objects,
             )
-        else:
-            obj_text = _join_values(objects_to_sort)
             templates = (
-                f"Launch a cycle sending {obj_text} to {target_area}.",
-                f"For this cycle, send {obj_text} to {target_area}.",
-                f"Right now, {obj_text} should go to {target_area}.",
+                (
+                    f"I want you to launch two cycles. First, send {first_assignment}. "
+                    f"Then when it's done, launch a cycle sending {second_assignment}."
+                ),
+                (
+                    f"Please launch two cycles in sequence: first send {first_assignment}, "
+                    f"then send {second_assignment}."
+                ),
+                (
+                    f"I need a first cycle with {first_assignment}. "
+                    f"Right after, launch another cycle with {second_assignment}."
+                ),
             )
-        return UserInstruction(random.choice(templates), has_constraint=True)
+            return UserInstruction(random.choice(templates), has_constraint=True)
+
+        steps = [f"First, send {first_assignment}"]
+        for cycle in cycle_plan[1:-1]:
+            steps.append(
+                "then send "
+                + self._format_cycle_assignment(
+                    cycle["objects"],
+                    cycle["target_area"],
+                    all_objects,
+                )
+            )
+        steps.append(
+            "finally send "
+            + self._format_cycle_assignment(
+                cycle_plan[-1]["objects"],
+                cycle_plan[-1]["target_area"],
+                all_objects,
+            )
+        )
+        return UserInstruction(
+            f"I want you to launch {len(cycle_plan)} cycles. " + ", ".join(steps) + ".",
+            has_constraint=True,
+        )
+
+    def _sample_cycle_plan(
+            self,
+            all_objects: List[str],
+            all_areas: List[str],
+        ) -> List[Dict[str, Any]]:
+        nb_cycle = random.randint(1, max(1, self.max_nb_cycle))
+        cycle_plan = []
+        for _ in range(nb_cycle):
+            cycle_plan.append({
+                "objects": self._sample_objects(all_objects),
+                "target_area": random.choice(all_areas),
+            })
+        return cycle_plan
 
     def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
         all_objects = state.attributes.get("objects", []).copy()
@@ -172,15 +251,24 @@ class TemporaryObjectAssignmentCycleRequest(BaseRequest):
                 "due to empty objects or areas"
             )
 
-        objects_to_sort = self._sample_objects(all_objects)
-        target_area = random.choice(all_areas)
-        instruction = self._build_instruction(objects_to_sort, target_area, all_objects)
+        cycle_plan = self._sample_cycle_plan(all_objects, all_areas)
+        instruction = self._build_instruction(cycle_plan, all_objects)
 
-        forbidden_objects = [
+        objects_to_sort = [
+            obj
+            for cycle in cycle_plan
+            for obj in cycle["objects"]
+        ]
+        target_areas = [
+            cycle["target_area"]
+            for cycle in cycle_plan
+        ]
+
+        forbidden_objects = list(dict.fromkeys(
             obj
             for obj in objects_to_sort
             if obj in state.properties.get("forbidden_objects", [])
-        ]
+        ))
         if forbidden_objects:
             return [
                 ForbiddenElemStage(
@@ -194,24 +282,34 @@ class TemporaryObjectAssignmentCycleRequest(BaseRequest):
                 )
             ]
 
-        if target_area in state.properties.get("forbidden_areas", []):
+        forbidden_areas = list(dict.fromkeys(
+            area
+            for area in target_areas
+            if area in state.properties.get("forbidden_areas", [])
+        ))
+        if forbidden_areas:
             return [
                 ForbiddenElemStage(
                     instruction=instruction,
-                    answer=f"The model must inform that {target_area} can not be used.",
+                    answer=f"The model must inform that {_join_values(forbidden_areas)} can not be used.",
                     memory=[],
                     attributes=state.attributes,
                 )
             ]
 
-        return [
-            Cycle(
-                assignment={obj: target_area for obj in objects_to_sort},
+        stages = []
+        for i, cycle in enumerate(cycle_plan):
+            stage = Cycle(
+                assignment={obj: cycle["target_area"] for obj in cycle["objects"]},
                 known_areas=all_areas,
-                flag_answer=True,
-                instruction=instruction,
+                flag_answer=i == len(cycle_plan) - 1,
+                instruction=instruction if i == 0 else EmptyInstruction(),
             )
-        ]
+            if stages:
+                stage.linked_to_prev = True
+            stages.append(stage)
+
+        return stages
 
 
 class CycleRequest(BaseRequest):
