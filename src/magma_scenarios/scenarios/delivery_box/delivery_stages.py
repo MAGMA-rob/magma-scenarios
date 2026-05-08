@@ -1,8 +1,8 @@
-from typing import List
+from typing import Dict, List
 
 from .attributes import MAX_NB_PER_RECIPE, att
 
-from magma_core.base.stage import BaseTaskStage
+from magma_core.base.stage import AskingBaseStage, BaseTaskStage
 from magma_core.base.goals import AtLeastCountAt, BaseGoal, ExactCountAt, MaxAt
 from magma_core.base.data_structures import UserInstruction, Log, Situation
 
@@ -78,3 +78,17 @@ class CycleStage(BaseTaskStage):
         if stage_log[-1].content == (self.deliveries, self.manufacturing_order):
             return 1
         return -1
+
+
+class CurrentRecipeStage(AskingBaseStage):
+    """
+    Text-only stage used when the user asks for the current delivery recipe.
+    """
+
+    def __init__(self, answer: str, memory: List[str], attributes: Dict) -> None:
+        super().__init__(
+            "Hey, What is the current recipe?",
+            answer,
+            memory,
+            attributes,
+        )

@@ -8,6 +8,7 @@ from .delivery_request import (
     GiveRecipe,
     UpdateRecipe,
     AskForCycle,
+    AskCurrentRecipe,
     AskForCycleWithOverride
 )
 from .tools.simple_tool import CycleTool
@@ -20,6 +21,7 @@ class EvolvingRecipeDefinition(TaskDefinition):
         GiveRecipe(4),
         UpdateRecipe(),
         AskForCycle(),
+        AskCurrentRecipe(),
         AskForCycleWithOverride()
     ]
 

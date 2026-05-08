@@ -1,5 +1,6 @@
 import random
-from typing import Dict, List, Optional
+from collections import Counter
+from typing import Dict, List, Optional, Tuple
 
 from magma_core.base.stage import BaseTaskStage
 from magma_core.base.state.task_state import TaskState
@@ -8,7 +9,7 @@ from magma_core.base.constraints import BaseConstraint
 from magma_core.utils.env_utils import craft_random_manu_order
 
 from .attributes import MAX_NB_PER_RECIPE
-from .delivery_stages import CycleStage
+from .delivery_stages import CurrentRecipeStage, CycleStage
 
 RECIPE_NEEDS_APPLICATION_KEY = "recipe_needs_application"
 RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY = "recipe_override_needs_application"
@@ -39,14 +40,17 @@ class RecipeConstraints(BaseConstraint):
         self.overridde = overridde
 
     def apply(self, state: TaskState):
-        super().apply(state)
         if self.overridde:
-            state.properties["recipe"] = self.to_add.copy()
+            new_recipe = self.to_add.copy()
             state.properties[RECIPE_OVERRIDE_NEEDS_APPLICATION_KEY] = True
         else:
+            new_recipe = state.properties["recipe"].copy()
             for r in self.to_remove:
-                state.properties["recipe"].remove(r) # Will raise an exception if not valid
-            state.properties["recipe"].extend(self.to_add.copy())
+                new_recipe.remove(r)
+            new_recipe.extend(self.to_add.copy())
+
+        super().apply(state)
+        state.properties["recipe"] = new_recipe
         state.properties[RECIPE_NEEDS_APPLICATION_KEY] = True
     
 
@@ -77,6 +81,41 @@ class GiveRecipe(BaseConstraintRequest):
         self.constraints = [RecipeConstraints(add=recipe,remove=[],overridde=True)]
         self.constraint_msg = f"Please update the default recipe to: {build_recipe_instruction(recipe)}."
 
+
+def _build_recipe_delta(
+    initial_recipe: List[str],
+    final_recipe: List[str],
+    product_types: List[str],
+) -> Tuple[List[str], List[str]]:
+    initial_counts = Counter(initial_recipe)
+    final_counts = Counter(final_recipe)
+
+    to_add: List[str] = []
+    to_remove: List[str] = []
+    for product_name in product_types:
+        diff = final_counts[product_name] - initial_counts[product_name]
+        if diff > 0:
+            to_add.extend([product_name] * diff)
+        elif diff < 0:
+            to_remove.extend([product_name] * -diff)
+
+    return to_add, to_remove
+
+
+def _build_fallback_recipe_delta(
+    recipe: List[str],
+    product_types: List[str],
+) -> Tuple[List[str], List[str]]:
+    for product_name in product_types:
+        if recipe.count(product_name) < MAX_NB_PER_RECIPE:
+            return [product_name], []
+
+    if len(recipe) > 1:
+        return [], [recipe[-1]]
+
+    return [], []
+
+
 class UpdateRecipe(BaseConstraintRequest):
     
     def __init__(self, max_update : int = 2):
@@ -94,15 +133,14 @@ class UpdateRecipe(BaseConstraintRequest):
         return 1 if can_add or can_remove else 0
 
     def initialize_constraints(self, state: TaskState):
-        cur_recipe : List[str] = state.properties.get("recipe",[]).copy()
+        initial_recipe : List[str] = state.properties.get("recipe",[]).copy()
+        cur_recipe = initial_recipe.copy()
         possible = []
         for p in state.attributes['product_type']:
             n = cur_recipe.count(p)
             possible.extend([p]*(MAX_NB_PER_RECIPE-n))
 
         n = random.randint(1,self.max_lenght)
-        to_add = []
-        to_remove = []
         for _ in range(n):
             can_add = len(possible) > 0
             can_remove = len(cur_recipe) > 1
@@ -118,13 +156,15 @@ class UpdateRecipe(BaseConstraintRequest):
             if ac == 1:
                 select = random.choice(possible)
                 possible.remove(select)
-                to_add.append(select)
                 cur_recipe.append(select)
             else:
                 select = random.choice(cur_recipe)
                 cur_recipe.remove(select)
-                to_remove.append(select)
                 possible.append(select)
+
+        to_add, to_remove = _build_recipe_delta(initial_recipe, cur_recipe, state.attributes['product_type'])
+        if len(to_add) == 0 and len(to_remove) == 0:
+            to_add, to_remove = _build_fallback_recipe_delta(initial_recipe, state.attributes['product_type'])
 
         self.constraints = [RecipeConstraints(add=to_add,remove=to_remove)]
         actions = []
@@ -165,7 +205,33 @@ class AskForCycle(BaseRequest):
                 state.properties.get(RECIPE_APPLICATIONS_KEY, 0) + 1
             )
         return state
-    
+
+
+class AskCurrentRecipe(BaseRequest):
+    """Ask the model to answer with the current default delivery recipe."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def sampling_weight(self, state: TaskState) -> float:
+        if len(state.properties.get("recipe", [])) <= 0:
+            return 0
+        return 0.7
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        recipe = state.properties.get("recipe", [])
+        if len(recipe) <= 0:
+            raise RuntimeError("Empty recipe has reached the current recipe question stage")
+
+        answer = f"The current recipe is {build_recipe_instruction(recipe)}."
+        return [
+            CurrentRecipeStage(
+                answer,
+                state.memory,
+                state.attributes,
+            )
+        ]
+
 class AskForCycleWithOverride(BaseRequest):
 
     def __init__(self) -> None:
