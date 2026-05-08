@@ -1,9 +1,9 @@
 from magma_core.base.errors import BaseError
 from torch._tensor import Tensor
 import torch
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Literal
 
-from magma_core.base.stage import BaseTaskStage
+from magma_core.base.stage import BaseTaskStage, AskingBaseStage
 from magma_core.base.data_structures import Instruction, Log, Situation
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.base.goals import BaseGoal, ExactCountAt, MaxAt
@@ -146,3 +146,130 @@ class DetectionStage(BaseTaskStage):
             if l.function != "get_object_state":
                 return -1
         return 1
+
+def _join_objects(objs: List[str]) -> str:
+    if len(objs) == 1:
+        return objs[0]
+    return ", ".join(objs[:-1]) + f" and {objs[-1]}"
+
+
+def _box_location(color: str) -> tuple[str, str]:
+    return f"{color}_box", f"in the {color} box"
+
+
+def _table_location() -> tuple[str, str]:
+    return "table", "on the table"
+
+
+def _objects_answer(detected_obj: Dict, key: str, location_phrase: str) -> str:
+    objs = detected_obj.get(key, [])
+    if len(objs) == 0:
+        return f"There are no objects {location_phrase}."
+    if len(objs) == 1:
+        return f"{objs[0]} is {location_phrase}."
+    return f"{_join_objects(objs)} are {location_phrase}."
+
+
+def _count_answer(detected_obj: Dict, key: str, location_phrase: str) -> str:
+    nb_objects = len(detected_obj.get(key, []))
+    if nb_objects == 0:
+        return f"There are no cubes {location_phrase}."
+    if nb_objects == 1:
+        return f"There is 1 cube {location_phrase}."
+    return f"There are {nb_objects} cubes {location_phrase}."
+
+
+def _location_for_sampler(
+        sampler_type: str,
+        color: Optional[str] = None,
+    ) -> tuple[str, str]:
+    if sampler_type == "table":
+        return _table_location()
+    if sampler_type == "box" and color is not None:
+        return _box_location(color)
+    raise ValueError(
+        f"Cannot resolve location for sampler_type={sampler_type!r} and color={color!r}"
+    )
+
+
+def _format_all_locations_answer(detected_obj: Dict, colors: List[str]) -> str:
+    parts = [
+        _objects_answer(detected_obj, *_box_location(color))
+        for color in colors
+    ]
+    parts.append(_objects_answer(detected_obj, *_table_location()))
+    return " ".join(parts)
+
+
+class _BaseAskColorStateStage(AskingBaseStage):
+
+    def __init__(
+            self,
+            question: str,
+            answer: str,
+            attributes: Dict,
+            detected_obj: Dict,
+        ):
+        question_attributes = attributes.copy()
+        question_attributes["mapping"] = detected_obj
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=question_attributes,
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )
+
+
+class AskColorStateStage(_BaseAskColorStateStage):
+
+    def __init__(self, detected_obj: Dict, attributes: Dict):
+        colors = attributes["known_box_color"]
+        super().__init__(
+            question="Which objects are in each color box or on the table?",
+            answer=_format_all_locations_answer(detected_obj, colors),
+            attributes=attributes,
+            detected_obj=detected_obj,
+        )
+
+
+class AskColorTableStateStage(_BaseAskColorStateStage):
+
+    def __init__(self, detected_obj: Dict, attributes: Dict):
+        super().__init__(
+            question="Which objects are on the table?",
+            answer=_objects_answer(detected_obj, *_table_location()),
+            attributes=attributes,
+            detected_obj=detected_obj,
+        )
+
+
+class AskColorBoxStateStage(_BaseAskColorStateStage):
+
+    def __init__(self, detected_obj: Dict, attributes: Dict, color: str):
+        super().__init__(
+            question=f"Which objects are in the {color} box?",
+            answer=_objects_answer(detected_obj, *_box_location(color)),
+            attributes=attributes,
+            detected_obj=detected_obj,
+        )
+
+
+class AskColorCountStage(_BaseAskColorStateStage):
+
+    def __init__(
+            self,
+            detected_obj: Dict,
+            attributes: Dict,
+            sampler_type: str,
+            color: Optional[str] = None,
+        ):
+        key, location_phrase = _location_for_sampler(sampler_type, color)
+        super().__init__(
+            question=f"How many cubes do you see {location_phrase}?",
+            answer=_count_answer(detected_obj, key, location_phrase),
+            attributes=attributes,
+            detected_obj=detected_obj,
+        )

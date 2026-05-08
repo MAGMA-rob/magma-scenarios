@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage
+from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage, ModifAttributesBaseStage, AskingBaseStage
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Log, Situation
 from magma_core.base.goals import At, NotAt
 from magma_core.base.data_structures.situation import Instruction
@@ -91,3 +91,87 @@ class RemoveLocationStage(ModifAttributesBaseStage):
     def __init__(self, instruction: Instruction, val_name: str, memory: List[str], attributes: Dict, flag_answer_to_user: bool = True) -> None:
         super().__init__("REMOVE", instruction, val_name, "target_areas", memory, [], attributes, flag_answer_to_user)
     
+class AskObjectAreaAssignementStage(AskingBaseStage):
+    """
+    Q&A stage testing object-to-area assignment retrieval.
+    The agent must identify which objects belong to a given area using state relations.
+    No tools are allowed; answer is fully derived from object_area mapping.
+    """
+    def __init__(
+        self,
+        object_to_area : Dict[str,str],
+        target_area : str,
+        attributes : Dict) -> None:
+
+        question = f"Which objects are associated to {target_area}?"
+
+        objects = [ obj for obj ,area in object_to_area.items() 
+            if area == target_area]
+            
+        if len(objects) == 0:
+            answer = f"No objects are associated to {target_area}."
+        else :
+            answer = f"{', '.join(objects)} are assigned to {target_area}"
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=attributes,
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+            )
+
+def _join_values(values: List[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+def _is_or_are(values: List[str]) -> str:
+    return "is" if len(values) == 1 else "are"
+
+class AskObjectAreaAssignementStageInverse(AskingBaseStage):
+
+    def __init__(
+        self,
+        object_to_area: Dict[str, str],
+        target_objects: List[str],
+        attributes : Dict
+    ) -> None:
+
+        question = (
+            f"Which areas are associated with {_join_values(target_objects)}?"
+        )
+
+        grouped_objects = {}
+
+        for obj in target_objects:
+            area = object_to_area.get(obj)
+
+            if area is None:
+                continue
+
+            grouped_objects.setdefault(area, []).append(obj)
+
+        if len(grouped_objects) == 0:
+            answer = (
+                f"No areas are associated with "
+                f"{_join_values(target_objects)}."
+            )
+        else:
+            answer = ", ".join(
+                f"{_join_values(objects)} {_is_or_are(objects)} assigned to {area}"
+                for area, objects in grouped_objects.items()
+            )
+
+        super().__init__(
+            question=question,
+            answer=answer,
+            memory=[],
+            attributes=attributes,
+            linked_to_prev=True,
+            allow_tools_before_answer=False
+        )

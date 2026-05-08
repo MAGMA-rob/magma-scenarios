@@ -7,7 +7,14 @@ from magma_core.base.user_request import BaseConstraintRequest, BaseRequest
 from magma_core.base.constraints import BaseConstraint
 from magma_core.base.data_structures import UserInstruction, EmptyInstruction
 
-from .color_sorting_stages import SortByColorStage, ExactSortByColorStage
+from .color_sorting_stages import (
+    SortByColorStage,
+    ExactSortByColorStage,
+    AskColorStateStage,
+    AskColorTableStateStage,
+    AskColorBoxStateStage,
+    AskColorCountStage,
+)
 
 constraint_type = ["alternate", "first-color", "second-color"]
 
@@ -239,3 +246,52 @@ class AskForCycle(BaseRequest):
                 state.properties.get("constraint_order_applications", 0) + 1
             )
         return state
+
+
+class AskColorStateRequest(BaseRequest):
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 1
+
+    def _generate_state(self, colors: List[str]) -> Dict:
+        detected = {f"{c}_box": [] for c in colors}
+        detected["table"] = []
+
+        raise NotImplementedError("We need something able to call detect_object or to reset the env to count")
+
+        return detected
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+        attributes, colors = _resolve_attributes_and_colors(state)
+        detected = self._generate_state(colors)
+
+        r = random.random()
+        if r < 0.2:
+            return [AskColorStateStage(detected_obj=detected, attributes=attributes)]
+
+        should_count = int(r*10) % 2 == 0
+        color = random.choice(colors)
+        
+        if r > 0.7:
+            sampler_type = "table"
+        else:
+            sampler_type = "box"
+
+        if should_count:
+            return [AskColorCountStage(
+                detected_obj=detected,
+                attributes=attributes,
+                sampler_type=sampler_type,
+                color=color,
+            )]
+    
+        if sampler_type == "table":
+            return [AskColorTableStateStage(detected_obj=detected, attributes=attributes)]
+        
+        return [AskColorBoxStateStage(
+            detected_obj=detected,
+            attributes=attributes,
+            color=color,
+        )
+]
+

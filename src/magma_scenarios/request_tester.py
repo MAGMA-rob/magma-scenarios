@@ -37,6 +37,7 @@ import copy
 import json
 import random
 import traceback
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -392,6 +393,7 @@ def run_sampling(
     max_total_target_steps: int = DEFAULT_MAX_TOTAL_TARGET_STEPS,
 ) -> None:
     errors: List[Dict[str, Any]] = []
+    request_counts: Counter[str] = Counter()
     successes = 0
 
     print("\n=== Random task sampling ===")
@@ -482,6 +484,7 @@ def run_sampling(
             task.stages.extend(stages)
             total_target_steps += sampled_target_steps
             state = next_state
+            request_counts[request.__class__.__name__] += 1
             request_history.append(
                 f"{request_label} -> {len(stages)} stage(s), {sampled_target_steps} target step(s)"
             )
@@ -500,6 +503,18 @@ def run_sampling(
     print("\n=== Sampling summary ===")
     print(f"Successful tasks: {successes}/{sample_count}")
     print(f"Errors: {len(errors)}")
+
+    total_requests = sum(request_counts.values())
+    print(f"Sampled requests: {total_requests}")
+    if request_counts:
+        print("\nRequest type counts:")
+        for request_name, count in sorted(
+            request_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        ):
+            percentage = count / total_requests * 100
+            print(f"- {request_name}: {count} ({percentage:.1f}%)")
+
     if not errors:
         return
 

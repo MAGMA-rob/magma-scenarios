@@ -9,11 +9,11 @@ from magma_core.base.user_request import BaseRequest
 from magma_scenarios.templates.requests import GiveRelationAssignmentRequest
 from magma_scenarios.templates.stages import MissingInformationStage
 
-from .laundry_stages import LoadClotheStage, WashStage
+from .laundry_stages import LoadClotheStage, WashStage, AskClothesDetergentStage, AskClothesDetergentStageInverse
 
 from .laundry_constraints import (
     CLOTHE_DETERGENT_KEY,
-    ClotheDetergentConstraint,
+    ClotheDetergentConstraint
 )
 
 
@@ -83,6 +83,7 @@ def _sample_clothes(state: TaskState, max_clothes: int) -> List[str]:
 
     nb_clothes = random.randint(1, min(max_clothes, len(available_clothes)))
     return random.sample(available_clothes, k=nb_clothes)
+
 
 
 def _group_clothes_by_detergent(state: TaskState, clothes: List[str]) -> List[Tuple[str, List[str]]]:
@@ -328,3 +329,57 @@ class AskDirectLaundryRequest(BaseRequest):
             selected_clothes,
             f"Please wash {_join_clothes(selected_clothes)} with {selected_detergent}."
         )
+
+class AskClothesDetergentRequest(BaseRequest):
+    def __init__(self, max_clothes: int = 3) -> None:
+        super().__init__()
+        self.max_clothes = max_clothes
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 0.6 if len(_get_known_clothes(state)) > 0 else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+
+        relations : Dict[str,str] = state.relations.get(CLOTHE_DETERGENT_KEY, {})
+
+        if len(relations) == 0 :
+            raise RuntimeError("No clothe-detergent relations available")
+
+        target_detergent = random.choice(list(set(relations.values())))
+
+        return [
+            AskClothesDetergentStage(
+                clothes_to_detergent = relations,
+                target_detergent = target_detergent
+            )
+        ]
+
+class AskClothesDetergentRequestInverse(BaseRequest):
+
+    def __init__(self, max_clothes: int = 3) -> None:
+        super().__init__()
+        self.max_clothes = max_clothes
+
+    def sampling_weight(self, state: TaskState) -> float:
+        return 0.6 if len(_get_known_clothes(state)) > 0 else 0
+
+    def create_stages(self, state: TaskState) -> List[BaseTaskStage]:
+
+        relations: Dict[str, str] = state.relations.get(CLOTHE_DETERGENT_KEY,{})
+
+        if len(relations) == 0:
+            raise RuntimeError(
+                "No clothes-detergent relations available"
+            )
+
+        clothes = random.sample(
+            list(relations.keys()),
+            k=min(self.max_clothes, len(relations))
+        )
+
+        return [
+            AskClothesDetergentStageInverse(
+                clothes_to_detergent=relations,
+                clothes=clothes
+            )
+        ]
