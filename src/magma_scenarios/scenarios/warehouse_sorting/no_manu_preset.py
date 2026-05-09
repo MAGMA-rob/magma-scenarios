@@ -97,6 +97,7 @@ class NoManuPreset(BaseTask):
                         assignment=assignments[i],
                         instruction=ins,
                         known_areas=task_attributes["target_areas"].copy(),
+                        attributes=task_attributes,
                         flag_answer= "flag" in t
                     )
                 )

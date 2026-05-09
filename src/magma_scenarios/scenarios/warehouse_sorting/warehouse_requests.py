@@ -303,6 +303,7 @@ class TemporaryObjectAssignmentCycleRequest(BaseRequest):
                 assignment={obj: cycle["target_area"] for obj in cycle["objects"]},
                 known_areas=all_areas,
                 flag_answer=i == len(cycle_plan) - 1,
+                attributes=state.attributes,
                 instruction=instruction if i == 0 else EmptyInstruction(),
             )
             if stages:
@@ -453,6 +454,7 @@ class CycleRequest(BaseRequest):
             assignment=assignement,
             known_areas=all_areas,
             flag_answer=True,
+            attributes=state.attributes,
             instruction=cycle_instruction
         ))
 
@@ -671,6 +673,7 @@ class CycleByCategoriesRequest(BaseRequest):
             assignment=assignment,
             known_areas=all_areas,
             flag_answer=True,
+            attributes=state.attributes,
             instruction=current_instruction
         ))
 

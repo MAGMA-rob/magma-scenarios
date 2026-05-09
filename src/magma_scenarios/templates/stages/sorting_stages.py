@@ -69,6 +69,7 @@ class Cycle(BaseTaskStage):
             assignment : Dict[str,str],
             known_areas : List[str],
             flag_answer : bool,
+            attributes : Dict,
             manu_order : Optional[str] = None,
             instruction : Instruction = EmptyInstruction(),
         ) -> None:
@@ -105,10 +106,7 @@ class Cycle(BaseTaskStage):
             memory=["You are in charge of sorting objects in a factory."],
             preserved_memory_indices=[0],
             instruction=instruction,
-            attributes={
-                "objects" : list(assignment.keys()),
-                "target_areas" : known_areas,
-            },
+            attributes=attributes,
             flag_answer_to_user=flag_answer
         )
 
