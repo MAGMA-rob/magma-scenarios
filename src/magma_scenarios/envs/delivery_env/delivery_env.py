@@ -41,6 +41,7 @@ class DeliveryEnv(DefaultEnv):
 
 
     SUPPORTED_ROBOTS = ["panda", "fetch"]
+    USE_TV_OBJECTS = False
 
     agent: Union[Panda, Fetch]
 
@@ -59,6 +60,16 @@ class DeliveryEnv(DefaultEnv):
     def _load_agent(self, options: Dict, initial_agent_poses = sapien.Pose(p=[0, 0, 0])):
         return super()._load_agent(options, initial_agent_poses)
 
+    def _build_cube_object(self, name: str, color: np.ndarray):
+        return actors.build_cube(
+            self.scene,
+            half_size=self.cube_half_size,
+            color=color,
+            name=name,
+            body_type="dynamic",
+            initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+        )
+
     def _load_scene(self, options: dict):
          # we use a prebuilt scene builder class that automatically loads in a floor and table.
         self.table_scene = TableSceneBuilder(
@@ -66,70 +77,75 @@ class DeliveryEnv(DefaultEnv):
         )
         self.table_scene.build()
 
-        self.cocas = [
-            actors.build_cylinder(
-                self.scene,
-                radius=self.cylinder_radius,
-                half_length=self.cylinder_half_length,
-                color=np.array([240, 10, 10, 255]) / 255,
-                name="coca_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
-            ),
-            actors.build_cylinder(
-                self.scene,
-                radius=self.cylinder_radius,
-                half_length=self.cylinder_half_length,
-                color=np.array([240, 10, 10, 255]) / 255,
-                name="coca_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
-            )
-        ]
+        coca_color = np.array([240, 10, 10, 255]) / 255
+        ice_tea_color = np.array([240, 240, 75, 255]) / 255
+        donut_color = np.array([180, 120, 20, 255]) / 255
+        brets_color = np.array([65, 180, 75, 255]) / 255
 
-        self.ice_tea = [
-            actors.build_cylinder(
-                self.scene,
-                radius=self.cylinder_radius,
-                half_length=self.cylinder_half_length,
-                color=np.array([240, 240, 75, 255]) / 255,
-                name="icetea_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
-            ),
-            actors.build_cylinder(
-                self.scene,
-                radius=self.cylinder_radius,
-                half_length=self.cylinder_half_length,
-                color=np.array([240, 240, 75, 255]) / 255,
-                name="icetea_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
-            )
-        ]
+        if self.USE_TV_OBJECTS:
+            self.cocas = [
+                actors.build_cylinder(
+                    self.scene,
+                    radius=self.cylinder_radius,
+                    half_length=self.cylinder_half_length,
+                    color=coca_color,
+                    name="coca_1",
+                    body_type="dynamic",
+                    initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
+                ),
+                actors.build_cylinder(
+                    self.scene,
+                    radius=self.cylinder_radius,
+                    half_length=self.cylinder_half_length,
+                    color=coca_color,
+                    name="coca_2",
+                    body_type="dynamic",
+                    initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
+                )
+            ]
 
-        self.donuts = [
-            create_donut(self.scene, 'donut_1', pose=sapien.Pose(p=[0, 0, self.cube_half_size])),
-            create_donut(self.scene, 'donut_2', pose=sapien.Pose(p=[0, 0, self.cube_half_size]))
-        ]
+            self.ice_tea = [
+                actors.build_cylinder(
+                    self.scene,
+                    radius=self.cylinder_radius,
+                    half_length=self.cylinder_half_length,
+                    color=ice_tea_color,
+                    name="icetea_1",
+                    body_type="dynamic",
+                    initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
+                ),
+                actors.build_cylinder(
+                    self.scene,
+                    radius=self.cylinder_radius,
+                    half_length=self.cylinder_half_length,
+                    color=ice_tea_color,
+                    name="icetea_2",
+                    body_type="dynamic",
+                    initial_pose=sapien.Pose(p=[0, 0, self.cylinder_half_length]),
+                )
+            ]
+
+            self.donuts = [
+                create_donut(self.scene, 'donut_1', pose=sapien.Pose(p=[0, 0, self.cube_half_size])),
+                create_donut(self.scene, 'donut_2', pose=sapien.Pose(p=[0, 0, self.cube_half_size]))
+            ]
+        else:
+            self.cocas = [
+                self._build_cube_object("coca_1", coca_color),
+                self._build_cube_object("coca_2", coca_color),
+            ]
+            self.ice_tea = [
+                self._build_cube_object("icetea_1", ice_tea_color),
+                self._build_cube_object("icetea_2", ice_tea_color),
+            ]
+            self.donuts = [
+                self._build_cube_object("donut_1", donut_color),
+                self._build_cube_object("donut_2", donut_color),
+            ]
 
         self.brets = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([65, 180, 75, 255]) / 255,
-                name="brets_1",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.1, 0, self.cube_half_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.cube_half_size,
-                color=np.array([65, 180, 75, 255]) / 255,
-                name="brets_2",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.1, 0, self.cube_half_size]),
-            )
+            self._build_cube_object("brets_1", brets_color),
+            self._build_cube_object("brets_2", brets_color),
         ]
         box_builder = create_cardboard_box_builder(self.scene)
         self.container = box_builder.build(name="container")
@@ -207,3 +223,8 @@ class DeliveryEnv(DefaultEnv):
             obs[obj.name] = obj.pose.raw_pose
         
         return obs
+
+
+@register_env("DeliveryBaseTV-v1", max_episode_steps=200)
+class DeliveryEnvTV(DeliveryEnv):
+    USE_TV_OBJECTS = True

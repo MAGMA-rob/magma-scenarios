@@ -37,12 +37,23 @@ class WarehouseSortingEnv(DefaultEnv):
     cube_half_size = 0.02
     size_box = 0.2
     thickness_box = 0.01
+    USE_TV_OBJECTS = False
 
     def __init__(self, *args, robot_uids="panda", **kwargs):
         super().__init__(*args, robot_uids=robot_uids, robot_init_qpos_noise=0, **kwargs)
 
     def _load_agent(self, options: Dict, initial_agent_poses = sapien.Pose(p=[0, 0, 0])):
         return super()._load_agent(options, initial_agent_poses)
+
+    def _build_cube_object(self, name: str, color: np.ndarray):
+        return actors.build_cube(
+            self.scene,
+            half_size=self.cube_half_size,
+            color=color,
+            name=name,
+            body_type="dynamic",
+            initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
+        )
 
     def _load_scene(self, options: dict):
          # we use a prebuilt scene builder class that automatically loads in a floor and table.
@@ -51,12 +62,18 @@ class WarehouseSortingEnv(DefaultEnv):
         )
         self.table_scene.build()
 
-        # Create three cubes with random names
-        self.industrial_objects = [
-            create_water_bottle(self.scene, "ref_obj_1"),
-            create_jar(self.scene, "ref_obj_2"),
-            create_pen(self.scene, "ref_obj_3")
-        ]
+        if self.USE_TV_OBJECTS:
+            self.industrial_objects = [
+                create_water_bottle(self.scene, "ref_obj_1"),
+                create_jar(self.scene, "ref_obj_2"),
+                create_pen(self.scene, "ref_obj_3")
+            ]
+        else:
+            self.industrial_objects = [
+                self._build_cube_object("ref_obj_1", np.array([80, 140, 240, 255]) / 255),
+                self._build_cube_object("ref_obj_2", np.array([220, 180, 60, 255]) / 255),
+                self._build_cube_object("ref_obj_3", np.array([90, 190, 100, 255]) / 255),
+            ]
 
         self.containers = []
         self.cardboard_box = []
@@ -116,3 +133,8 @@ class WarehouseSortingEnv(DefaultEnv):
         for obj in self.industrial_objects:
             obs[obj.name] = obj.pose.raw_pose
         return obs
+
+
+@register_env("SortingCubesWarehouseTV-v1", max_episode_steps=200)
+class WarehouseSortingEnvTV(WarehouseSortingEnv):
+    USE_TV_OBJECTS = True

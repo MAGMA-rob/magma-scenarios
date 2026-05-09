@@ -2,14 +2,14 @@
 # Copyright (c) 2026, Loan Bernat
 
 from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolErrorSupport, ToolExecution, ToolResult, Observation
+from magma_core.base.data_structures import ToolErrorSupport, ToolExecution, ToolResult, Observation, Trajectory
 from magma_core.utils.env_utils import is_object_inside_target
 from magma_core.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
 from magma_core.base.data_structures import Log
 
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 import sapien, torch
 
 # "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
@@ -22,6 +22,141 @@ import sapien, torch
 # \"action\": {\"default_system\": {\"name\": \"grab_specific_object\", \"arguments\": {\"item_name\": \"clipboard\"}}}}", "attributes": "{\"objects_name\": [\"fork\", \"clipboard\", \"valve\", \"paper_sheet\", \"laptop\"], \"targets_name\": [\"area1\", \"area2\", \"area3\", \"area4\", \"area5\"], \"known_robots\": [\"default_system\"]}"},
 
 class WarehouseSortingTool(BaseToolsAPI):
+    CYCLE_SORTED_DISTANCE_THRESHOLD = 0.1
+    CYCLE_GRASP_APPROACH_Z = 0.14
+    CYCLE_TRANSFER_Z = 0.42
+    CYCLE_DROP_Z = 0.18
+    CYCLE_DROP_APPROACH_Z = 0.36
+    CYCLE_STAGING_X = -0.15
+    CYCLE_STAGING_Y = 0.0
+
+    def _make_top_down_pose(self, p) -> sapien.Pose:
+        return sapien.Pose(p=p, q=[0, 1, 0, 0])
+
+    def _cycle_staging_pose(self) -> sapien.Pose:
+        return self._make_top_down_pose([
+            self.CYCLE_STAGING_X,
+            self.CYCLE_STAGING_Y,
+            self.CYCLE_TRANSFER_Z,
+        ])
+
+    def _is_cycle_object_sorted(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            obj_name: str,
+            target_name: str,
+        ) -> bool:
+        return torch.norm(
+            obs_extra[obj_name][env_id][:2] - obs_extra[target_name][env_id][:2]
+        ) < self.CYCLE_SORTED_DISTANCE_THRESHOLD
+
+    def _find_held_cycle_object(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            obj_to_sort: List[str],
+        ) -> Optional[str]:
+        reduced_obs = {
+            k: v[env_id][:3]
+            for k, v in obs_extra.items()
+            if k == "agent_tcp" or k in obj_to_sort
+        }
+        agent_tcp_pos = reduced_obs.pop("agent_tcp", None)
+        if agent_tcp_pos is None:
+            return None
+        return find_object_in_gripper(agent_tcp_pos, reduced_obs)
+
+    def _compute_cycle_drop_trajectory(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            target_name: str,
+        ) -> Trajectory:
+        target_pose = obs_extra[target_name][env_id].cpu().numpy()
+        drop_pose = self._make_top_down_pose([
+            target_pose[0],
+            target_pose[1],
+            self.CYCLE_DROP_Z,
+        ])
+        drop_approach_pose = self._make_top_down_pose([
+            target_pose[0],
+            target_pose[1],
+            self.CYCLE_DROP_APPROACH_Z,
+        ])
+        return compute_drop_trajectory(
+            self.get_agent(),
+            drop_pose=drop_pose,
+            approach_pose=drop_approach_pose,
+            final_pose=self._cycle_staging_pose(),
+        )
+
+    def _compute_cycle_grasp_drop_trajectory(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            obj_name: str,
+            target_name: str,
+        ) -> Trajectory:
+        obj_pose = obs_extra[obj_name][env_id].cpu().numpy()
+        target_pose = obs_extra[target_name][env_id].cpu().numpy()
+
+        grasp_approach_pose = self._make_top_down_pose([
+            obj_pose[0],
+            obj_pose[1],
+            self.CYCLE_GRASP_APPROACH_Z,
+        ])
+        lift_pose = self._make_top_down_pose([
+            obj_pose[0],
+            obj_pose[1],
+            self.CYCLE_TRANSFER_Z,
+        ])
+        transfer_pose = self._make_top_down_pose([
+            (obj_pose[0] + target_pose[0]) / 2,
+            (obj_pose[1] + target_pose[1]) / 2,
+            self.CYCLE_TRANSFER_Z,
+        ])
+
+        poses = compute_grasp_trajectory(
+            self.get_agent(),
+            obj_pose,
+            move_pos=grasp_approach_pose,
+        )
+        poses.extend([lift_pose, transfer_pose])
+        poses.extend(self._compute_cycle_drop_trajectory(obs_extra, env_id, target_name))
+        return poses
+
+    def _compute_next_cycle_trajectory(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            obj_to_sort: List[str],
+            assignment: Dict[str, str],
+        ) -> Trajectory:
+        held_obj = self._find_held_cycle_object(obs_extra, env_id, obj_to_sort)
+        if held_obj in obj_to_sort:
+            return self._compute_cycle_drop_trajectory(
+                obs_extra,
+                env_id,
+                assignment[held_obj],
+            )
+
+        for obj_name in obj_to_sort:
+            if self._is_cycle_object_sorted(
+                obs_extra,
+                env_id,
+                obj_name,
+                assignment[obj_name],
+            ):
+                continue
+
+            return self._compute_cycle_grasp_drop_trajectory(
+                obs_extra,
+                env_id,
+                obj_name,
+                assignment[obj_name],
+            )
+        return []
 
     def take_obj(self, obs : Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
@@ -134,11 +269,21 @@ class WithManufacturingOrder(WarehouseSortingTool):
         task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
+            held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
+            if held_obj in obj_to_sort:
+                return ToolResult(False, f"{held_obj} is still in the gripper. You can retry.")
+
             for obj_name in obj_to_sort:
-                if torch.norm(
-                    new_obs["extra"][obj_name][env_id][:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]
-                    ) > 0.1:
-                    return ToolResult(False, "Communication failure with the system.") #waiting for proper partial reset
+                if not self._is_cycle_object_sorted(
+                    new_obs["extra"],
+                    env_id,
+                    obj_name,
+                    assignment[obj_name],
+                ):
+                    return ToolResult(
+                        False,
+                        "Cycle did not finish. You can retry.",
+                    )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=manu_order))
@@ -168,33 +313,25 @@ class WithManufacturingOrder(WarehouseSortingTool):
         manu_order = params['manu_order']
 
         for obj_name, target in assignment.items():
-            if torch.norm(obs.maniskill_obs["extra"][obj_name][env_id][:2] - obs.maniskill_obs["extra"][target][env_id][:2]) > 0.1:
+            if not self._is_cycle_object_sorted(obs.maniskill_obs["extra"], env_id, obj_name, target):
                 obj_to_sort.append(obj_name)
 
         if not obj_to_sort:
             return ToolExecution([],verifier=verifier,reason=f"All objects has already been sorted.")
 
-        cpt, cpt_max = 0, len(obj_to_sort) + 2
+        cpt, cpt_max = 0, len(obj_to_sort) * 2 + 2
 
-        def redo(new_obs: Dict) -> List[sapien.Pose]:
+        def redo(new_obs: Dict) -> Trajectory:
             nonlocal cpt
             cpt +=1
             if cpt > cpt_max:
                 return []
-            
-            # peut etre on pourrait verif si on a un objet en gripper pour juste faire un put
-
-            for obj_name in obj_to_sort:
-                obj_pose = new_obs["extra"][obj_name][env_id]
-                if torch.norm(obj_pose[:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]) < 0.1: # juste sur x , y prcq sinon lobjet a pas le temps de tomber
-                    continue
-
-                poses = compute_grasp_trajectory(self.get_agent(),obj_pose.cpu().numpy())
-                box_pose = obs["extra"][assignment[obj_name]][env_id].cpu().numpy()
-                box_pose[2] += 0.25
-                poses += [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
-                return poses
-            return []
+            return self._compute_next_cycle_trajectory(
+                new_obs["extra"],
+                env_id,
+                obj_to_sort,
+                assignment,
+            )
         p = redo(obs.maniskill_obs)
         return ToolExecution(poses=p,verifier=verifier,redo=redo)
     
@@ -266,11 +403,21 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
         task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
+            held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
+            if held_obj in obj_to_sort:
+                return ToolResult(False, f"{held_obj} is still in the gripper. You can retry.")
+
             for obj_name in obj_to_sort:
-                if torch.norm(
-                    new_obs["extra"][obj_name][env_id][:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]
-                    ) > 0.1:
-                    return ToolResult(False, "Communication error with the robot") #waiting for a proper partial reset.
+                if not self._is_cycle_object_sorted(
+                    new_obs["extra"],
+                    env_id,
+                    obj_name,
+                    assignment[obj_name],
+                ):
+                    return ToolResult(
+                        False,
+                        "Cycle did not finish. You can retry.",
+                    )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}",logs=Log(""))
@@ -298,31 +445,24 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
             return ToolExecution([],verifier=verifier,reason=f"These areas {', '.join(map(str, invalid_areas))} are invalid. Please use only known target.")
 
         for obj_name, target in assignment.items():
-            if torch.norm(obs.maniskill_obs["extra"][obj_name][env_id][:2] - obs.maniskill_obs["extra"][target][env_id][:2]) > 0.1:
+            if not self._is_cycle_object_sorted(obs.maniskill_obs["extra"], env_id, obj_name, target):
                 obj_to_sort.append(obj_name)
 
         if not obj_to_sort:
             return ToolExecution([],verifier=verifier,reason=f"All objects has already been sorted.")
 
-        cpt, cpt_max = 0, len(obj_to_sort) + 2
+        cpt, cpt_max = 0, len(obj_to_sort) * 2 + 2
 
-        def redo(new_obs: Dict) -> List[sapien.Pose]:
+        def redo(new_obs: Dict) -> Trajectory:
             nonlocal cpt
             cpt +=1
             if cpt > cpt_max:
                 return []
-            
-            # peut etre on pourrait verif si on a un objet en gripper pour juste faire un put
-            for obj_name in obj_to_sort: 
-                obj_pose = new_obs["extra"][obj_name][env_id]
-                if torch.norm(obj_pose[:2] - new_obs["extra"][assignment[obj_name]][env_id][:2]) < 0.1: # juste sur x , y prcq sinon lobjet a pas le temps de tomber
-                    continue
-
-                poses = compute_grasp_trajectory(self.get_agent(),obj_pose.cpu().numpy())
-                box_pose = obs.maniskill_obs["extra"][assignment[obj_name]][env_id].cpu().numpy()
-                box_pose[2] += 0.25
-                poses += [sapien.Pose(p=box_pose[:3],q=[0,1,0,0]), "OPEN"]
-                return poses
-            return []
+            return self._compute_next_cycle_trajectory(
+                new_obs["extra"],
+                env_id,
+                obj_to_sort,
+                assignment,
+            )
         p = redo(obs.maniskill_obs)
         return ToolExecution(poses=p,verifier=verifier,redo=redo)
