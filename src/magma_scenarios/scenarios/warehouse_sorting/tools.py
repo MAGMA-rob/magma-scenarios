@@ -10,7 +10,7 @@ from magma_core.base.data_structures import Log
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 
 from typing import Dict, List, Optional
-import sapien, torch
+import sapien
 
 # "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
 # {\"name\": \"grab_specific_object\", \"description\": \"Grasp the object corresponding to item_name.\", \"parameters\": {\"item_name\": {\"description\": \"the name of the object to grasp.\", \"type\": \"str\"}}}]", 
@@ -23,10 +23,10 @@ import sapien, torch
 
 class WarehouseSortingTool(BaseToolsAPI):
     CYCLE_SORTED_DISTANCE_THRESHOLD = 0.1
-    CYCLE_GRASP_APPROACH_Z = 0.14
+    CYCLE_GRASP_APPROACH_OFFSET_Z = 0.12
     CYCLE_TRANSFER_Z = 0.42
-    CYCLE_DROP_Z = 0.18
-    CYCLE_DROP_APPROACH_Z = 0.36
+    CYCLE_DROP_OFFSET_Z = 0.28
+    CYCLE_DROP_APPROACH_OFFSET_Z = 0.46
     CYCLE_STAGING_X = -0.15
     CYCLE_STAGING_Y = 0.0
 
@@ -47,9 +47,18 @@ class WarehouseSortingTool(BaseToolsAPI):
             obj_name: str,
             target_name: str,
         ) -> bool:
-        return torch.norm(
-            obs_extra[obj_name][env_id][:2] - obs_extra[target_name][env_id][:2]
-        ) < self.CYCLE_SORTED_DISTANCE_THRESHOLD
+        return is_object_inside_target(
+            obs_extra[obj_name][env_id],
+            obs_extra[target_name][env_id],
+            thresh=self.CYCLE_SORTED_DISTANCE_THRESHOLD,
+            keep_tensor=False,
+        )
+
+    def _extract_cycle_assignment(self, params: Dict) -> tuple[Optional[Dict[str, str]], str]:
+        assignment = params.get("assignment", None)
+        if not isinstance(assignment, dict) or len(assignment) == 0:
+            return None, "Assignment parameter is invalid. It must be a non-empty dictionary."
+        return assignment, ""
 
     def _find_held_cycle_object(
             self,
@@ -77,12 +86,12 @@ class WarehouseSortingTool(BaseToolsAPI):
         drop_pose = self._make_top_down_pose([
             target_pose[0],
             target_pose[1],
-            self.CYCLE_DROP_Z,
+            target_pose[2] + self.CYCLE_DROP_OFFSET_Z,
         ])
         drop_approach_pose = self._make_top_down_pose([
             target_pose[0],
             target_pose[1],
-            self.CYCLE_DROP_APPROACH_Z,
+            target_pose[2] + self.CYCLE_DROP_APPROACH_OFFSET_Z,
         ])
         return compute_drop_trajectory(
             self.get_agent(),
@@ -104,7 +113,7 @@ class WarehouseSortingTool(BaseToolsAPI):
         grasp_approach_pose = self._make_top_down_pose([
             obj_pose[0],
             obj_pose[1],
-            self.CYCLE_GRASP_APPROACH_Z,
+            obj_pose[2] + self.CYCLE_GRASP_APPROACH_OFFSET_Z,
         ])
         lift_pose = self._make_top_down_pose([
             obj_pose[0],
@@ -282,15 +291,15 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 ):
                     return ToolResult(
                         False,
-                        "Cycle did not finish. You can retry.",
+                        f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
                     )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=manu_order))
 
-        assignment = params.get("assignment", "none")
-        if assignment is None:
-            return ToolExecution([],verifier=verifier,reason="Assignment parameter is invalid !")
+        assignment, assignment_error = self._extract_cycle_assignment(params)
+        if assignment_error:
+            return ToolExecution([], verifier=None, reason=assignment_error)
         
         invalid_objects = []
         for key in assignment.keys():
@@ -310,7 +319,9 @@ class WithManufacturingOrder(WarehouseSortingTool):
         elif (len(invalid_areas) > 1):
             return ToolExecution([],verifier=verifier,reason=f"These areas {str.join(', ', invalid_areas)} are invalid. Please use only known target.")
         
-        manu_order = params['manu_order']
+        manu_order = params.get('manu_order', None)
+        if not isinstance(manu_order, str) or len(manu_order) == 0:
+            return ToolExecution([], verifier=None, reason="manu_order parameter is invalid. It must be a non-empty string.")
 
         for obj_name, target in assignment.items():
             if not self._is_cycle_object_sorted(obs.maniskill_obs["extra"], env_id, obj_name, target):
@@ -414,17 +425,18 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                     obj_name,
                     assignment[obj_name],
                 ):
+                    print("FAILURE OF CYCLE")
                     return ToolResult(
                         False,
-                        "Cycle did not finish. You can retry.",
+                        f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
                     )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
             return ToolResult(True, f"All objects has been sorted : {s}",logs=Log(""))
 
-        assignment = params.get("assignment", "none")
-        if assignment is None:
-            return ToolExecution([],verifier=verifier,reason="Assignment parameter is invalid !")
+        assignment, assignment_error = self._extract_cycle_assignment(params)
+        if assignment_error:
+            return ToolExecution([], verifier=None, reason=assignment_error)
         
         invalid_objects = []
         for key in assignment.keys():
