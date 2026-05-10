@@ -10,7 +10,7 @@ from magma_core.base.data_structures import Log
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 
 from typing import Dict, List, Optional
-import sapien
+import sapien, random
 
 # "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
 # {\"name\": \"grab_specific_object\", \"description\": \"Grasp the object corresponding to item_name.\", \"parameters\": {\"item_name\": {\"description\": \"the name of the object to grasp.\", \"type\": \"str\"}}}]", 
@@ -167,7 +167,7 @@ class WarehouseSortingTool(BaseToolsAPI):
                 env_id,
                 assignment[held_obj],
             )
-
+        random.shuffle(obj_to_sort)
         for obj_name in obj_to_sort:
             if self._is_cycle_object_sorted(
                 obs_extra,
@@ -302,14 +302,7 @@ class WithManufacturingOrder(WarehouseSortingTool):
                 obj_to_sort,
                 assignment,
             )
-            held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
-            if held_obj in obj_to_sort:
-                return ToolResult(
-                    False,
-                    f"{held_obj} is still in the gripper. You can retry.",
-                    context={"no_reset": sorted_objects},
-                )
-
+            print("FAILURE ", sorted_objects, obj)
             for obj_name in obj_to_sort:
                 if obj_name not in sorted_objects:
                     return ToolResult(
@@ -444,24 +437,18 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
                 obj_to_sort,
                 assignment,
             )
-            held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
-            if held_obj in obj_to_sort:
-                return ToolResult(
-                    False,
-                    f"{held_obj} is still in the gripper. You can retry.",
-                    context={"no_reset": sorted_objects},
-                )
 
             for obj_name in obj_to_sort:
                 if obj_name not in sorted_objects:
+                    print("FAILURE ", sorted_objects, obj_to_sort)
                     return ToolResult(
                         False,
                         f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
                         context={"no_reset": sorted_objects},
                     )
-
+            print("VALID : ", obj_to_sort)
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
-            return ToolResult(True, f"All objects has been sorted : {s}",logs=Log(""))
+            return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=""))
 
         assignment, assignment_error = self._extract_cycle_assignment(params)
         if assignment_error:
@@ -494,9 +481,12 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
 
         cpt, cpt_max = 0, len(obj_to_sort) * 2 + 2
 
+        print("LAUNCH CYCLE for : ", obj_to_sort)
+
         def redo(new_obs: Dict) -> Trajectory:
             nonlocal cpt
             cpt +=1
+            print("redo-called")
             if cpt > cpt_max:
                 return []
             return self._compute_next_cycle_trajectory(
