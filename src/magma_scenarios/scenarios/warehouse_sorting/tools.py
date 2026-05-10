@@ -60,6 +60,24 @@ class WarehouseSortingTool(BaseToolsAPI):
             return None, "Assignment parameter is invalid. It must be a non-empty dictionary."
         return assignment, ""
 
+    def _get_sorted_cycle_objects(
+            self,
+            obs_extra: Dict,
+            env_id: int,
+            obj_to_sort: List[str],
+            assignment: Dict[str, str],
+        ) -> List[str]:
+        return [
+            obj_name
+            for obj_name in obj_to_sort
+            if self._is_cycle_object_sorted(
+                obs_extra,
+                env_id,
+                obj_name,
+                assignment[obj_name],
+            )
+        ]
+
     def _find_held_cycle_object(
             self,
             obs_extra: Dict,
@@ -278,20 +296,26 @@ class WithManufacturingOrder(WarehouseSortingTool):
         task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
+            sorted_objects = self._get_sorted_cycle_objects(
+                new_obs["extra"],
+                env_id,
+                obj_to_sort,
+                assignment,
+            )
             held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
             if held_obj in obj_to_sort:
-                return ToolResult(False, f"{held_obj} is still in the gripper. You can retry.")
+                return ToolResult(
+                    False,
+                    f"{held_obj} is still in the gripper. You can retry.",
+                    context={"no_reset": sorted_objects},
+                )
 
             for obj_name in obj_to_sort:
-                if not self._is_cycle_object_sorted(
-                    new_obs["extra"],
-                    env_id,
-                    obj_name,
-                    assignment[obj_name],
-                ):
+                if obj_name not in sorted_objects:
                     return ToolResult(
                         False,
                         f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
+                        context={"no_reset": sorted_objects},
                     )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
@@ -414,21 +438,26 @@ class WithoutManufacturingOrder(WarehouseSortingTool):
         task_attributes = obs.task_attributes
 
         def verifier(new_obs: Dict) -> ToolResult:
+            sorted_objects = self._get_sorted_cycle_objects(
+                new_obs["extra"],
+                env_id,
+                obj_to_sort,
+                assignment,
+            )
             held_obj = self._find_held_cycle_object(new_obs["extra"], env_id, obj_to_sort)
             if held_obj in obj_to_sort:
-                return ToolResult(False, f"{held_obj} is still in the gripper. You can retry.")
+                return ToolResult(
+                    False,
+                    f"{held_obj} is still in the gripper. You can retry.",
+                    context={"no_reset": sorted_objects},
+                )
 
             for obj_name in obj_to_sort:
-                if not self._is_cycle_object_sorted(
-                    new_obs["extra"],
-                    env_id,
-                    obj_name,
-                    assignment[obj_name],
-                ):
-                    print("FAILURE OF CYCLE")
+                if obj_name not in sorted_objects:
                     return ToolResult(
                         False,
                         f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
+                        context={"no_reset": sorted_objects},
                     )
 
             s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
