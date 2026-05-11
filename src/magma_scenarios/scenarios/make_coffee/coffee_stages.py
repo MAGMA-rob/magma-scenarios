@@ -28,13 +28,13 @@ class MugAndCapsuleGoal(BaseGoal):
         is_capsule_loaded = is_object_inside_target(
             obs["extra"][self.capsule], 
             torch.add(obs["extra"]["coffee_maker"][:,:7], self.capsule_target.to(device)),
-            0.03)
+            0.06)
         
         # check if the mug is placed
         is_mug_dropped = is_object_inside_target(
             obs["extra"]["mug"], 
             torch.add(obs["extra"]["coffee_maker"][:,:7], self.mug_target.to(device)),
-            0.03)
+            0.06)
         
         return (is_capsule_loaded & is_mug_dropped).int()
 
