@@ -122,29 +122,27 @@ class LaunchTool(BaseToolsAPI):
         The machine must contains the detergent.
         This function emits a log with the list of items in the machine."""
 
+        extra = obs.maniskill_obs["extra"]
+        used_detergent = []
+        for detergent in all_detergents : 
+            if is_object_inside_target(extra[detergent]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
+                used_detergent.append(detergent)
+
+        cleaned_items = []
+        for obj_name in extra:
+            if obj_name in all_detergents or obj_name in ["washing_machine_basket" ,"agent_tcp"]:
+                continue
+            if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
+                cleaned_items.append(obj_name)
+
         def verifier(new_obs: dict):
-            extra = new_obs["extra"]
-            used_detergent = []
-            for detergent in all_detergents : 
-                if is_object_inside_target(extra[detergent]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
-                    used_detergent.append(detergent)
-                    
-            if len(used_detergent) == 0:
-                return ToolResult(False, reason="No detergent in machine.")
-
-            cleaned_items = []
-            for obj_name in extra:
-                if obj_name in all_detergents or obj_name in ["washing_machine_basket" ,"agent_tcp"]:
-                    continue
-                if is_object_inside_target(extra[obj_name]["pose"][env_id], extra["washing_machine_basket"]["pose"][env_id]):
-                    cleaned_items.append(obj_name)
-
-            if len(cleaned_items) == 0:
-                        return ToolResult(False, reason="There is no clothes in the machine!")
-
             s = ",".join(cleaned_items)
             return ToolResult(True, reason=f"You have washed {s}",logs=Log(content={"clothes" : cleaned_items,"detergent" : used_detergent}))
 
-            
+        if len(used_detergent) == 0:
+            return ToolExecution([], verifier=None, reason="No detergent in machine.")
+        
+        if len(cleaned_items) == 0:
+            return ToolExecution([], verifier=None, reason="There is no clothes in the machine!")
 
         return ToolExecution(["OK"], verifier)

@@ -162,10 +162,10 @@ class MakingCoffeeTool(BaseToolsAPI):
         teams = obs.add_constants.get("teams",{})
         result = teams.get(team_name,None)
         def verifier(new_obs: Dict)-> ToolResult:
-            #check if the people belongs to the team
-            if result is None :
-                return ToolResult(False,f"team {team_name} doesn't exist",logs=Log(""))
             return ToolResult(True,f"people in {team_name} : {result}",logs=Log(""))
+        
+        if result is None :
+            ToolExecution(poses = [], verifier = None, reason=f"team {team_name} doesn't exist")
 
         return ToolExecution(poses=["OK"], verifier=verifier, reason="")
                     
@@ -186,8 +186,9 @@ class MakingCoffeeTool(BaseToolsAPI):
                 result = teams
                 break
         def verifier(new_obs:Dict)-> ToolResult:
-            if result is None :
-                return ToolResult(False,f"person doesn't exist in the registry")
             return ToolResult(True,f"{people} in team {result}")
+
+        if result is None :
+            return ToolExecution(poses = [], verifier = None, reason=f"Person named {people} doesn't exist in the registry") 
 
         return ToolExecution(poses = ["OK"], verifier = verifier, reason="") 
