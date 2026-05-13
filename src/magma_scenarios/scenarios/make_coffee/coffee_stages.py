@@ -286,7 +286,7 @@ class AskCoffeePreferenceForUserStage(AskingBaseStage):
         question = random.choice([
             f"What coffee does {requested_person} like?",
             f"What is {requested_person}'s coffee preference?",
-            f"Which coffee should I prepare for {requested_person}?",
+            f"Which coffee like {requested_person}?",
         ])
 
         if coffee_preference is None:
