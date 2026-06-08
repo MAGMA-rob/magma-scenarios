@@ -1,12 +1,7 @@
 # MAGMA Scenarios
 
-This repository contains a python package that store task implementation for use in [MAGMA-GEN](https://github.com/MAGMA-s/magma-bench) and [MAGMA-BENCH](https://github.com/MAGMA-s/magma-gen)
+This repository contains a python package that store task implementation for use in [MAGMA-GEN](https://github.com/MAGMA-s/magma-gen) and [MAGMA-BENCH](https://github.com/MAGMA-s/magma-bench)
 
-<p align="center">
-  <b>⚠️ EXPERIMENTAL PROJECT — DOCUMENTATION IN PROGRESS ⚠️</b>
-</p>
-
-> Most of the task are not yet fully implemented.
 ---
 
 ## Getting started
@@ -28,11 +23,13 @@ This repository must be cloned and installed in the same environment as the rest
 You can create your own scenario and open a merge request.
 
 ---
+
 ## Support
 You can contact me at l.bernat@sileane.com
 
 ## Authors and acknowledgment
 Loan BERNAT (l.bernat@sileane.com)
+Abdelbasset HOUDASS (internship)
 
 ## License
 BSD 2 clauses
