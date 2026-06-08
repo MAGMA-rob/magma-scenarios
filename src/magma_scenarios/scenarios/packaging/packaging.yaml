@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  detect:
+    name:
+      - detect
+      - inspect_table
+      - list_visible_food
+      - scan_packaging_area
+    description:
+      - "Returns visible objects and their locations."
+      - "Inspect the table and tray to list visible food items."
+      - "Scan the packaging area and report the detected objects."
+      - "List the food items currently visible on the table and tray."
+  take:
+    name:
+      - take
+      - pick_food
+      - grab_item
+      - pick_from_table
+    description:
+      - "Pick an object from the table."
+      - "Grab the specified food item from the table."
+      - "Pick up the named item so it can be moved."
+      - "Take the requested object from the packaging area."
+    parameters:
+      name:
+        name:
+          - name
+          - food_name
+          - item
+          - target_item
+        description:
+          - "The name of the object to take."
+          - "Food item identifier to pick up."
+          - "Name of the target item."
+          - "Requested object to grab from the table."
+  put:
+    name:
+      - put
+      - place_item
+      - drop_item
+      - move_to_target
+    description:
+      - "Place the held object either on the table or on the tray."
+      - "Put the item currently in the gripper onto the requested target."
+      - "Drop the held food item on the table or tray."
+      - "Move the held object to the specified packaging target."
+    parameters:
+      target:
+        name:
+          - target
+          - destination
+          - surface
+          - placement_target
+        description:
+          - "The name of the target where the object should be put."
+          - "Destination surface, either table or tray."
+          - "Surface where the held item should be placed."
+          - "Target location for the object currently in the gripper."
+  valid_plate:
+    name:
+      - valid_plate
+      - validate_tray
+      - check_plate
+      - inspect_tray_contents
+    description:
+      - "Used to validate whether constraints are satisfied."
+      - "Check whether the tray contents satisfy the packaging constraints."
+      - "Validate the current plate or tray composition."
+      - "Inspect the tray and report its categorized contents."
+
+attributes:
+  main_course:
+    - ["chicken", "fish", "pasta"]
+    - ["rice_bowl", "noodles", "salad"]
+    - ["sandwich", "quiche", "wrap"]
+  fruits:
+    - ["ananas", "apple", "banana"]
+    - ["orange", "pear", "grape"]
+    - ["kiwi", "peach", "plum"]
+  drinks:
+    - ["water", "juice", "milk"]
+    - ["tea", "soda", "smoothie"]
+    - ["lemonade", "coffee", "cocoa"]
