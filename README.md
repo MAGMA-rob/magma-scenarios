@@ -17,6 +17,18 @@ You can find in this package the task definition used in MAGMA.
 
 This repository must be cloned and installed in the same environment as the rest of MAGMA packages. magma_gen and magma-bench will import it to instanciate tasks.
 
+For development, install it from the cloned source in editable mode:
+
+```bash
+git clone https://github.com/MAGMA-rob/magma-scenarios.git
+cd magma-scenarios
+pip install "git+https://github.com/MAGMA-rob/magma-core.git@v0.1.0"
+pip install -e .
+```
+
+Editable installation keeps the package linked to this checkout, so changes to scenarios,
+tasks, configs, and assets are immediately visible to MAGMA-GEN.
+
 ---
 ## How to contribute
 

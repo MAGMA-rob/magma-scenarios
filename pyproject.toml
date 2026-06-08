@@ -7,7 +7,13 @@ version = "0.1.0"
 description = "This package contains scenarios for use in MAGMA-GEN and MAGMA-BENCH"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = ["magma_core>=0.1.0"]
+dependencies = [
+    "magma_core>=0.1.0",
+    "numpy<2.0",
+    "torch",
+    "mani_skill",
+    "PyYAML",
+]
 
 [project.optional-dependencies]
 dev = ["pytest"]
@@ -15,3 +21,14 @@ dev = ["pytest"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"magma_scenarios" = [
+    "assets/**/*",
+    "benchmark/**/*.json",
+    "scene_builders/assets/**/*",
+    "scenarios/**/*.yaml",
+]
