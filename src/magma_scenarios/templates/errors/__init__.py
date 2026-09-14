@@ -3,5 +3,7 @@ from .perception_errors import (
 )
 
 from .take_errors import (
-    GraspFailureError
+    GraspFailureError,
+    OneShotToolFailureError,
+    RequestedObjectGraspFailureError,
 )

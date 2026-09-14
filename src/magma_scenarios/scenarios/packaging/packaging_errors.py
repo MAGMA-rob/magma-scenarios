@@ -1,11 +1,12 @@
-from re import M
-from magma_core.base.data_structures.observation import Observation
-from magma_core.base.data_structures.tools import ToolResult
-from magma_scenarios.templates.errors import MaskedObjectError, GraspFailureError
 from typing import Dict, Optional, Any, List
-from .attributes import fruits, drinks, main_course
-from magma_core.utils.env_utils import is_object_inside_target
 import random
+
+from magma_core.simulation.data_structures.observation import Observation
+from magma_core.simulation.data_structures.tools import ToolResult
+
+from magma_scenarios.templates.errors import MaskedObjectError, GraspFailureError
+
+from .attributes import fruits, drinks, main_course
 
 def _get_remaining_food(obs : Observation, env_id : int) -> List[str]:
     remaining = []

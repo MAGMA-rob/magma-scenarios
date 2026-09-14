@@ -1,8 +1,8 @@
 from typing import Any, Dict, Optional
 
-from magma_core.base.data_structures.observation import Observation
-from magma_core.base.data_structures.tools import ToolResult, ToolExecution
-from magma_core.base.errors import BaseError
+from magma_core.simulation.data_structures.observation import Observation
+from magma_core.simulation.data_structures.tools import ToolResult, ToolExecution
+from magma_core.simulation.errors import BaseError
  
 
 class MaskedObjectError(BaseError):
@@ -23,21 +23,27 @@ class MaskedObjectError(BaseError):
     def initialize(self, obs: Observation, env_id: int) -> Optional[Dict[str, Any]]:
         raise NotImplementedError("This class msut be defined in child class")
 
-    def apply_pre_exec(self, tool_execution: ToolExecution, arguments: Dict[str, Any]):
+    def apply_pre_exec(
+        self,
+        tool_execution: ToolExecution,
+        arguments: Dict[str, Any],
+    ) -> bool:
         """
         Allows to ensure that masked object are not taken or manipulated.
         """
         masked = arguments.get("masked",None)
         if masked is None or len(masked)==0:
-            return
+            return False
         target_name = tool_execution.context.get(self.target_key, None)
         if target_name is None:
-            return
+            return False
 
         if target_name in masked:
             tool_execution.fail(
                 f"Unknown object: {target_name}. Please use only detected objects."
             )
+            return True
+        return False
 
     def apply_post_verif(self, tool_result: ToolResult, arguments: Dict[str, Any]):
         raise NotImplementedError("This function must be defined in the child class to allow custom modification")

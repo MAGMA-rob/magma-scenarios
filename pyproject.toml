@@ -3,12 +3,12 @@
 
 [project]
 name = "magma_scenarios"
-version = "0.1.0"
-description = "This package contains scenarios for use in MAGMA-GEN and MAGMA-BENCH"
+version = "2.0.0"
+description = "Official scenarios and extensible scenario registry for MAGMA-GEN and MAGMA-BENCH"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12,<3.13"
 dependencies = [
-    "magma_core>=0.1.0",
+    "magma_core[simulation]>=2.0.0b1,<3.0.0",
     "numpy<2.0",
     "torch",
     "mani_skill",
@@ -32,3 +32,20 @@ where = ["src"]
     "scene_builders/assets/**/*",
     "scenarios/**/*.yaml",
 ]
+
+[project.entry-points."magma.scenarios"]
+advanced_delivery = "magma_scenarios.scenarios.advanced_delivery.manifest:SCENARIO"
+bi_robot_sorting = "magma_scenarios.scenarios.bi_robot_sorting.manifest:SCENARIO"
+color_sorting = "magma_scenarios.scenarios.color_sorting.manifest:SCENARIO"
+delivery_box = "magma_scenarios.scenarios.delivery_box.manifest:SCENARIO"
+hall_sorting = "magma_scenarios.scenarios.hall_sorting.manifest:SCENARIO"
+laundry = "magma_scenarios.scenarios.laundry.manifest:SCENARIO"
+make_coffee = "magma_scenarios.scenarios.make_coffee.manifest:SCENARIO"
+packaging = "magma_scenarios.scenarios.packaging.manifest:SCENARIO"
+press_button = "magma_scenarios.scenarios.press_button.manifest:SCENARIO"
+standalone_environments = "magma_scenarios.scenarios.standalone_environments.manifest:SCENARIO"
+table_cleaning = "magma_scenarios.scenarios.table_cleaning.manifest:SCENARIO"
+warehouse_sorting = "magma_scenarios.scenarios.warehouse_sorting.manifest:SCENARIO"
+
+[project.scripts]
+magma-scenarios = "magma_scenarios.command_line:main"

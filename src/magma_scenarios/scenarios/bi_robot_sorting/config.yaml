@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  get_objects_state:
+    name: [get_objects_state, inspect_sorting_areas, list_area_contents]
+    description: [List objects by area and identify damaged objects., Inspect every sorting zone and report damaged items., List the contents of each area and mark damaged objects.]
+  deplace:
+    name: [deplace, move_object, transfer_item]
+    description: [Move an object to a target area., Transfer a specified object into the requested sorting zone., Relocate an item to a destination area.]
+    parameters:
+      object:
+        name: [object, object_name, item]
+        description: [Name of the object to move., Identifier of the item to transfer., Object that must be relocated.]
+      target_area:
+        name: [target_area, destination, sorting_zone]
+        description: [Area where the object must be moved., Destination zone for the selected item., Sorting area that should receive the object.]

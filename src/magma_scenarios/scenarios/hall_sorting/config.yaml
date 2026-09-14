@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  detect:
+    name: [detect, scan_current_hall, list_nearby_objects]
+    description: [List objects near the selected robot., Scan the current hall for objects near the active robot., Report the objects available around the selected robot.]
+  move_to:
+    name: [move_to, navigate_to_hall, change_hall]
+    description: [Move the selected robot to the requested hall., Navigate the active robot and its tray to a target hall., Send the selected robot to the specified hall.]
+    parameters:
+      hall:
+        name: [hall, target_hall, destination]
+        description: [Name of the hall to reach., Target hall for the selected robot., Destination hall to which the robot must move.]
+  pick_to_tray:
+    name: [pick_to_tray, load_tray, collect_from_table]
+    description: [Load an object from the current table onto the selected robot's tray., Pick an item from the current hall table and place it on the tray., Collect a table object onto the active robot's tray.]
+    parameters:
+      object:
+        name: [object, object_name, item]
+        description: [Name of the object to load., Object to pick from the current table., Item that must be placed on the tray.]
+  drop_from_tray:
+    name: [drop_from_tray, unload_tray, place_on_table]
+    description: [Unload an object from the selected robot's tray onto the current table., Move a carried tray item onto the table in the current hall., Place an object from the active tray on the nearby table.]
+    parameters:
+      object:
+        name: [object, object_name, item]
+        description: [Name of the object to unload., Object to remove from the tray., Tray item that must be placed on the table.]

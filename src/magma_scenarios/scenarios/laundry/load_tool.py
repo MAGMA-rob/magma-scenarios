@@ -1,19 +1,28 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, ToolErrorSupport
-from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
+from magma_core.simulation.tools import BaseToolsAPI, register_tool
+from magma_core.simulation.data_structures import (
+    ToolExecution,
+    ToolResult,
+    Observation,
+    ToolErrorSupport,
+)
+from magma_core.simulation.utils.env_utils import is_object_inside_target
+from magma_core.simulation.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
-from magma_core.base.data_structures import Log
-from magma_scenarios.envs.laundry.observation import ObjectObservation
+from magma_core.simulation.data_structures import Log
 from magma_scenarios.scenarios.laundry.attributes import all_detergents, all_clothes
-from typing import Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
 import sapien, torch
 
 from .laundry_errors import GraspClothesFailureError
+
+if TYPE_CHECKING:
+    from magma_scenarios.envs.laundry.observation import ObjectObservation
+else:
+    ObjectObservation = Any
 
 LaundryExtraState = dict[str, ObjectObservation]
 
@@ -23,11 +32,11 @@ class LaunchTool(BaseToolsAPI):
     """
 
     @register_tool(
-            description="Pick a product by its name.",
+            description="Take a laundry item.",
             params_spec={
                 "name": {
                     "type": str,
-                    "description": "Name of the object to grab.",
+                    "description": "Name of the item to take.",
                 }
             },
             errors=[
@@ -39,23 +48,36 @@ class LaunchTool(BaseToolsAPI):
 
         extra: LaundryExtraState = obs.maniskill_obs["extra"]
         name = params["name"]
-        object = extra.get(name, None)
-        if object is None:
+        obj = extra.get(name, None)
+        if obj is None:
             return ToolExecution(
                 poses=[], verifier=None, reason=f"No object with name {params['name']}"
             )
-        poses = compute_grasp_trajectory(self.get_agent(),object["pose"][env_id].cpu().numpy())
+
+        grasp_threshold = 0.05 if name == "detergent" else 0.02
+        if is_object_in_gripper(
+            extra["agent_tcp"]["pose"][env_id],
+            obj["pose"][env_id],
+            threshold=grasp_threshold,
+        ):
+            return ToolExecution(
+                poses=[],
+                verifier=None,
+                reason=f"The object {name} is already in the gripper.",
+            )
+
+        poses = compute_grasp_trajectory(self.get_agent(),obj["pose"][env_id].cpu().numpy())
 
         def verifier(new_obs: dict) -> ToolResult:
             """The object must be in the gripper."""
             new_extra: LaundryExtraState = new_obs["extra"]
-            object = new_extra.get(name, None)
-            if object is None:
+            obj = new_extra.get(name, None)
+            if obj is None:
                 return ToolResult(False, f"The object {name} does not exist anymore.")
             if is_object_in_gripper(
                 new_extra["agent_tcp"]["pose"][env_id],
-                object["pose"][env_id],
-                threshold=0.05 if name == "detergent" else 0.005,
+                obj["pose"][env_id],
+                threshold=grasp_threshold,
             ):
                 return ToolResult(True, f"You have {name} in your gripper.")
             else:
@@ -63,11 +85,16 @@ class LaunchTool(BaseToolsAPI):
                     False, f"You failed to take the object {name}. You can retry."
                 )
 
-        return ToolExecution(poses, verifier=verifier, context={"target_name":name})
+        return ToolExecution(
+            poses,
+            verifier=verifier,
+            context={"target_name": name},
+            allowed_moving_actors=[name],
+        )
 
 
     @register_tool(
-            description="Put the held clothes into the washing machine.",
+            description="Put the held item in the washing machine.",
             params_spec={}
     )
     def drop(self, obs: Observation, env_id: int, params: dict) -> ToolExecution:
@@ -75,7 +102,7 @@ class LaunchTool(BaseToolsAPI):
 
         extra = obs.maniskill_obs["extra"]
 
-        target_pos: torch.Tensor = extra["washing_machine"]["pose"][env_id]
+        target_pos: torch.Tensor = extra["washing_machine_basket"]["pose"][env_id]
 
         reduced_env = dict((k, v["pose"][env_id][:3]) for k, v in extra.items())
         agent_tcp_position = reduced_env.pop("agent_tcp")
@@ -110,10 +137,14 @@ class LaunchTool(BaseToolsAPI):
                 )
             return ToolResult(True, reason=f"Successfully put {obj_in_gripper} in the wash machine")
 
-        return ToolExecution(poses, verifier)
+        return ToolExecution(
+            poses,
+            verifier,
+            allowed_moving_actors=[obj_in_gripper],
+        )
 
     @register_tool(
-            description="Wash all clothes in the washing machine, only if a detergent is also in the machine.",
+            description="Start the washing machine.",
             params_spec={}
     )
     def action_wash(self, obs: Observation, env_id: int, params: dict):

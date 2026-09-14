@@ -1,7 +1,43 @@
 from typing import Optional
 
-from magma_core.base.constraints import BaseConstraint
-from magma_core.base.state.task_state import TaskState
+from magma_core.simulation.constraints import BaseConstraint
+from magma_core.simulation.state.task_state import TaskState
+
+
+class RelationDefaultConstraint(BaseConstraint):
+    """Define the fallback target for a relation and reset its exceptions."""
+
+    def __init__(
+        self,
+        relation_key: str,
+        target_value: str,
+        target_attribute_key: Optional[str] = None,
+    ) -> None:
+        super().__init__()
+        self.relation_key = relation_key
+        self.target_value = target_value
+        self.target_attribute_key = target_attribute_key
+
+    def apply(self, state: TaskState):
+        if self.outdated(state):
+            raise RuntimeError(
+                f"The {self.__class__.__name__} failed to be applied"
+            )
+        super().apply(state)
+        state.relations[self.relation_key] = {}
+        state.properties.setdefault(
+            "relation_default_targets",
+            {},
+        )[self.relation_key] = self.target_value
+
+    def outdated(self, state: TaskState) -> bool:
+        if self.target_attribute_key is None:
+            return False
+        return self.target_value not in state.attributes.get(
+            self.target_attribute_key,
+            [],
+        )
+
 
 class RelationAssignmentConstraint(BaseConstraint):
     """Assign one value to another in a configurable latent sorting relation.

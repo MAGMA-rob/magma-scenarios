@@ -1,4 +1,5 @@
-import sapien, random
+import random
+import sapien
 
 att = {"coffee_pod": ["black", "milky", "white"]}
 
@@ -10,8 +11,8 @@ loaded_capsule_pose = sapien.Pose(p=[-0.022, 0.04, 0.18], q = [0,1,0,0])
 people = [ "Smith", "Anderson", "Clark", "Wright", 
         "Mitchell", "Johnson", "Thomas", "Rodriguez", 
         "Lopez", "Perez", "Williams", "Jackson",
-        "Lewis", "Hill", "Roberts", "Jones", "White",
-        "Lee", "Scott", "Turner", "Brown", "Harris", 
+        "Lewis", "Hill", "Roberts", "Jones",
+        "Lee", "Scott", "Turner", "Jade", "Harris", 
         "Walker", "Arthur", "Matthieu", "Florent", 
         "Ariane", "Abdelbasset", "Michel", "Olivier",
         "Philippe", "Hector", "Michael", "Leo",

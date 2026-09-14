@@ -1,47 +1,65 @@
-from magma_core.base.stage import ConstraintBaseStage
-from magma_core.base.data_structures import Log, ToolResult
-from magma_core.utils.env_utils import is_object_inside_target
+from typing import Dict
 
-## DUMMY STAGE JUSTE FOR LAUNCH THE PRESET ON TOOL TESTING
-class SimplePutOnTrayStage(ConstraintBaseStage):
-    """
-    Goal: put at least 1 object on tray
-    """
+import torch
 
-    def __init__(self):
-        memory = [
-            "You must place at least one object on the tray."
-        ]
+from magma_core.simulation.data_structures import StageInput, UserInstruction
+from magma_core.simulation.goals import BaseGoal
+from magma_core.simulation.stage import BaseTaskStage, StageGlobalParameters
+from magma_core.simulation.utils.env_utils import is_object_inside_target
 
-        super().__init__(
-            constraint="at_least_one_object_on_tray",
-            memory=memory,
-            attributes={}
-        )
-        self.allowed_tools = ["detect", "take", "put", "valid_plate"]
-        self.allow_tools_before_answer = True
+from .attributes import drinks, fruits, main_course
 
-    def verify(self, obs):
+
+class AtLeastOneObjectOnTrayGoal(BaseGoal):
+    def __init__(self, threshold: float = 0.2) -> None:
+        super().__init__("AtLeastOneObjectOnTray", "minimum=1")
+        self.threshold = threshold
+
+    def verify(self, obs: Dict) -> torch.Tensor:
         extra = obs["extra"]
-
         tray_pose = extra["tray"]
-
-        for name, obj in extra.items():
-            if name in ["agent_tcp", "tray"]:
-                continue
-
-            if is_object_inside_target(
-                obj,
-                tray_pose,
-                0.05
-            ):
-                return ToolResult(
-                    True,
-                    "At least one object is on tray",
-                    logs=Log("ok")
-                )
-
-        return ToolResult(
-            False,
-            "No object on tray"
+        nb_envs = 1 if tray_pose.ndim == 1 else tray_pose.shape[0]
+        result = torch.zeros(
+            nb_envs,
+            dtype=torch.int32,
+            device=tray_pose.device,
         )
+
+        for name in [*main_course, *fruits, *drinks]:
+            if name not in extra:
+                continue
+            result = torch.maximum(
+                result,
+                is_object_inside_target(
+                    extra[name],
+                    tray_pose,
+                    thresh=self.threshold,
+                    keep_tensor=True,
+                ).int(),
+            )
+
+        return result
+
+
+class SimplePutOnTrayStage(BaseTaskStage):
+    """Place at least one food item on the tray."""
+
+    target_tool_calls = 3
+    max_tool_calls = 4
+
+    def __init__(self, threshold: float = 0.2) -> None:
+        super().__init__(
+            goals=[AtLeastOneObjectOnTrayGoal(threshold)],
+            stage_goal_description="Place at least one food item on the tray.",
+            stage_input=StageInput(
+                instruction=UserInstruction(
+                    "Place at least one food item from the table on the tray."
+                ),
+                flag_answer_to_user=True,
+            ),
+            global_parameters=StageGlobalParameters(reset_at_end=True),
+        )
+        self.threshold = threshold
+
+    def _to_spec_arguments(self) -> Dict:
+        return {"threshold": self.threshold}

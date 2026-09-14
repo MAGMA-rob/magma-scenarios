@@ -6,8 +6,8 @@ from copy import deepcopy
 from itertools import combinations
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from magma_core.base.constraints import BaseConstraint
-from magma_core.base.state import TaskState
+from magma_core.simulation.constraints import BaseConstraint
+from magma_core.simulation.state import TaskState
 
 
 BUTTON_PRECEDENCE_KEY = "button_precedence"
@@ -273,6 +273,16 @@ def valid_parity_candidates(state: TaskState) -> List[Tuple[List[str], List[str]
             candidates.append((first_buttons, second_buttons, label))
 
     return candidates
+
+
+def valid_prefix_candidates(state: TaskState) -> List[str]:
+    buttons = available_buttons(state)
+    graph = _copy_precedence_graph(state)
+    return [
+        button
+        for button in buttons
+        if _prefix_compatible_with_graph(graph, button, buttons)
+    ]
 
 
 def available_forget_targets(state: TaskState) -> List[Tuple[str, Optional[str]]]:

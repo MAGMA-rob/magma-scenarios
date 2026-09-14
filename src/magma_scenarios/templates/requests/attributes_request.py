@@ -1,16 +1,15 @@
 from typing import Tuple, Dict, Any, List, Optional
 import random
 
-from magma_core.base.state.task_state import TaskState
-from magma_core.base.user_request import BaseAttributesModifRequest
+from magma_core.simulation.state.task_state import TaskState
+from magma_scenarios.templates.requests.interact_request import BaseAttributesModifRequest
 
 class AddValueToListRequest(BaseAttributesModifRequest):
     """
     Base helper for requests that add values to list attributes.
 
-    Subclasses usually build a ``ModifAttributesBaseStage`` and store the
-    updated attributes in ``self.att_state`` so the change can be applied to
-    the latent task state after the interaction.
+    Subclasses sample an attribute snapshot, then use it both to build their
+    stages and to update the latent task state after the interaction.
     """
 
     def __init__(self, modifiable_task_attributes: Dict[str, Any], max_update : int = 1) -> None:
@@ -39,9 +38,8 @@ class RemoveValueToListRequest(BaseAttributesModifRequest):
     """
     Base helper for requests that remove values from list attributes.
 
-    Subclasses usually build a ``ModifAttributesBaseStage`` and store the
-    updated attributes in ``self.att_state`` so the change can be applied to
-    the latent task state after the interaction.
+    Subclasses sample an attribute snapshot, then use it both to build their
+    stages and to update the latent task state after the interaction.
     """
 
     def __init__(self, modifiable_attributes_name : List, max_update : int = 1) -> None:

@@ -1,20 +1,31 @@
-from typing import Dict
+import random
+from collections import Counter
 
-from magma_core.base.data_structures import TemplateInstruction
+PACKAGE_NAMES = ["package_1","package_2","package_3","package_4"]
 
-att = {"product_type":["coca","icetea","brets","donut"]}
+att = {"product_type":["coca","icetea","brets","donut"],
+       "slot": ["products_slot", "packages_slot"],
+       "package": PACKAGE_NAMES }
 
-MAX_NB_PER_RECIPE = 2
-    
-class DeliveryTemplateInstruction(TemplateInstruction):
+PRODUCT_TYPES = ["coca", "icetea", "brets", "donut"]
 
-    def __init__(self, template: Dict, timestamp: int = 0) -> None:
-        context = """
-        You will have access to a dict with add and remove field. 
-        You must generate an instruction that inform the robot hat the default recipe for its packaging has changed. 
-        The add field represent element that need to be added to the recipe, remove element represent elements that need to be removed from the recipe.
-        If an element is present in both, you can safely ignore it. If there is x time the same element in the same field, you can just tell the robot x element. 
-        You are only giving a constraint, you MUST NOT ask to launch a cycle with this recipe, just update it for future cycle.
-        Here are some exemple 'add x to your recipe for future cycle', 'remove y and add x from your recipe now' ...
-        """
-        super().__init__(template, context, timestamp)
+
+def _sample_table_objects() -> list[str]:
+    available_types = [
+        product_type
+        for product_type in PRODUCT_TYPES
+        for _ in range(3)
+    ]
+
+    selected_types = random.sample(available_types, k=9)
+
+    counters = Counter()
+    table_objects = []
+
+    for product_type in selected_types:
+        counters[product_type] += 1
+        table_objects.append(f"{product_type}_{counters[product_type]}")
+
+    random.shuffle(table_objects)
+
+    return table_objects

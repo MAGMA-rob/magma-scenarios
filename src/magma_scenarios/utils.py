@@ -10,7 +10,7 @@ from mani_skill.agents.base_agent import BaseAgent
 from mani_skill.utils.common import to_numpy
 from transforms3d.euler import euler2quat
 
-from magma_core.base.data_structures import Trajectory, Point
+from magma_core.simulation.data_structures import Trajectory, Point
 
 APPROACHING = np.array([0, 0, -1])
 CLOSING = [0, -1, 0]
@@ -23,15 +23,37 @@ def compute_grasp_drop_trajectory(
         approach_seuil : float = 0,
         drop_seuil : float = 0,
         grasp_approach_pose: Optional[sapien.Pose]=None,
+        transfer_pose: Optional[sapien.Pose]=None,
         drop_approach_pose: Optional[sapien.Pose]=None,
         final_pose : Optional[sapien.Pose]=None
     ) -> Trajectory:
-        """Compute a trajectory to take an object at position obj_pose and drop it to drop_pose"""
+        """
+        Compute a pick-and-place trajectory from an object pose to a drop pose.
+
+        The generated sequence is:
+        OPEN -> grasp_approach_pose -> grasp_pose -> CLOSE -> grasp_approach_pose
+        -> transfer_pose, when provided -> drop_approach_pose -> drop_pose
+        -> OPEN -> drop_approach_pose -> final_pose, when provided.
+
+        obj_pose and drop_pose can be 7D poses [x, y, z, qw, qx, qy, qz].
+        drop_pose may also be a sapien.Pose. When drop_pose is not a sapien.Pose,
+        drop_seuil is added to its z coordinate before building the actual drop
+        pose.
+
+        approach_seuil is used to build default approach poses. By default,
+        grasp_approach_pose is above the object and drop_approach_pose is above
+        the drop pose. transfer_pose is an optional carried-object waypoint used
+        between the grasp lift and the drop approach, for example to force a
+        higher path above a table or divider.
+
+        final_pose is only a retreat pose after the object has been released. It
+        does not affect the path taken while carrying the object.
+        """
         
         if not grasp_approach_pose:
             _obj_pose = to_numpy(obj_pose)
             grasp_approach_pose = sapien.Pose(
-                p=_obj_pose[:3] + [0,0,_obj_pose[2]+SEUIL+approach_seuil],
+                p=_obj_pose[:3] + [0,0,SEUIL+approach_seuil],
                 q = [0,1,0,0]
             )
             
@@ -40,12 +62,15 @@ def compute_grasp_drop_trajectory(
         if not isinstance(drop_pose, sapien.Pose):
             _drop_pose = to_numpy(drop_pose)
             drop_pose = sapien.Pose(
-                p= _drop_pose[:3]+[0,0,_drop_pose[2]+drop_seuil],
+                p= _drop_pose[:3]+[0,0,drop_seuil],
                 q = _drop_pose[3:]
             )
 
         if not drop_approach_pose:
             drop_approach_pose = sapien.Pose(p=[drop_pose.p[0], drop_pose.p[1], drop_pose.p[2]+approach_seuil], q = drop_pose.q)
+
+        if transfer_pose:
+            poses.append(transfer_pose)
 
         poses.extend([drop_approach_pose, drop_pose, "OPEN", drop_approach_pose])
 
@@ -72,6 +97,41 @@ def compute_grasp_trajectory(agent : BaseAgent, obj_pose: Union[np.ndarray, torc
             _obj_pose[:3])
 
         return ["OPEN", move_pos, grasp_pos, "CLOSE", move_pos]
+
+def compute_swipe_trajectory(agent: BaseAgent, center_table: list,thresh: float = 0.5,z_offset: float = 0.05, final_pose : Optional[sapien.Pose] = None) -> Trajectory:
+
+    center = to_numpy(center_table)
+    cx, cy, cz = center[:3]
+    key_points = [
+        # top-left
+        [cx + thresh, cy + thresh, cz + z_offset],
+
+        # top-right * 2/3
+        [cx + thresh*2/3, cy - thresh, cz + z_offset],
+
+        # left * 1/3                                                           
+        [cx + thresh/3 , cy + thresh, cz + z_offset],
+
+        # bottom-right
+        [cx - thresh, cy - thresh, cz + z_offset],
+
+        [cx - thresh, cy + thresh, cz + z_offset]
+    ]
+    if final_pose is None:
+        final_pose = sapien.Pose(
+            p=[-0.1,0,0.4],
+            q = [0,1,0,0]
+            )
+    elif not isinstance(final_pose, sapien.Pose):
+        final_pose = to_numpy(final_pose)
+        final_pose = sapien.Pose(
+            p = final_pose[:3],
+            q = final_pose[3:]
+        )
+    poses = [sapien.Pose(p=p, q=[0,1,0,0]) for p in key_points]
+    poses.append(final_pose)
+
+    return poses
 
 
 def compute_drop_trajectory(agent : BaseAgent, drop_pose: Union[np.ndarray, torch.Tensor, sapien.Pose], approach_pose : Union[np.ndarray, torch.Tensor, sapien.Pose, None]=None, approach_seuil : float = 0.0, drop_seuil : float = 0,final_pose : Optional[sapien.Pose]=None) -> Trajectory:

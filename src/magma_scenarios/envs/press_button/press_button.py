@@ -23,7 +23,7 @@ from mani_skill.utils.structs.types import GPUMemoryConfig, SimConfig
 from mani_skill.utils.building.actors.ycb import get_ycb_builder
 
 from transforms3d.euler import euler2quat
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 
 @register_env("PressButtonBasic-v1", max_episode_steps=200)
 class PressButtonsEnv(DefaultEnv):

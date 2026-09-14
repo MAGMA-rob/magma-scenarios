@@ -2,9 +2,9 @@
 # Copyright (c) 2026, Loan Bernat
 
 tools:
-  take_object_per_id:
+  take:
     name:
-      - take_object_per_id
+      - take
       - pick_object_by_name
       - grab_item_by_id
 
@@ -28,10 +28,32 @@ tools:
           - Label associated with the object to retrieve.
           - The target object's name used for selection.
           - The ID used to locate the object to be taken.
+      obj_color:
+        name:
+          - obj_color
+          - cube_color
+          - color
+          - requested_color
+        description:
+          - The color of the cube to take.
+          - Color identifying the cube that must be picked.
+          - Requested cube color for the grasp action.
+          - Color of the target cube.
+      source:
+        name:
+          - source
+          - location
+          - source_location
+          - pickup_area
+        description:
+          - The location containing the cube.
+          - Table or tray from which the cube must be taken.
+          - Source location containing the requested cube.
+          - Area where the robot should look for the cube.
 
-  put_to_box:
+  put:
     name:
-      - put_object_to_box
+      - put
       - place_to_box
       - drop_in_colored_box
       - send_to_box
@@ -44,20 +66,20 @@ tools:
       - Allocate the item into the matching color compartment.
 
     parameters:
-      color:
+      target:
         name:
-          - color
-          - box_color
-          - target_color
-          - container_color
-          - destination_color
+          - target
+          - tray_name
+          - target_tray
+          - destination
+          - destination_tray
 
         description:
-          - The color of the target box.
-          - The color used to determine which box receives the object.
-          - The destination color where the object should be placed.
-          - Color identifier of the container for object delivery.
-          - The colored box corresponding to the object's destination.
+          - The name of the target tray.
+          - The tray that should receive the held cube.
+          - The destination tray where the cube must be placed.
+          - Name of the container selected for the held object.
+          - The colored tray corresponding to the cube's destination.
 
   get_object_state:
     name:
@@ -73,4 +95,3 @@ tools:
       - Provide the current state of every detected object.
 
     parameters: {}
-

@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  scan_scene:
+    name: [scan_scene, inspect_workspace, list_visible_objects]
+    description: [Return visible objects, their locations, and dirty objects., Inspect the workspace and report object locations and dirtiness., List visible items, where they are, and which ones are dirty.]
+  take:
+    name: [take, pick_object, collect_item]
+    description: [Pick up an object with the selected robot., Use the active robot to take a specified object., Collect a named item with the selected robot.]
+    parameters:
+      name:
+        name: [name, object_name, item]
+        description: [Name of the object to pick up., Identifier of the item to take., Object that the selected robot must collect.]
+  put:
+    name: [put, place_object, deposit_item]
+    description: [Place the held object in a target location., Put the carried object at the requested destination., Deposit the held item in a specified location.]
+    parameters:
+      target:
+        name: [target, destination, location]
+        description: [Location where the object must be placed., Destination for the held object., Target location that should receive the item.]
+  clean:
+    name: [clean, wash_dishware, clean_sink_item]
+    description: [Clean dirty dishware located in the sink., Wash a specified dirty dishware item in the sink., Clean the named sink item using the dish robot.]
+    parameters:
+      name:
+        name: [name, object_name, dishware]
+        description: [Name of the dirty dishware to clean., Identifier of the sink item to wash., Dishware object that must be cleaned.]
+  wipe:
+    name: [wipe, clean_table, wipe_surface]
+    description: [Wipe the empty table with the sponge., Clean the table surface using the sponge., Use the sponge to wipe the table once it is empty.]
+
+semantic_attributes:
+  food_types:
+    variations:
+      - [mango, orange]
+      - [lemon, apricot]
+      - [peach, avocado]
+    forms: ["{value}", "{value}s", "{value}_1", "{value}_2"]
+  dishware_types:
+    variations:
+      - [bowl, goblet, mug]
+      - [saucer, tumbler, beaker]
+      - [platter, jar, stein]
+    forms: ["{value}", "{value}s", "{value}_1", "{value}_2"]

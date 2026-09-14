@@ -1,61 +1,33 @@
 from typing import Dict
-from magma_core.base.data_structures.tools import ToolErrorSupport
-from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolExecution, ToolResult, Observation, Log
-from magma_core.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
-from magma_scenarios.envs.six_cubes_two_boxes_on_table import reduced_env
+from magma_core.simulation.data_structures.tools import ToolErrorSupport
+from magma_core.simulation.tools import BaseToolsAPI, register_tool
+from magma_core.simulation.data_structures import ToolExecution, ToolResult, Observation, Log
+from magma_core.simulation.utils.gripper_utils import find_object_in_gripper, is_object_in_gripper
 import sapien
 from .packaging_errors import MaskFoodError, GraspFoodFailureError
+from magma_scenarios.templates.errors import OneShotToolFailureError
 from magma_scenarios.utils import compute_drop_trajectory, compute_grasp_trajectory
-from magma_core.utils.env_utils import is_object_inside_target
-import numpy as np
+from magma_core.simulation.utils.env_utils import is_object_inside_target
 import torch
 from .attributes import fruits, drinks, main_course
+from magma_scenarios.templates.tools import PlacementGrid
 
 class PackagingTool(BaseToolsAPI):
 
-    r = 0.11
     table_gride_centre = [-0.1,-0.2,0]
-    tray_gride_center = [-0.2, 0.25,0]
-
-    def _world_to_grid(self,center_target_position : list , object_world_position : list)-> tuple:
-        i = np.round((object_world_position[0]-center_target_position[0])/self.r)
-        j = np.round((object_world_position[1]-center_target_position[1])/self.r)        
-        return (i,j)
-
-    def _grid_to_world(self,grid : tuple , center_target_position : list, r : float):
-        grid_position = center_target_position.copy()
-        grid_position[0] = grid_position[0] + r * grid[0]
-        grid_position[1] = grid_position[1] + r * grid[1]
-
-        return grid_position
-
-
-    def _get_free_cell(self,obs : Observation , env_id : int ,target_center : list):
-        extra = obs.maniskill_obs["extra"]
-        gride = [(1,1),(0,1),(-1,1),
-                 (1,0),(0,0),(-1,0),
-                (1,-1),(0,-1),(-1,-1)]
-        occupide = []
-        for name, pos in extra.items() :
-            if name in ["agent_tcp", "tray"] :
-                continue
-            object_position = pos[env_id].cpu().numpy()
-            if np.allclose(target_center ,self.table_gride_centre) and object_position[1] > 0 :
-                continue
-            if np.allclose(target_center ,self.tray_gride_center) and object_position[1] < 0 :
-                continue
-            grid_object_position = self._world_to_grid(target_center,object_position)
-            occupide.append(grid_object_position)
-        for grid_position in gride :
-            if grid_position not in occupide :
-                return grid_position
-        return None
+    placement_grid = PlacementGrid(
+        name="packaging_support",
+        rows=3,
+        columns=3,
+        cell_spacing=0.11,
+        selection_order=[8, 7, 6, 5, 4, 3, 2, 1, 0],
+    )
 
 
     @register_tool(
-        description ="Returns visible objects and their locations",
+        description="List the objects on the table and on the tray.",
         params_spec={},
+        is_detection=True,
         errors = [
             ToolErrorSupport(MaskFoodError,pre = False, post= True)
         ]
@@ -92,16 +64,23 @@ class PackagingTool(BaseToolsAPI):
 
 
     @register_tool(
-        description ="Pick an object from the table",
-        params_spec={"name" : {"description" : "the name of object to take", "type": str}},
+        description="Take an object from the table.",
+        params_spec={"name" : {"description" : "Name of the object to take.", "type": str}},
         errors = [
-            ToolErrorSupport(GraspFoodFailureError,pre = True, post= False)
+            ToolErrorSupport(GraspFoodFailureError, pre=True, post=False),
+            ToolErrorSupport(OneShotToolFailureError, pre=True, post=False),
         ]
     )
     def take(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
         """go fetch an object by his name """
 
         name = params["name"]
+        extra = obs.maniskill_obs["extra"]
+        reduced_env = {obj : pos[env_id][:3] for obj, pos in extra.items() if obj in [*fruits, *drinks, *main_course]}
+
+        agent_tcp_position = extra["agent_tcp"][env_id][:3]
+        if find_object_in_gripper(agent_tcp_position, reduced_env) :
+            return ToolExecution(poses=[],verifier=None,reason="The gripper is not empty.")
 
         if not name in obs.maniskill_obs["extra"]:
             return ToolExecution(
@@ -122,18 +101,23 @@ class PackagingTool(BaseToolsAPI):
                 return ToolResult(False, f"the object {name} does not exist anymore ")
             if is_object_in_gripper(new_extra["agent_tcp"][env_id],
                                     object[env_id],
-                                    threshold=0.005) :
+                                    threshold=0.02) :
                 return ToolResult(True, f"you have {name} in your gripper")
             else :
                 return ToolResult(
                     False, f"you failed to take the object {name}. you can retry"
                 )
-        return ToolExecution(poses, verifier=verifier, context = {"target_name": name})
+        return ToolExecution(
+            poses,
+            verifier=verifier,
+            context={"target_name": name},
+            allowed_moving_actors=[name],
+        )
 
 
     @register_tool(
-        description ="Place the held object either on the table or on the tray",
-        params_spec={"target" : {"description" : "the name of the target where put the object", "type" : str}}
+        description="Put the held object on the table or on the tray.",
+        params_spec={"target" : {"description" : "Destination: table or tray.", "type" : str}}
     )
     def put(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
         extra = obs.maniskill_obs["extra"]
@@ -146,22 +130,41 @@ class PackagingTool(BaseToolsAPI):
                 poses = [], verifier= None, reason = "The gripper is empty. Aborting."
             )
 
-        if params["target"] == "table" :
-            target_center = self.table_gride_centre
-        elif params["target"] == "tray" :
-            target_center = self.tray_gride_center
+        target = params["target"]
+        if target == "table":
+            reference = extra[obj_in_gripper][env_id]
+            support_pose = torch.tensor(
+                [*self.table_gride_centre, 1.0, 0.0, 0.0, 0.0],
+                device=reference.device,
+                dtype=reference.dtype,
+            )
+        elif target == "tray":
+            support_pose = extra["tray"][env_id]
         else:
             return ToolExecution(
-                poses = [], verifier= None, reason = f"Unknow {params['target']} used as target. Use only tray or table."
+                poses = [], verifier= None, reason = f"Unknow {target} used as target. Use only tray or table."
             )
 
-        target_cell = self._get_free_cell(obs,env_id,target_center)
+        food_names = {*fruits, *drinks, *main_course}
+        food_poses = {
+            name: pose[env_id]
+            for name, pose in extra.items()
+            if name in food_names
+        }
+        target_cell = self.placement_grid.allocate(
+            center_pose=support_pose,
+            object_poses=food_poses,
+            batch_context=obs.tool_batch_context,
+            owner=obj_in_gripper,
+            reservation_namespace=f"packaging:{target}",
+            excluded_objects=[obj_in_gripper],
+        )
         if target_cell is None :
-            r = f"there is no place in the {params['target']}"
+            r = f"there is no place in the {target}"
             return ToolExecution(
                 poses = [], verifier= None, reason = r
             )
-        target_pose = self._grid_to_world(target_cell, target_center, self.r)
+        target_pose = target_cell.world_position.cpu().numpy()
 
         poses = [sapien.Pose(agent_tcp_position[:3].cpu().numpy() + (0, 0, 0.1), (0, 1, 0, 0))]
         poses.extend(compute_drop_trajectory(
@@ -178,14 +181,18 @@ class PackagingTool(BaseToolsAPI):
                 return ToolResult(False, reason = "the food is still in the gripper")
             tensor_target_pose = torch.tensor(target_pose, device=obj_pose.device)
             if not is_object_inside_target(obj_pose, tensor_target_pose) :
-                return ToolResult(False, reason=f"The {obj_in_gripper} is not in {params['target']} and not in the gripper")
-            return ToolResult(True,reason=f"Successfully put {obj_in_gripper} in the {params['target']}")
+                return ToolResult(False, reason=f"The {obj_in_gripper} is not in {target} and not in the gripper")
+            return ToolResult(True,reason=f"Successfully put {obj_in_gripper} in the {target}")
 
-        return ToolExecution(poses, verifier)
+        return ToolExecution(
+            poses,
+            verifier,
+            allowed_moving_actors=[obj_in_gripper],
+        )
             
 
     @register_tool(
-        description ="Used to validate whether constraints are satisfied",
+        description="Validate the tray and give it to the user.",
         params_spec={}
     )
     def valid_plate(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :

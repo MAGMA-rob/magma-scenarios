@@ -1,17 +1,17 @@
-# SPDX-License-Identifier: BSD-2-Clause
-# Copyright (c) 2026, Loan Bernat
+"""Compatibility declarations derived from the scenario manifest."""
 
-SCENARIO_NAME = "make_coffee"
+from .manifest import SCENARIO
 
+SCENARIO_NAME = SCENARIO.id
 TASK_DEFINITIONS = {
-    "SimpleDefinition": "coffee_definition:SimpleDefinition",
-    "TeamDefinition": "coffee_definition:TeamDefinition",
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.definitions.items()
 }
-
 TASK_PRESETS = {
-    "ConstrainedPreset": "coffee_preset:ConstrainedPreset",
-    "TestComposite": "coffee_preset:TestComposite",
-    "TeamCoffePreset": "coffee_preset:TeamCoffePreset",
-
-    "SimpBench": "benchmark:CoffeeBenchmark"
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.presets.items()
+}
+SKILLS = {
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.skills.items()
 }

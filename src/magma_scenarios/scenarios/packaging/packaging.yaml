@@ -63,13 +63,10 @@ tools:
     name:
       - valid_plate
       - validate_tray
-      - check_plate
-      - inspect_tray_contents
+      - send_tray
     description:
-      - "Used to validate whether constraints are satisfied."
-      - "Check whether the tray contents satisfy the packaging constraints."
-      - "Validate the current plate or tray composition."
-      - "Inspect the tray and report its categorized contents."
+      - "Used to validate the tray and send it to the user."
+      - "Send the tray to the user."
 
 attributes:
   main_course:

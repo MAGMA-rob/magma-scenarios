@@ -1,14 +1,35 @@
-from typing import Dict, Union
-import sapien
+from pathlib import Path
+from typing import Dict
+
 import numpy as np
+import sapien
 import torch
-from mani_skill.agents.robots.fetch.fetch import Fetch
-from mani_skill.agents.robots.panda.panda import Panda
-from magma_core.base.envs import DefaultEnv
-from mani_skill.utils.scene_builder.table import TableSceneBuilder
+
+from magma_core.simulation.envs import DefaultEnv
+from magma_scenarios.envs.visual_assets import OBJECT_VISUALS
+from magma_scenarios.scenarios.packaging.attributes import (
+    DRINKS,
+    FRUITS,
+    MAIN_COURSE,
+)
 from mani_skill.utils.registration import register_env
-from mani_skill.utils.building import actors
+from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose
+
+
+VISUAL_ASSETS_DIR = Path(__file__).resolve().parents[2] / "assets" / "visuel"
+
+FOOD_VISUALS = {
+    "banana": "banana",
+    "ananas": "orange",
+    "apple": "apple",
+    "milk": "cup",
+    "water": "glass",
+    "juice": "drink",
+    "chicken": "snack",
+    "fish": "snack",
+    "pasta": "plate",
+}
 
 
 
@@ -37,95 +58,51 @@ class PackagingEnv(DefaultEnv):
         )
         self.table_scene.build()
 
-        self.tray = actors.build_box(
-                scene=self.scene,
-                half_sizes=np.array([0.16, 0.16, self.z_half_tray_size], dtype=np.float32),
-                color=np.array([211, 211, 211, 255]) / 255,
-                name="tray",
-                body_type="static",
-                initial_pose=sapien.Pose(p=[self.tray_centre[0], self.tray_centre[1], self.z_half_tray_size]),
-            )
+        self.tray = self.build_box_object(
+            name="tray",
+            half_size=(0.16, 0.16, self.z_half_tray_size),
+            color=np.array([211, 211, 211, 255]) / 255,
+            body_type="static",
+            initial_xy=tuple(self.tray_centre),
+            visual=OBJECT_VISUALS["tray"],
+            visual_assets_dir=VISUAL_ASSETS_DIR,
+        )
         
         self.fruits = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.fruits_size,
-                color=np.array([255, 229, 188, 255]) / 255,
-                name="banana",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.04, -0.1, self.fruits_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.fruits_size,
-                color=np.array([255, 229, 188, 255]) / 255,
-                name="ananas",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.02, -0.1, self.fruits_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.fruits_size,
-                color=np.array([255, 229, 188, 255]) / 255,
-                name="apple",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.08, -0.1, self.fruits_size]),
+            self._build_food_object(
+                name,
+                self.fruits_size,
+                np.array([255, 229, 188, 255]) / 255,
             )
+            for name in FRUITS
         ]
 
         self.drinks = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.drinks_size,
-                color=np.array([185, 206, 235, 255]) / 255,
-                name="milk",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.04, -0.16, self.drinks_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.drinks_size,
-                color=np.array([185, 206, 235, 255]) / 255,
-                name="water",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.02, -0.16, self.drinks_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.drinks_size,
-                color=np.array([185, 206, 235, 255]) / 255,
-                name="juice",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.08, -0.16, self.drinks_size]),
+            self._build_food_object(
+                name,
+                self.drinks_size,
+                np.array([185, 206, 235, 255]) / 255,
             )
+            for name in DRINKS
         ]
 
         self.main_course = [
-            actors.build_cube(
-                self.scene,
-                half_size=self.main_course_size,
-                color=np.array([65, 180, 75, 255]) / 255,
-                name="chicken",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[-0.04, -0.22, self.main_course_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.main_course_size,
-                color=np.array([65, 180, 75, 255]) / 255,
-                name="fish",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.02, -0.22, self.main_course_size]),
-            ),
-            actors.build_cube(
-                self.scene,
-                half_size=self.main_course_size,
-                color=np.array([65, 180, 75, 255]) / 255,
-                name="pasta",
-                body_type="dynamic",
-                initial_pose=sapien.Pose(p=[0.08, -0.22, self.main_course_size]),
+            self._build_food_object(
+                name,
+                self.main_course_size,
+                np.array([65, 180, 75, 255]) / 255,
             )
+            for name in MAIN_COURSE
         ]
+
+    def _build_food_object(self, name: str, half_size: float, color: np.ndarray):
+        return self.build_box_object(
+            name=name,
+            half_size=(half_size, half_size, half_size),
+            color=color,
+            visual=OBJECT_VISUALS[FOOD_VISUALS[name]],
+            visual_assets_dir=VISUAL_ASSETS_DIR,
+        )
 
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         b = len(env_idx)

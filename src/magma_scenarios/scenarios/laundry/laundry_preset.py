@@ -5,18 +5,35 @@ from typing import List
 import random
 
 from .load_tool import LaunchTool
-from .laundry_stages import WashStage, LoadClotheStage, ContraintWashStage, RefuseLaundryStage
+from .laundry_stages import WashStage, LoadClotheStage
 from .attributes import all_clothes, all_detergents
 
-from magma_core.base.tasks import BaseTask
-from magma_core.base.tasks_style import TaskStyle
-from magma_core.base.data_structures import Instruction, UserInstruction
+from magma_core.simulation.tasks import BaseTask
+from magma_core.simulation.stage import ConstraintBaseStage
+from magma_core.simulation.data_structures import (
+    Instruction, UserInstruction, SituationInit
+)
 
+RANDOMIZED_CONFIG_PATH = str(Path(__file__).resolve().parent / "laundry.yaml")
 
 class BaseLaundry(BaseTask):
 
-    env_id = "Laundry-v1"
+    maniskill_env_id = "Laundry-v1"
     Tools_cls = LaunchTool
+
+    situation_init = SituationInit(
+        attributes={
+            "clothes" : all_clothes,
+            "detergents": all_detergents
+        },
+        memory={"memory_list":[
+            "To wash clothes, I need to put them inside the wash-machine, add detergents and then use 'wash'.",
+            "Detergent must always be put last in the wash-machine",
+            "Different detergents must not mixed in the same wash."
+        ]}
+    )
+
+    randomized_config_path = RANDOMIZED_CONFIG_PATH
 
     def __init__(self, number_of_clothes : int = 2, total : int = 6) -> None :
         """
@@ -34,6 +51,7 @@ class BaseLaundry(BaseTask):
         self.instruction = self.verif_elem.build_instruction()
 
         self.cloth_to_detergent = {cloth : random.choice(self.all_detergents) for cloth in self.clothes}
+
 
 class Verification:
 
@@ -55,26 +73,21 @@ class LaundryFromDetergentPreset(BaseLaundry):
     output = clothes à laver
     """
     name = "Laundry from detergent"
-    styles = [  TaskStyle.LONG_STAGE,
-                TaskStyle.CONSTRAINED]
 
     def __init__(self,number_of_clothes : int = 3) :
         super().__init__(number_of_clothes)
 
-        self.target_detergent = random.choice(self.all_detergents)
+        assigned_detergents = sorted(set(self.cloth_to_detergent.values()))
+        self.target_detergent = random.choice(assigned_detergents)
         self.target_clothes = [cloth for cloth, detergent in self.cloth_to_detergent.items() if detergent == self.target_detergent]
-        
-        desc = ",".join(f"{cloth} uses {detergent} detergent" for cloth, detergent in self.cloth_to_detergent.items())
+
+        desc = ", ".join(f"{cloth} uses {detergent}" for cloth, detergent in self.cloth_to_detergent.items())
         instruction = UserInstruction(f"Wash all clothes that can be washed with {self.target_detergent}")
-        
-        self.stages = [ContraintWashStage(desc)]
+        self.stages = [ConstraintBaseStage(desc)]
         self.stages.append(LoadClotheStage(1,self.target_clothes,instruction))
-        for i in range(2, number_of_clothes+1):
+        for i in range(2, len(self.target_clothes)+1):
             self.stages.append(LoadClotheStage(i,self.target_clothes))
         self.stages.append(WashStage(self.target_detergent, self.target_clothes))
-
-        self.approximal_difficulty = "Medium" if number_of_clothes < 3 else "Hard"
-
 
 class LaundryCompatibleClothesPreset(BaseLaundry):
     """
@@ -82,21 +95,20 @@ class LaundryCompatibleClothesPreset(BaseLaundry):
     condition = même detergent
     """
     name = "Laundry compatible clothes"
-    styles = [ TaskStyle.LONG_STAGE,
-               TaskStyle.CONSTRAINED]
 
     def __init__(self,number_of_clothes : int = 3) :
         super().__init__(number_of_clothes)
 
-        self.target_detergent = random.choice(self.all_detergents)
+        assigned_detergents = sorted(set(self.cloth_to_detergent.values()))
+        self.target_detergent = random.choice(assigned_detergents)
         self.target_clothes = [cloth for cloth, detergent in self.cloth_to_detergent.items() if detergent == self.target_detergent]
         
         desc = ",".join(f"{cloth} uses {detergent} detergent" for cloth, detergent in self.cloth_to_detergent.items())
         instruction = UserInstruction("Please wash the following clothes: " + ", ".join(f"{cloth}" for cloth in self.target_clothes ))
-        self.stages = [ContraintWashStage(desc)]
+        self.stages = [ConstraintBaseStage(desc)]
         
         self.stages.append(LoadClotheStage(1,self.target_clothes,instruction))
-        for i in range(2, number_of_clothes+1):
+        for i in range(2, len(self.target_clothes)+1):
             self.stages.append(LoadClotheStage(i,self.target_clothes))
         self.stages.append(WashStage(self.target_detergent, self.target_clothes))
 

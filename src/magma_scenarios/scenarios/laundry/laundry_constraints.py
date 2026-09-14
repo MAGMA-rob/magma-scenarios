@@ -1,6 +1,6 @@
 from typing import Dict
 
-from magma_core.base.state import TaskState
+from magma_core.simulation.state import TaskState
 
 from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 

@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  move_to:
+    name: [move_to, navigate_to, go_to_destination]
+    description:
+      - Move the selected robot to a destination.
+      - Navigate the active robot to the requested destination.
+      - Send the selected robot to a specified workstation.
+    parameters:
+      target:
+        name: [target, destination, station]
+        description: [Destination to reach., Name of the destination workstation., Target location for the selected robot.]
+  take_package:
+    name: [take_package, collect_package_tray, pick_output_package]
+    description: [Take an available package tray from the output table., Collect a free package tray at the output station., Pick up an available shipping tray from the output table.]
+  drop_package:
+    name: [drop_package, release_package_tray, return_package_to_output]
+    description: [Put the held package tray on the output table., Release the carried package tray at the output station., Return the held shipping tray to the output table.]
+  pick:
+    name: [pick, take_product, collect_item]
+    description: [Take a product., Pick up the requested product., Collect a specified product with the gripper.]
+    parameters:
+      name:
+        name: [name, product_name, item]
+        description: [Name of the product to take., Identifier of the product to pick up., Product that the robot must collect.]
+  put:
+    name: [put, place_product, deposit_item]
+    description: [Put the held product on a table, tray, trashcan, or package., Place the carried product on the requested support., Deposit the held item on a table, tray, trashcan, or package.]
+    parameters:
+      target:
+        name: [target, destination, placement]
+        description: [Target on which to put the product., Destination table, tray, trashcan, or package., Support where the held item must be placed.]
+  inspect:
+    name: [inspect, examine_product, check_held_item]
+    description: [Inspect the held product., Examine the product currently held by the robot., Check the carried item for defects.]
+  detection:
+    name: [detection, scan_products, list_nearby_items]
+    description: [List nearby products and their locations., Scan and report products near the selected robot., List visible nearby items with their locations.]
+  attach_shipping_label:
+    name: [attach_shipping_label, label_package, apply_delivery_label]
+    description: [Attach a shipping label to the package in front of the selected robot., Label the package at the current output station., Apply the requested delivery label to the package in front of the robot.]
+    parameters:
+      name:
+        name: [name, recipient, customer_name]
+        description: [Recipient name to write on the label., Name of the package recipient., Customer name for the shipping label.]
+      city:
+        name: [city, destination_city, delivery_city]
+        description: [Destination city to write on the label., City where the package must be shipped., Delivery city for the shipping label.]

@@ -1,199 +1,69 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import ToolErrorSupport, ToolExecution, ToolResult, Observation, Trajectory
-from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
-from magma_core.base.data_structures import Log
+from magma_core.simulation.tools import BaseToolsAPI, register_tool
+from magma_core.simulation.data_structures import (
+    Observation,
+    ToolErrorSupport,
+    ToolExecution,
+    ToolResult,
+)
+from magma_core.simulation.utils.env_utils import is_object_inside_target
+from magma_core.simulation.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
+from magma_core.simulation.data_structures import Log
 
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
+from magma_scenarios.templates.errors import OneShotToolFailureError
 
-from typing import Dict, List, Optional
-import sapien, random
+from .att import AREAS
 
-# "[{\"name\": \"move_object_to_location\", \"description\": \"Depose the object currently inside the gripper to the specified target location.\", \"parameters\": {\"drop_zone\": {\"description\": \"the name of the target location.\", \"type\": \"str\"}}}, 
-# {\"name\": \"grab_specific_object\", \"description\": \"Grasp the object corresponding to item_name.\", \"parameters\": {\"item_name\": {\"description\": \"the name of the object to grasp.\", \"type\": \"str\"}}}]", 
-# {\"name\": \"launch_cycle\", \"description\": \"Launch the default sorting cycle. It sort only objects provided as keys in object_areas_mapping parameter. The cycle continue until there is no more objects since 5 minutes.\", \"parameters\": {\"object_areas_mapping\": {\"description\": \"Keys represent the name of object to detect, associated value correspond to the target_location name.\", \"type\": \"Dict\"}}}
-# "long_memory": "Memory:\n- You must sort objects by grasping them and put them in their corresponding target store location.\n- I am still waiting to confirm a target location for clipboard\n- Default object target location : fork -> area1, clipboard -> area2, valve -> area3, paper_sheet -> area4, laptop -> area5, .", 
-# "short_memory": "[{\"user\": \"Choose a clipboard and put it where it belongs.\", \"model\": \"I need to confirm the target location for the clipboard first. Could you please specify where the clipboard should be placed?\"}]",
-#  "answers": "{\"think\": \"The user asked to use the default target location for the clipboard. The default location for clipboard is area2. I need to grasp the clipboard first. Then, I can put it in area2. I do not need to wait for a confirmation for the target location anymore. 
-# The action is to take the clipboard using grab_specific_object function. I need to remember to depose it in area2 after the take finished.\", \"say\": \"Okay, I'll use the default target location for the clipboard.\", 
-# \"action\": {\"default_system\": {\"name\": \"grab_specific_object\", \"arguments\": {\"item_name\": \"clipboard\"}}}}", "attributes": "{\"objects_name\": [\"fork\", \"clipboard\", \"valve\", \"paper_sheet\", \"laptop\"], \"targets_name\": [\"area1\", \"area2\", \"area3\", \"area4\", \"area5\"], \"known_robots\": [\"default_system\"]}"},
+from typing import Dict
+import torch
 
 class WarehouseSortingTool(BaseToolsAPI):
-    CYCLE_SORTED_DISTANCE_THRESHOLD = 0.1
-    CYCLE_GRASP_APPROACH_OFFSET_Z = 0.12
-    CYCLE_TRANSFER_Z = 0.42
-    CYCLE_DROP_OFFSET_Z = 0.28
-    CYCLE_DROP_APPROACH_OFFSET_Z = 0.46
-    CYCLE_STAGING_X = -0.15
-    CYCLE_STAGING_Y = 0.0
 
-    def _make_top_down_pose(self, p) -> sapien.Pose:
-        return sapien.Pose(p=p, q=[0, 1, 0, 0])
-
-    def _cycle_staging_pose(self) -> sapien.Pose:
-        return self._make_top_down_pose([
-            self.CYCLE_STAGING_X,
-            self.CYCLE_STAGING_Y,
-            self.CYCLE_TRANSFER_Z,
-        ])
-
-    def _is_cycle_object_sorted(
+    def _is_object_sorted(
             self,
+            obj_pose : torch.Tensor,
             obs_extra: Dict,
             env_id: int,
-            obj_name: str,
-            target_name: str,
         ) -> bool:
-        return is_object_inside_target(
-            obs_extra[obj_name][env_id],
-            obs_extra[target_name][env_id],
-            thresh=self.CYCLE_SORTED_DISTANCE_THRESHOLD,
-            keep_tensor=False,
-        )
-
-    def _extract_cycle_assignment(self, params: Dict) -> tuple[Optional[Dict[str, str]], str]:
-        assignment = params.get("assignment", None)
-        if not isinstance(assignment, dict) or len(assignment) == 0:
-            return None, "Assignment parameter is invalid. It must be a non-empty dictionary."
-        return assignment, ""
-
-    def _get_sorted_cycle_objects(
-            self,
-            obs_extra: Dict,
-            env_id: int,
-            obj_to_sort: List[str],
-            assignment: Dict[str, str],
-        ) -> List[str]:
-        return [
-            obj_name
-            for obj_name in obj_to_sort
-            if self._is_cycle_object_sorted(
-                obs_extra,
-                env_id,
-                obj_name,
-                assignment[obj_name],
-            )
-        ]
-
-    def _find_held_cycle_object(
-            self,
-            obs_extra: Dict,
-            env_id: int,
-            obj_to_sort: List[str],
-        ) -> Optional[str]:
-        reduced_obs = {
-            k: v[env_id][:3]
-            for k, v in obs_extra.items()
-            if k == "agent_tcp" or k in obj_to_sort
-        }
-        agent_tcp_pos = reduced_obs.pop("agent_tcp", None)
-        if agent_tcp_pos is None:
-            return None
-        return find_object_in_gripper(agent_tcp_pos, reduced_obs)
-
-    def _compute_cycle_drop_trajectory(
-            self,
-            obs_extra: Dict,
-            env_id: int,
-            target_name: str,
-        ) -> Trajectory:
-        target_pose = obs_extra[target_name][env_id].cpu().numpy()
-        drop_pose = self._make_top_down_pose([
-            target_pose[0],
-            target_pose[1],
-            target_pose[2] + self.CYCLE_DROP_OFFSET_Z,
-        ])
-        drop_approach_pose = self._make_top_down_pose([
-            target_pose[0],
-            target_pose[1],
-            target_pose[2] + self.CYCLE_DROP_APPROACH_OFFSET_Z,
-        ])
-        return compute_drop_trajectory(
-            self.get_agent(),
-            drop_pose=drop_pose,
-            approach_pose=drop_approach_pose,
-            final_pose=self._cycle_staging_pose(),
-        )
-
-    def _compute_cycle_grasp_drop_trajectory(
-            self,
-            obs_extra: Dict,
-            env_id: int,
-            obj_name: str,
-            target_name: str,
-        ) -> Trajectory:
-        obj_pose = obs_extra[obj_name][env_id].cpu().numpy()
-        target_pose = obs_extra[target_name][env_id].cpu().numpy()
-
-        grasp_approach_pose = self._make_top_down_pose([
-            obj_pose[0],
-            obj_pose[1],
-            obj_pose[2] + self.CYCLE_GRASP_APPROACH_OFFSET_Z,
-        ])
-        lift_pose = self._make_top_down_pose([
-            obj_pose[0],
-            obj_pose[1],
-            self.CYCLE_TRANSFER_Z,
-        ])
-        transfer_pose = self._make_top_down_pose([
-            (obj_pose[0] + target_pose[0]) / 2,
-            (obj_pose[1] + target_pose[1]) / 2,
-            self.CYCLE_TRANSFER_Z,
-        ])
-
-        poses = compute_grasp_trajectory(
-            self.get_agent(),
-            obj_pose,
-            move_pos=grasp_approach_pose,
-        )
-        poses.extend([lift_pose, transfer_pose])
-        poses.extend(self._compute_cycle_drop_trajectory(obs_extra, env_id, target_name))
-        return poses
-
-    def _compute_next_cycle_trajectory(
-            self,
-            obs_extra: Dict,
-            env_id: int,
-            obj_to_sort: List[str],
-            assignment: Dict[str, str],
-        ) -> Trajectory:
-        held_obj = self._find_held_cycle_object(obs_extra, env_id, obj_to_sort)
-        if held_obj in obj_to_sort:
-            return self._compute_cycle_drop_trajectory(
-                obs_extra,
-                env_id,
-                assignment[held_obj],
-            )
-        random.shuffle(obj_to_sort)
-        for obj_name in obj_to_sort:
-            if self._is_cycle_object_sorted(
-                obs_extra,
-                env_id,
-                obj_name,
-                assignment[obj_name],
+        for target in AREAS:
+            if is_object_inside_target(
+                obj_pose[env_id],
+                obs_extra[target][env_id],
+                keep_tensor=False
             ):
-                continue
-
-            return self._compute_cycle_grasp_drop_trajectory(
-                obs_extra,
-                env_id,
-                obj_name,
-                assignment[obj_name],
-            )
-        return []
+                return True
+        return False
 
     def take_obj(self, obs : Observation, env_id, params : Dict) -> ToolExecution:
         poses = []
         name_obj = None
+        selected_object = None
         r = ""
 
         name_obj = params.get("obj", None)
 
         for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
             if name_obj in obj_name:
+                if is_object_in_gripper(
+                    obs.maniskill_obs["extra"]["agent_tcp"][env_id],
+                    obj_pos[env_id],
+                    threshold=0.05,
+                ):
+                    return ToolExecution(
+                        poses=[],
+                        verifier=None,
+                        reason=f"The object {name_obj} is already in the gripper.",
+                    )
+
+                if self._is_object_sorted(obj_pos, obs.maniskill_obs["extra"], env_id):
+                    return ToolExecution(poses=[],
+                                         verifier=None,
+                                         reason=f"The object {name_obj} is already sorted. It can not be taken again.")
+
+                selected_object = obj_name
                 poses = compute_grasp_trajectory(self.get_agent(),obj_pos[env_id].cpu().numpy())
                 break
         if not poses:
@@ -204,16 +74,26 @@ class WarehouseSortingTool(BaseToolsAPI):
             # e.g. check if gripper is holding the right object
             reason=f"No object with {name_obj} name was found. You must pass the name of the object to take."
             ok = False
-            for obj_name, obj_pos in new_obs["extra"].items():
-                if name_obj in obj_name:
-                    ok = is_object_in_gripper(new_obs["extra"]["agent_tcp"][env_id], obj_pos[env_id])   
-                    if ok:
-                        reason = f"You have a {name_obj} object in your gripper"
-                        break
-                    else:
-                        reason = f"Failed to grasp the {name_obj} object. You can retry."
+            if selected_object is not None:
+                obj_pos = new_obs["extra"][selected_object]
+                ok = is_object_in_gripper(
+                    new_obs["extra"]["agent_tcp"][env_id],
+                    obj_pos[env_id],
+                    threshold=0.05,
+                )
+                if ok:
+                    reason = f"You have a {name_obj} object in your gripper"
+                else:
+                    reason = f"Failed to grasp the {name_obj} object. You can retry."
             return ToolResult(ok, reason)
-        return ToolExecution(poses=poses, verifier=verifier, reason=r)
+        return ToolExecution(
+            poses=poses,
+            verifier=verifier,
+            reason=r,
+            allowed_moving_actors=(
+                [selected_object] if selected_object is not None else None
+            ),
+        )
     
 
     def depose(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
@@ -247,7 +127,14 @@ class WarehouseSortingTool(BaseToolsAPI):
                 poses = compute_drop_trajectory(self.get_agent(), drop_pose=obs.maniskill_obs["extra"][area_name][env_id].cpu().numpy(),
                                                 drop_seuil=0.3, approach_seuil=0.2)
 
-        return ToolExecution(poses=poses, verifier=verifier, reason=r)
+        return ToolExecution(
+            poses=poses,
+            verifier=verifier,
+            reason=r,
+            allowed_moving_actors=(
+                [obj_in_gripper] if obj_in_gripper is not None else None
+            ),
+        )
     
     def add_new_location(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
         poses = []
@@ -281,217 +168,54 @@ class WarehouseSortingTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason=r)
 
 
-
-class WithManufacturingOrder(WarehouseSortingTool):
-
-    @register_tool(
-            description="Launch a default cycle to sort all objects to their assigned area.",
-            params_spec={
-                "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
-                "manu_order": {"description": "The Manufacturing Order associated with this cycle", "type": str}
-            },
-    )
-    def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
-        obj_to_sort, manu_order, assignment = [], "", {}
-        task_attributes = obs.task_attributes
-
-        def verifier(new_obs: Dict) -> ToolResult:
-            sorted_objects = self._get_sorted_cycle_objects(
-                new_obs["extra"],
-                env_id,
-                obj_to_sort,
-                assignment,
-            )
-
-            for obj_name in obj_to_sort:
-                if obj_name not in sorted_objects:
-                    return ToolResult(
-                        False,
-                        f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
-                        context={"no_reset": sorted_objects},
-                    )
-
-            s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
-            return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=manu_order))
-
-        assignment, assignment_error = self._extract_cycle_assignment(params)
-        if assignment_error:
-            return ToolExecution([], verifier=None, reason=assignment_error)
-        
-        invalid_objects = []
-        for key in assignment.keys():
-            if (key not in task_attributes["objects"]):
-                invalid_objects.append(key)
-
-        if len(invalid_objects) > 0:
-            return ToolExecution([],verifier=verifier,reason=f"There are no manipulable {str.join(', ', invalid_objects)} object(s).")
-
-        invalid_areas = []
-        for value in assignment.values():
-            if (value not in task_attributes["target_areas"]):
-                invalid_areas.append(value)
-
-        if len(invalid_areas) == 1:
-            return ToolExecution([],verifier=verifier,reason=f"This area {invalid_areas[0]} is invalid. Please use only known target.")
-        elif (len(invalid_areas) > 1):
-            return ToolExecution([],verifier=verifier,reason=f"These areas {str.join(', ', invalid_areas)} are invalid. Please use only known target.")
-        
-        manu_order = params.get('manu_order', None)
-        if not isinstance(manu_order, str) or len(manu_order) == 0:
-            return ToolExecution([], verifier=None, reason="manu_order parameter is invalid. It must be a non-empty string.")
-
-        for obj_name, target in assignment.items():
-            if not self._is_cycle_object_sorted(obs.maniskill_obs["extra"], env_id, obj_name, target):
-                obj_to_sort.append(obj_name)
-
-        if not obj_to_sort:
-            return ToolExecution([],verifier=verifier,reason=f"All objects has already been sorted.")
-
-        cpt, cpt_max = 0, len(obj_to_sort) * 2 + 2
-
-        def redo(new_obs: Dict) -> Trajectory:
-            nonlocal cpt
-            cpt +=1
-            if cpt > cpt_max:
-                return []
-            return self._compute_next_cycle_trajectory(
-                new_obs["extra"],
-                env_id,
-                obj_to_sort,
-                assignment,
-            )
-        p = redo(obs.maniskill_obs)
-        return ToolExecution(poses=p,verifier=verifier,redo=redo)
-    
-    @register_tool(
-            description="Add a new location to the known area the robot can use to store objects",
-            params_spec={
-                "location_name": {"description": "The name of the new location. Must not already exist.", "type": str}
-            }
-    )
-    def add_new_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
-        return super().add_new_location(obs, env_id, params)
-
-    @register_tool(
-            description="Remove an existing location from the known area.",
-            params_spec={
-                "location_name": {"description": "The name of the location to remove. Must exist.", "type": str}
-            }
-    )
-    def remove_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
-        return super().remove_location(obs, env_id, params)
-    
-
 class WithoutManufacturingOrder(WarehouseSortingTool):
 
     @register_tool(
-            description="Take an object from the environment.",
+            description="Take an unsorted object.",
             params_spec={
-                "obj": {"description": "The name of the object to take in the gripper.", "type": str},
-            }
+                "obj": {"description": "Name of the object to take.", "type": str},
+            },
+            errors=[
+                ToolErrorSupport(
+                    OneShotToolFailureError,
+                    pre=True,
+                    post=False,
+                )
+            ],
     )
     def take_obj(self, obs, env_id, params: Dict) -> ToolExecution:
         return super().take_obj(obs, env_id, params)
     
     @register_tool(
-            description="Put the held object in an area",
+            description="Put the held object in a storage area.",
             params_spec={
-                "target": {"description": "Move the robot gripper upper the area and drop the current object.", "type": str}
-            }
+                "target": {"description": "Name of the destination area.", "type": str}
+            },
+            errors=[
+                ToolErrorSupport(
+                    OneShotToolFailureError,
+                    pre=True,
+                    post=False,
+                )
+            ],
     )
     def depose(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().depose(obs, env_id, params)
 
     @register_tool(
-            description="Add a new location to the known area the robot can use to store objects",
+            description="Add a storage location.",
             params_spec={
-                "location_name": {"description": "The name of the new location. Must not already exist.", "type": str}
+                "location_name": {"description": "Name of the new location.", "type": str}
             }
     )
     def add_new_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().add_new_location(obs, env_id, params)
 
     @register_tool(
-            description="Remove an existing location from the known area.",
+            description="Remove a storage location.",
             params_spec={
-                "location_name": {"description": "The name of the location to remove. Must exist.", "type": str}
+                "location_name": {"description": "Name of the location to remove.", "type": str}
             }
     )
     def remove_location(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
         return super().remove_location(obs, env_id, params)
-
-    @register_tool(
-            description="Launch a default cycle to sort all objects to their assigned area.",
-            params_spec={
-                "assignment": {"description": "Dictionary of the object to sort as dictionary keys with their corresponding area.", "type": dict},
-            },
-    )
-    def launch_cycle(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
-        obj_to_sort, assignment = [], {}
-        task_attributes = obs.task_attributes
-
-        def verifier(new_obs: Dict) -> ToolResult:
-            sorted_objects = self._get_sorted_cycle_objects(
-                new_obs["extra"],
-                env_id,
-                obj_to_sort,
-                assignment,
-            )
-
-            for obj_name in obj_to_sort:
-                if obj_name not in sorted_objects:
-
-                    return ToolResult(
-                        False,
-                        f"Cycle did not finish: {obj_name} is not in {assignment[obj_name]}. You can retry.",
-                        context={"no_reset": sorted_objects},
-                    )
-
-            s = ', '.join(f'{obj} to {ass}' for obj, ass in assignment.items())
-            return ToolResult(True, f"All objects has been sorted : {s}", logs=Log(content=""))
-
-        assignment, assignment_error = self._extract_cycle_assignment(params)
-        if assignment_error:
-            return ToolExecution([], verifier=None, reason=assignment_error)
-        
-        invalid_objects = []
-        for key in assignment.keys():
-            if (key not in task_attributes["objects"]):
-                invalid_objects.append(key)
-
-        if len(invalid_objects) > 0:
-            return ToolExecution([],verifier=verifier,reason=f"There are no manipulable {', '.join(map(str, invalid_objects))} object(s).")
-
-        invalid_areas = []
-        for value in assignment.values():
-            if (value not in task_attributes["target_areas"]):
-                invalid_areas.append(value)
-
-        if len(invalid_areas) == 1:
-            return ToolExecution([],verifier=verifier,reason=f"This area {invalid_areas[0]} is invalid. Please use only known target.")
-        elif (len(invalid_areas) > 1):
-            return ToolExecution([],verifier=verifier,reason=f"These areas {', '.join(map(str, invalid_areas))} are invalid. Please use only known target.")
-
-        for obj_name, target in assignment.items():
-            if not self._is_cycle_object_sorted(obs.maniskill_obs["extra"], env_id, obj_name, target):
-                obj_to_sort.append(obj_name)
-
-        if not obj_to_sort:
-            return ToolExecution([],verifier=verifier,reason=f"All objects has already been sorted.")
-
-        cpt, cpt_max = 0, len(obj_to_sort) * 2 + 2
-
-
-        def redo(new_obs: Dict) -> Trajectory:
-            nonlocal cpt
-            cpt +=1
-            if cpt > cpt_max:
-                return []
-            return self._compute_next_cycle_trajectory(
-                new_obs["extra"],
-                env_id,
-                obj_to_sort,
-                assignment,
-            )
-        p = redo(obs.maniskill_obs)
-        return ToolExecution(poses=p,verifier=verifier,redo=redo)

@@ -3,11 +3,17 @@ from typing import Callable, Dict, List, Literal, Optional, Sequence, Tuple
 import random
 from collections import defaultdict
 
-from magma_core.base.state.task_state import TaskState
-from magma_core.base.user_request import BaseConstraintRequest
-from magma_core.base.constraints import BaseConstraint
+from magma_core.simulation.state.task_state import TaskState
+from magma_scenarios.templates.requests.interact_request import (
+    BaseConstraintRequest,
+    ConstraintParameters,
+)
+from magma_core.simulation.constraints import BaseConstraint
 
-from ..constraints import RelationAssignmentConstraint
+from ..constraints import (
+    RelationAssignmentConstraint,
+    RelationDefaultConstraint,
+)
 
 ConstraintBuilder = Callable[[str, str], BaseConstraint]
 AssignmentMessageBuilder = Callable[[str, List[Tuple[str, str]]], str]
@@ -44,6 +50,8 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
             target_attribute_key: Optional[str],
             max_simultaneous_change: int = 1,
             empty_relation_sampling_weight: float = 3,
+            existing_relation_sampling_weight: float = 1,
+            pending_relation_sampling_weight: float = 0.25,
             intro_message: str = "Hey, here are some rules: ",
             assignment_template: str = "{source} goes to {target}",
             plural_assignment_template: Optional[str] = None,
@@ -64,6 +72,8 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
         self.target_attribute_key = target_attribute_key
         self.max_change = max_simultaneous_change
         self.empty_relation_sampling_weight = empty_relation_sampling_weight
+        self.existing_relation_sampling_weight = existing_relation_sampling_weight
+        self.pending_relation_sampling_weight = pending_relation_sampling_weight
         self.intro_message = intro_message
         self.assignment_template = assignment_template
         self.plural_assignment_template = plural_assignment_template
@@ -80,8 +90,16 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
 
         if len(self.assignment_modes) <= 0:
             raise ValueError("At least one assignment sampling mode must be provided")
+        if self.existing_relation_sampling_weight < 0:
+            raise ValueError("existing_relation_sampling_weight must be non-negative")
+        if self.pending_relation_sampling_weight < 0:
+            raise ValueError("pending_relation_sampling_weight must be non-negative")
 
-    def _build_constraint(self, source_value: str, target_value: str) -> BaseConstraint:
+    def _build_constraint(
+        self,
+        source_value: str,
+        target_value: str,
+    ) -> BaseConstraint:
         if self.constraint_builder is not None:
             return self.constraint_builder(source_value, target_value)
         return RelationAssignmentConstraint(
@@ -141,15 +159,26 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
         if not self._has_possible_assignment(state):
             return 0
         if state.properties.get(f"{self.relation_key}_needs_application", False):
-            return 0.25
+            return self.pending_relation_sampling_weight
         if len(state.relations.get(self.relation_key, {})) < 1:
-            return max(self.empty_relation_sampling_weight, 4)
-        return 1
+            return self.empty_relation_sampling_weight
+        return self.existing_relation_sampling_weight
 
-    def apply_request(self, state: TaskState) -> TaskState:
-        state = super().apply_request(state)
-        if len(self.constraints) > 0:
+    def apply_request(
+        self,
+        state: TaskState,
+        parameters: ConstraintParameters,
+    ) -> TaskState:
+        state = super().apply_request(state, parameters)
+        if parameters.constraints:
             state.properties[f"{self.relation_key}_needs_application"] = True
+            pending_sources = [
+                constraint.source_value
+                for constraint in parameters.constraints
+                if hasattr(constraint, "source_value")
+            ]
+            if pending_sources:
+                state.properties[f"{self.relation_key}_pending_sources"] = pending_sources
         return state
 
     def _sample_individual_assignments(
@@ -440,21 +469,47 @@ class GiveRelationAssignmentRequest(BaseConstraintRequest):
 
         return self._choose_message_prefix(plan) + clause + "."
 
-    def initialize_constraints(self, state: TaskState):
-        self.constraints = []
+    def sample_parameters(self, state: TaskState) -> ConstraintParameters:
+        constraints: List[BaseConstraint] = []
         plan = self._sample_assignment_plan(state)
         assignments = [(record.source, record.target) for record in plan.records]
+        default_target = None
+        if self.constraint_message_builder is None:
+            if plan.mode == "all_to_one":
+                default_target = plan.records[0].target
+            elif plan.mode == "split_one_vs_rest":
+                default_target = plan.records[1].target
+            elif (
+                len(plan.records) == plan.all_source_count
+                and len({record.target for record in plan.records}) == 1
+            ):
+                default_target = plan.records[0].target
+
+        if default_target is not None:
+            constraints.append(
+                RelationDefaultConstraint(
+                    relation_key=self.relation_key,
+                    target_value=default_target,
+                    target_attribute_key=self.target_attribute_key,
+                )
+            )
 
         for source_value, target_value in assignments:
-            self.constraints.append(
-                self._build_constraint(source_value, target_value)
+            constraints.append(
+                self._build_constraint(
+                    source_value,
+                    target_value,
+                )
             )
 
         if self.constraint_message_builder is not None:
-            self.constraint_msg = self.constraint_message_builder(self.intro_message, assignments)
-            return
-
-        self.constraint_msg = self._build_default_message(plan)
+            instruction = self.constraint_message_builder(
+                self.intro_message,
+                assignments,
+            )
+        else:
+            instruction = self._build_default_message(plan)
+        return ConstraintParameters(constraints, instruction)
 
 
 class GiveObjectAssignmentRequest(GiveRelationAssignmentRequest):
@@ -463,6 +518,8 @@ class GiveObjectAssignmentRequest(GiveRelationAssignmentRequest):
     def __init__(
             self,
             max_simultaneous_change : int = 1,
+            existing_relation_sampling_weight: float = 1,
+            pending_relation_sampling_weight: float = 0.25,
             assignment_modes: Sequence[AssignmentSamplingMode] = (
                 "sample",
                 "sample",
@@ -475,6 +532,8 @@ class GiveObjectAssignmentRequest(GiveRelationAssignmentRequest):
             source_attribute_key="objects",
             target_attribute_key="target_areas",
             max_simultaneous_change=max_simultaneous_change,
+            existing_relation_sampling_weight=existing_relation_sampling_weight,
+            pending_relation_sampling_weight=pending_relation_sampling_weight,
             intro_message="Hey, here are some sorting rules: ",
             assignment_template="{source} goes to {target}",
             plural_assignment_template="{sources} go to {target}",
@@ -494,6 +553,8 @@ class GiveObjectCategoryRequest(GiveRelationAssignmentRequest):
             self,
             available_categories : List[str],
             max_object_assignment : int = 2,
+            existing_relation_sampling_weight: float = 1,
+            pending_relation_sampling_weight: float = 0.25,
             assignment_modes: Sequence[AssignmentSamplingMode] = (
                 "sample",
                 "sample",
@@ -512,6 +573,8 @@ class GiveObjectCategoryRequest(GiveRelationAssignmentRequest):
             target_values=available_categories,
             max_simultaneous_change=max_object_assignment,
             empty_relation_sampling_weight=4,
+            existing_relation_sampling_weight=existing_relation_sampling_weight,
+            pending_relation_sampling_weight=pending_relation_sampling_weight,
             intro_message="Hello, ",
             assignment_template="{source} is {target}",
             plural_assignment_template="{sources} are {target}",
@@ -543,6 +606,8 @@ class GiveCategoryAssignmentRequest(GiveRelationAssignmentRequest):
             self,
             available_categories : List[str],
             max_categories_assignment : int = 2,
+            existing_relation_sampling_weight: float = 1,
+            pending_relation_sampling_weight: float = 0.25,
             assignment_modes: Sequence[AssignmentSamplingMode] = (
                 "sample",
                 "sample",
@@ -561,6 +626,8 @@ class GiveCategoryAssignmentRequest(GiveRelationAssignmentRequest):
             source_values_provider=_get_known_object_categories,
             max_simultaneous_change=max_categories_assignment,
             empty_relation_sampling_weight=4,
+            existing_relation_sampling_weight=existing_relation_sampling_weight,
+            pending_relation_sampling_weight=pending_relation_sampling_weight,
             intro_message="Hello, ",
             assignment_template="{source} goes to {target}",
             plural_assignment_template="{sources} go to {target}",
@@ -577,4 +644,3 @@ class GiveCategoryAssignmentRequest(GiveRelationAssignmentRequest):
         if len(state.relations.get("type_area",{})) > 3:
             return 0 # AVoiding too much category
         return super().sampling_weight(state)
-

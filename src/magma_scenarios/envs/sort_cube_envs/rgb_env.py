@@ -14,7 +14,7 @@ from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
 
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 
 
 # register the environment by a unique ID and specify a max time limit. Now once this file is imported you can do gym.make("CustomEnv-v0")

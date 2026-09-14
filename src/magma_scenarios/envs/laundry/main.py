@@ -15,7 +15,7 @@ from mani_skill.utils.structs import Pose as MSPose
 
 from magma_scenarios.envs.asset_lib import create_wash_machine, create_soap
 
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 from .observation import ObjectObservation
 
 WHITE = (1.0, 1.0, 1.0, 1.0)
@@ -180,8 +180,7 @@ class LaundryEnv(DefaultEnv):
         """The observations contains position of all objects in the scene."""
         
         obs = {
-                "washing_machine": ObjectObservation(pose=self.machine_actor.pose.raw_pose),
-                "washing_machine_basket": ObjectObservation(pose=self.wash_machine_collision.pose.raw_pose),
+                "washing_machine_basket": ObjectObservation(pose=self.machine_actor.pose.raw_pose),
                 "agent_tcp": ObjectObservation(pose=self.agent.tcp.pose.raw_pose),
             }
 

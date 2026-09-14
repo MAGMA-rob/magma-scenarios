@@ -1,25 +1,24 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tasks import BaseTask
-from magma_core.base.stage import AskingBaseStage
-from magma_core.base.tasks_style import TaskStyle
-from magma_core.base.data_structures import UserInstruction, EmptyInstruction
-
+from magma_core.simulation.tasks import BaseTask
+from magma_core.simulation.stage import AskingBaseStage, ConstraintBaseStage
+from magma_core.simulation.data_structures import (
+    UserInstruction, EmptyInstruction,
+    SituationInit
+)
 from typing import List, Dict, Tuple
-import copy, random
+import random
 from pathlib import Path
 
-from magma_scenarios.templates.stages import Cycle
-
 from .tools import WithoutManufacturingOrder
-from .stages import ConstraintSorting, ObjectToZone, AddLocationStage, RemoveLocationStage
+from .warehouse_stages import build_object_to_zone_stages, AddLocationStage, RemoveLocationStage
 from .att import OBJECTS, AREAS
 
-# launch_cycle(assignment={"ref_obj_1":"area1"|"ref_obj_2":"area2"|"ref_obj_3":"area3"}, manu_order="A121")
-# launch_cycle(assignment={"ref_obj_1":"area2"|"ref_obj_2":"area3"})
-# launch_cycle(assignment={"ref_obj_1":"area2"|"ref_obj_3":"area3"})
-# launch_cycle(assignment={"ref_obj_1":"area2"})
+ALL_TASK_ATTRIBUTES = {
+    "objects" : OBJECTS,
+    "target_areas" : AREAS
+}
 
 class NoManuPreset(BaseTask):
     """
@@ -27,21 +26,11 @@ class NoManuPreset(BaseTask):
     The robot must solves these constraint to complete multiple cycle.
     """
     name : str = "Parent Sorting Warehouse objects"
-    env_id : str = "SortingCubesWarehouse-v1"
+    maniskill_env_id : str = "SortingCubesWarehouse-v1"
 
     Tools_cls = WithoutManufacturingOrder
 
-    styles = [
-        TaskStyle.CONSTRAINED,
-        TaskStyle.LONG_STAGE
-    ]
-
     randomized_config_path = str(Path(__file__).parent.joinpath("config.yaml"))
-
-    all_task_attributes = {
-        "objects" : OBJECTS,
-        "target_areas" : AREAS
-    }
 
     def __init__(
             self,
@@ -72,18 +61,24 @@ class NoManuPreset(BaseTask):
 
         known_objects = OBJECTS[:nb_of_object]
         known_areas = AREAS[:nb_of_area]
+
         task_attributes = {
             "objects" : known_objects,
             "target_areas" : known_areas
         }
-        
+
+        self.situation_init = SituationInit(
+            attributes = task_attributes,
+            all_task_attributes = ALL_TASK_ATTRIBUTES
+        )
+
         self.stages = []
         i=0
         for tupl in queries:
             t, content = tupl[0], tupl[1]
             if t == "constraint":
                 self.stages.append(
-                    ConstraintSorting(content,[],copy.deepcopy(task_attributes))
+                    ConstraintBaseStage(content)
                 )
             elif t == "cycle" or t == "cycle-flag":
                 if i >= len(assignments):
@@ -92,33 +87,33 @@ class NoManuPreset(BaseTask):
                     ins = EmptyInstruction()
                 else:
                     ins = UserInstruction(content)
-                self.stages.append(
-                    Cycle(
-                        assignment=assignments[i],
-                        instruction=ins,
-                        known_areas=task_attributes["target_areas"].copy(),
-                        attributes=task_attributes,
-                        flag_answer= "flag" in t
-                    )
-                )
+                self.stages.extend(build_object_to_zone_stages(
+                    assignment=assignments[i],
+                    instruction=ins,
+                    known_areas=task_attributes["target_areas"].copy(),
+                    flag_answer="flag" in t,
+                ))
                 i+=1
             elif t == "uni":
                 if i >= len(assignments):
                     raise ValueError(f"The task needs to have the same amount of 'cycle' and assignment.")
-                self.stages.append(ObjectToZone(assignments[i], task_attributes["objects"].copy(), content))
+                self.stages.extend(build_object_to_zone_stages(
+                    assignment=assignments[i],
+                    known_areas=task_attributes["target_areas"].copy(),
+                    instruction=UserInstruction(content),
+                    flag_answer=False,
+                ))
                 i+=1
             else:
                 if len(tupl) < 2:
                     raise TypeError(f"Not enought tuple element for type {t} : {tupl}")
                 if t == "question":
-                    self.stages.append(AskingBaseStage(content,tupl[2],[],copy.deepcopy(task_attributes)))
+                    self.stages.append(AskingBaseStage(content,tupl[2]))
                 elif t == "add" or t == "add-noflag":
                     if isinstance(tupl[2], str):
                         self.stages.append(AddLocationStage(
                             UserInstruction(content),
                             tupl[2],
-                            [],
-                            copy.deepcopy(task_attributes),
                             flag_answer_to_user= not "noflag" in t
                         ))
                         task_attributes["target_areas"].append(tupl[2])
@@ -128,8 +123,6 @@ class NoManuPreset(BaseTask):
                             self.stages.append(AddLocationStage(
                                 ins,
                                 area,
-                                [],
-                                copy.deepcopy(task_attributes),
                                 flag_answer_to_user= j == len(area)-1
                             ))
                             ins = EmptyInstruction()
@@ -142,8 +135,6 @@ class NoManuPreset(BaseTask):
                         self.stages.append(RemoveLocationStage(
                             UserInstruction(content),
                             tupl[2],
-                            [],
-                            copy.deepcopy(task_attributes),
                             flag_answer_to_user=not "noflag" in t
                         ))
                         task_attributes["target_areas"].remove(tupl[2])
@@ -153,8 +144,6 @@ class NoManuPreset(BaseTask):
                             self.stages.append(RemoveLocationStage(
                                 ins,
                                 area,
-                                [],
-                                copy.deepcopy(task_attributes),
                                 flag_answer_to_user= j == len(area)-1
                             ))
                             ins = EmptyInstruction()
@@ -164,11 +153,6 @@ class NoManuPreset(BaseTask):
                 
                 else:
                     raise TypeError(f"Unknow type {t} for {tupl}. Known types are uni, question, constraint, cycle")
-
-        if i < 3:
-            self.approximal_difficulty = "Medium"
-        else:
-            self.approximal_difficulty = "Hard"
 
 class WarehouseSortingSimpPreset1(NoManuPreset):
     """
@@ -236,7 +220,7 @@ class WarehouseSortingSimpPreset3(NoManuPreset):
     """
 
     def __init__(self, difficulty : int = 3):
-        areas = random.sample(self.all_task_attributes["target_areas"],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"],k=2)
         queries : List[Tuple] = [
             ("constraint",f"Okay, consider {areas[0]} the default assignment for ref_obj_1 and {areas[1]} for ref_obj_2 and ref_obj_3."),
             ("cycle-flag","Perfect! Launch a cycle now for all objects"),
@@ -246,8 +230,8 @@ class WarehouseSortingSimpPreset3(NoManuPreset):
             base.copy()
         ]
         for _ in range(difficulty):
-            area = random.choice(self.all_task_attributes["target_areas"])
-            obj = random.choice(self.all_task_attributes["objects"])
+            area = random.choice(ALL_TASK_ATTRIBUTES["target_areas"])
+            obj = random.choice(ALL_TASK_ATTRIBUTES["objects"])
             queries.extend([
                 ("constraint",f"Hey! the target area for {obj} has changed! It's {area} now."),
                 ("cycle-flag","Hello, you can launch a cycle for all objects!"),
@@ -265,7 +249,7 @@ class WarehouseSortingSimpPreset4(NoManuPreset):
     """
 
     def __init__(self, difficulty : int = 0):
-        areas = random.sample(self.all_task_attributes["target_areas"],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"],k=2)
         queries : List[Tuple] = [
             ("constraint",f"For future cycle, only objects that are associated with {areas[1]} are concerned okay?"),
             ("constraint",f"Okay, consider {areas[0]} the default assignment for ref_obj_1 and {areas[1]} for ref_obj_2 and ref_obj_3."),
@@ -277,7 +261,7 @@ class WarehouseSortingSimpPreset4(NoManuPreset):
             {"ref_obj_2":areas[1],"ref_obj_3":areas[1]}
         ]
         for _ in range(difficulty):
-            ar = random.choice(self.all_task_attributes["target_areas"])
+            ar = random.choice(ALL_TASK_ATTRIBUTES["target_areas"])
             queries.extend([
                 ("cycle-flag",f"Just for this time, I need a cycle for ref_obj_1 and ref_obj_2 to {ar} please"),
                 ("cycle-flag",f"Please launch a cycle right now please"),
@@ -299,7 +283,7 @@ class WarehouseSortingSimpPreset5(NoManuPreset):
     def __init__(self, difficulty : int = 0, cycle_request : int = 4, multi_steps : bool = False) -> None:
         obj = OBJECTS[:3].copy()
         random.shuffle(obj)
-        areas = random.sample(self.all_task_attributes["target_areas"],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"],k=2)
  
         queries : List[Tuple] = [
             ("constraint", f"By the way, drinks are going to {areas[0]} and food to {areas[1]}"),
@@ -334,7 +318,7 @@ class WarehouseSortingSimpPreset5(NoManuPreset):
                     a[idx[1]]
                 ])
             if difficulty >=1:
-                areas = random.sample(self.all_task_attributes["target_areas"],k=2)
+                areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"],k=2)
                 queries.append(("constraint",f"From now, drinks are going to {areas[0]} and food to {areas[1]}"))
         
         super().__init__(queries, 3, 5, assignments)
@@ -351,7 +335,7 @@ class WarehouseSortingSimpPreset6(NoManuPreset):
         nb_of_object: int = 3
         nb_of_area: int = 4
 
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"][:nb_of_area],k=2)
 
         ori = {"ref_obj_1":areas[0],"ref_obj_2":areas[1],"ref_obj_3":areas[0]}
 
@@ -363,7 +347,7 @@ class WarehouseSortingSimpPreset6(NoManuPreset):
 
         for _ in range(difficulty):
             
-            obj = random.choice(self.all_task_attributes["objects"][:nb_of_object])
+            obj = random.choice(ALL_TASK_ATTRIBUTES["objects"][:nb_of_object])
 
             queries.extend([ 
                 ("uni", f"I want you to take a {obj} and put in {ori[obj]} whitout using the cycle method."),
@@ -384,7 +368,7 @@ class WarehouseSortingSimpPreset7(NoManuPreset):
         nb_of_object: int = 3
         nb_of_area: int = 4
 
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"][:nb_of_area],k=2)
 
         ori = {"ref_obj_1":areas[0],"ref_obj_2":areas[1],"ref_obj_3":areas[0]}
 
@@ -395,7 +379,7 @@ class WarehouseSortingSimpPreset7(NoManuPreset):
         assignments: List[Dict[str, str]] = [{"ref_obj_2": areas[1], "ref_obj_1": areas[0]}]
 
         for _ in range(difficulty):
-            obj = random.choice(self.all_task_attributes["objects"][:nb_of_object])
+            obj = random.choice(ALL_TASK_ATTRIBUTES["objects"][:nb_of_object])
             ar = random.choice(areas)
             queries.extend([ 
                 ("question", f"Hey robot, do you know where should you put {obj}", f"The model must answer that {obj} goes to {ori[obj]}"),
@@ -464,73 +448,6 @@ class WarehouseSortingSimpAdd3(NoManuPreset):
 
         super().__init__(queries, 3, 5, assignments)
 
-class WarehouseSortingSimpInterrupt(NoManuPreset):
-    """
-    A preset for WarehouseSortingSimp Task.
-    The idea is to ask the model to do a cycle according default assignment, then to interupt it with a new cycle to do and ask him to continue its precedent task after.
-    """
-    # launch_cycle(assignment={"ref_obj_1":"area4"|"ref_obj_2":"area1"})
-    def __init__(self, difficulty : int = 0)-> None:
-        nb_of_object: int = 2
-        nb_of_area: int = 3
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
-        queries: List[Tuple] = [
-            ("constraint", f"Consider {areas[0]} the default area for ref_obj_1 and {areas[1]} for ref_obj_2"), 
-            ("cycle", "Can you launch a cycle for all objects please?"),
-        ]
-        assignments: List[Dict[str, str]] = [{"ref_obj_1": areas[0],"ref_obj_2": areas[1]}]
-
-        if difficulty >=1:
-            queries.extend([
-                ("add-noflag", 
-                 "Robot, stop what you are doing. I need you to add area4 and right after, send to it all ref_obj_1! When you have done that, you can continue your precedent task.",
-                 "area4"),
-                ("cycle", "none")
-            ])
-            assignments.append(
-                {"ref_obj_1": "area4"}
-            )
-        else:
-            queries.extend([("cycle", f"Hey, stop what you are doing I need you to launch a cycle for ref_obj_1 to {areas[1]} right now. You will continue your task after.")])
-            assignments.append(
-                {"ref_obj_1":areas[1]}
-            )
-
-        queries.append(("cycle-flag", "none"))
-        assignments.append({"ref_obj_1": areas[0],"ref_obj_2": areas[1]})
-        super().__init__(queries, nb_of_object, nb_of_area, assignments)
-
-class WarehouseSortingSimpInterrupt2(NoManuPreset):
-    """
-    A preset for WarehouseSortingSimp Task.
-    The idea is to ask the model to do a cycle according default assignment, then to interupt it with a new cycle to do and ask him to continue its precedent task after.
-    """
-    # launch_cycle(assignment={"ref_obj_1":"area4"|"ref_obj_2":"area1"})
-    def __init__(self)-> None:
-        nb_of_object: int = 3
-        nb_of_area: int = 5
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
-        ori = {"ref_obj_1":areas[0],"ref_obj_2":areas[1],"ref_obj_3":areas[2]}
-        obj = random.sample(list(ori.keys()),k=2)
-        queries: List[Tuple] = [
-            ("constraint", f"Consider {ori[obj[0]]} the default area for {obj[0]} and {ori[obj[1]]} for {obj[1]}"), 
-            ("cycle", f"Can you launch a cycle for {obj[0]} and {obj[1]} objects please?"),
-            ("cycle", f"Hey, stop what you are doing I need you to launch a cycle for ref_obj_1 to {areas[3]} right now. You will continue your task after."),
-            ("cycle-flag", "none"),
-            ("question", f"Do you know where {obj[2]} must go?", "The model must answer no"),
-            ("cycle", f"It must go to {ori[obj[2]]}. Launch a cycle directly for all objects with this update."),
-            ("cycle", f"Hey, stop what you are doing I need you to launch a cycle for ref_obj_2 to {areas[4]} and ref_obj_1 to {areas[3]} right now. You will continue your task after."),
-            ("cycle-flag", "none"),
-        ]
-        assignments: List[Dict[str, str]] = [
-            {obj[0]: ori[obj[0]],obj[1]: ori[obj[1]]},
-            {"ref_obj_1":areas[3]},
-            {obj[0]: ori[obj[0]],obj[1]: ori[obj[1]]},
-            {obj[0]: ori[obj[0]],obj[1]: ori[obj[1]],obj[2]: ori[obj[2]]},
-            {"ref_obj_1":areas[3],"ref_obj_2":areas[4]},
-        ]
-        super().__init__(queries, nb_of_object, nb_of_area, assignments)
-
 class WarehouseSortingSimpInterdictionPreset1(NoManuPreset):
     """
     A preset for WarehouseSortingSimp Task.
@@ -540,7 +457,7 @@ class WarehouseSortingSimpInterdictionPreset1(NoManuPreset):
     def __init__(self, difficulty : int = 0)-> None:
         nb_of_object: int = 2
         nb_of_area: int = 2
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"][:nb_of_area],k=2)
         queries: List[Tuple] = [
             ("constraint", f"The default cycle rule is {areas[0]} for ref_obj_1 and {areas[1]} for ref_obj_2"),  
             ("constraint", "However, do not manipulate yet ref_obj_1. I am fixing somme issues with this type of object."),
@@ -574,7 +491,7 @@ class WarehouseSortingSimpInterdictionPreset2(NoManuPreset):
     def __init__(self, difficulty : int = 0)-> None:
         nb_of_object: int = 2
         nb_of_area: int = 4
-        areas = random.sample(self.all_task_attributes["target_areas"][:nb_of_area],k=2)
+        areas = random.sample(ALL_TASK_ATTRIBUTES["target_areas"][:nb_of_area],k=2)
         queries: List[Tuple] = [
             ("constraint", f"Consider {areas[0]} the default area for ref_obj_1 and {areas[1]} for ref_obj_2"), 
             ("constraint", f"However, you should not use {areas[0]}."),

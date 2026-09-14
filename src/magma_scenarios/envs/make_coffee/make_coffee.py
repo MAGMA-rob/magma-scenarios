@@ -3,14 +3,14 @@
 
 # Arthur TANNEAU
 
-from typing import Any, Dict, Union
+from pathlib import Path
+from typing import Dict, Union
 
 import numpy as np
 import sapien
 import torch
-import os
 
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 
 from mani_skill.agents.robots.fetch.fetch import Fetch
 from mani_skill.agents.robots.panda.panda import Panda
@@ -20,6 +20,7 @@ from mani_skill.utils.registration import register_env
 from mani_skill.utils.building.actors.ycb import get_ycb_builder
 
 from magma_scenarios.envs.asset_lib import create_coffee_maker
+from magma_scenarios.envs.visual_assets import OBJECT_VISUALS
 
 from transforms3d.euler import euler2quat
 
@@ -28,7 +29,8 @@ class MakeCoffeeEnv(DefaultEnv):
     """
     Env Description
     ----------------
-    The env is composed of a coffee machine, some pods (represented as cubes) and a mug (also represented a cube).
+    The env is composed of a coffee machine, some pods represented as cubes,
+    and a mug whose collision is represented as a cube.
 
     Randomizations
     --------------
@@ -77,15 +79,6 @@ class MakeCoffeeEnv(DefaultEnv):
             name = id
         return builder.build(name=name)
     
-    def create_mug(self, name="mug"):
-        builder = self.scene.create_actor_builder()
-        box_pose = sapien.Pose([0, 0, 0])  
-        box_half_size = [self.mug_scale/2, self.mug_scale/2, self.mug_scale/2]
-        builder.add_box_collision(pose=box_pose, half_size=box_half_size)
-        builder.add_box_visual(pose=box_pose, half_size=box_half_size, material=[0,0,0.5])
-        builder.set_initial_pose(box_pose)
-        return builder.build_dynamic(name=name)
-    
     def create_cube(self, thickness = 0.01, size = 0.02, name="box", material = [0.5,0.5,0.5]):
         builder = self.scene.create_actor_builder()
         box_pose = sapien.Pose([0, 0, 0])  
@@ -104,7 +97,18 @@ class MakeCoffeeEnv(DefaultEnv):
 
         # instanciates objects
         self.coffee_maker = create_coffee_maker(self.scene)
-        self.mug = self.create_mug()
+        self.mug = self.build_box_object(
+            name="mug",
+            half_size=(self.mug_scale / 2,) * 3,
+            color=[0, 0, 0.5, 1],
+            visual=OBJECT_VISUALS["cup"],
+            visual_assets_dir=(
+                Path(__file__).resolve().parents[2]
+                / "assets"
+                / "visuel"
+            ),
+            initial_z=0,
+        )
         self.capsules = []
         
         shade = 8

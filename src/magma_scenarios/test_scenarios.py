@@ -3,7 +3,7 @@ import argparse
 from typing import List, Dict, Type, Tuple
 import importlib, pkgutil
 
-from magma_core.base.tasks import BaseTask
+from magma_core.simulation.tasks import BaseTask
 
 def collect_task_classes(package_name: str, scenarios: List[str]) -> List[Type[BaseTask]]:
     task_classes = []

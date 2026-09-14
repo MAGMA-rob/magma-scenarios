@@ -1,8 +1,8 @@
 import random
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
-from magma_core.base.data_structures import Observation
-from magma_core.utils.env_utils import is_object_inside_target
+from magma_core.simulation.data_structures import Observation
+from magma_core.simulation.utils.env_utils import is_object_inside_target
 from magma_scenarios.templates.errors import GraspFailureError
 from .attributes import all_detergents, all_clothes
 
@@ -23,12 +23,13 @@ def _get_unwashed_clothes(obs: Observation, env_id: int) -> List[str]:
     return remaining
 
 class GraspClothesFailureError(GraspFailureError):
-    recovery_extra_steps = 1
-
-    def __init__(self, all_requested_objects : List[str] = [], max_impossible = 2) -> None:
+    def __init__(self, all_requested_objects : Optional[List[str]] = None, max_impossible = 2) -> None:
         super().__init__()
         self.max_nb = max_impossible
-        self.all_requested_objects = all_requested_objects
+        if all_requested_objects is None:
+            self.all_requested_objects = []
+        else:
+            self.all_requested_objects = all_requested_objects
 
     def initialize(self, obs: Observation, env_id: int) -> Dict[str, Any]:        
         remaining = _get_unwashed_clothes(obs,env_id)

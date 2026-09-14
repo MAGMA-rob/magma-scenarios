@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.data_structures.tools import ToolErrorSupport
-from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.base.data_structures import Log, ToolExecution, ToolResult, Observation
+from magma_core.simulation.data_structures.tools import ToolErrorSupport
+from magma_core.simulation.tools import BaseToolsAPI, register_tool
+from magma_core.simulation.utils.env_utils import is_object_inside_target
+from magma_core.simulation.data_structures import Log, ToolExecution, ToolResult, Observation
 
-from magma_scenarios.utils import compute_press_trajectory, compute_grasp_drop_trajectory, sapien_to_tensor
+from magma_scenarios.utils import (
+    compute_press_trajectory,
+    compute_grasp_drop_trajectory,
+    sapien_to_tensor,
+)
+from magma_scenarios.templates.errors import OneShotToolFailureError
 from .coffee_errors import GraspCapsuleFailureError
 from typing import Dict, List
 import sapien, torch
@@ -23,8 +28,15 @@ class MakingCoffeeTool(BaseToolsAPI):
     #         return (btn_translation > button_STROKE_LIMIT)
 
     @register_tool(
-            description="Press the start button on the coffee maker to launch the brewing cycle once the mug and capsule are in place.",
-            params_spec={}
+            description="Start the coffee maker.",
+            params_spec={},
+            errors=[
+                ToolErrorSupport(
+                    OneShotToolFailureError,
+                    pre=True,
+                    post=False,
+                )
+            ],
     )
     def press_button(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """tool to press a button"""
@@ -39,10 +51,10 @@ class MakingCoffeeTool(BaseToolsAPI):
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
     @register_tool(
-            description="Insert the requested coffee capsule flavor into the coffee maker so the machine can brew the correct drink.",
+            description="Load a coffee capsule into the coffee maker.",
             params_spec={
                 "name": {
-                    "description": "Flavor or identifier of the capsule to insert into the coffee maker.",
+                    "description": "Flavor of the coffee capsule to load.",
                     "type": str,
                 }
             },
@@ -64,7 +76,8 @@ class MakingCoffeeTool(BaseToolsAPI):
             q = [0,1,0,0]
             )
         for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
-            if coffee_name in obj_name:
+            print(obj_name)
+            if coffee_name == obj_name:
                 pods_name = obj_name
                 poses = compute_grasp_drop_trajectory(
                     self.get_agent(), obj_pose=obj_pos[env_id].cpu().numpy(), drop_pose=drop_pose,
@@ -101,11 +114,19 @@ class MakingCoffeeTool(BaseToolsAPI):
             verifier=verifier,
             reason=r,
             context={"target_name": pods_name},
+            allowed_moving_actors=[pods_name] if pods_name is not None else None,
         )
     
     @register_tool(
-            description="Place the mug in the coffee maker, under the coffee outlet, so the brewed drink is dispensed into it.",
-            params_spec={}
+            description="Place the mug in the coffee maker.",
+            params_spec={},
+            errors=[
+                ToolErrorSupport(
+                    OneShotToolFailureError,
+                    pre=True,
+                    post=False,
+                )
+            ],
     )
     def place_mug(self, obs: Observation, env_id, params : Dict) -> ToolExecution:
         """drop a mug on the coffee maker"""
@@ -146,13 +167,18 @@ class MakingCoffeeTool(BaseToolsAPI):
                
             return ToolResult(False,"Failed to place the mug. You can retry.")
   
-        return ToolExecution(poses=poses, verifier=verifier, reason="")
+        return ToolExecution(
+            poses=poses,
+            verifier=verifier,
+            reason="",
+            allowed_moving_actors=["mug"],
+        )
 
 
     @register_tool(
-        description = "Look up the registered members of a known team in the coffee scenario registry.",
+        description = "List the people in a team.",
         params_spec = {"team" : {
-                "description" : "Name of the team whose registered members should be retrieved.",
+                "description" : "Name of the team.",
                 "type" : str 
             }
             }
@@ -171,9 +197,9 @@ class MakingCoffeeTool(BaseToolsAPI):
                     
 
     @register_tool(
-        description = "Look up which registered team a person belongs to in the coffee scenario registry.",
+        description = "Return the team a person belongs to.",
         params_spec= {"person" : {
-                "description" : "Name of the person whose registered team should be retrieved.",
+                "description" : "Name of the person.",
                 "type" : str
             }}
         )

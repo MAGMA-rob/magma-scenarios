@@ -1,30 +1,18 @@
-def load_definition(name):
-    from .registry_loader import load_definition as _load_definition
+"""Public loading API for installed MAGMA scenario providers."""
 
-    return _load_definition(name)
-
-
-def load_preset(name):
-    from .registry_loader import load_preset as _load_preset
-
-    return _load_preset(name)
-
-
-def __getattr__(name):
-    if name in {"TASK_DEFINITION_REGISTRY", "TASK_PRESET_REGISTRY"}:
-        from .registry_loader import TASK_DEFINITION_REGISTRY, TASK_PRESET_REGISTRY
-
-        registry = {
-            "TASK_DEFINITION_REGISTRY": TASK_DEFINITION_REGISTRY,
-            "TASK_PRESET_REGISTRY": TASK_PRESET_REGISTRY,
-        }
-        return registry[name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
+from .manifest import ScenarioManifest
+from .registry_loader import (
+    get_scenario,
+    list_scenarios,
+    load_definition,
+    load_preset,
+    load_skills,
+    register_environment,
+    __getattr__,
+)
 
 __all__ = [
-    "TASK_DEFINITION_REGISTRY",
-    "TASK_PRESET_REGISTRY",
-    "load_definition",
-    "load_preset",
+    "ScenarioManifest", "get_scenario", "list_scenarios",
+    "load_definition", "load_preset", "load_skills", "register_environment",
+    "TASK_DEFINITION_REGISTRY", "TASK_PRESET_REGISTRY", "SKILL_REGISTRY",
 ]

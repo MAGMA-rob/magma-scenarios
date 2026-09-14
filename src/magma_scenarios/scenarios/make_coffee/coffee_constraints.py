@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal
 
-from magma_core.base.constraints import BaseConstraint
-from magma_core.base.state import TaskState
+from magma_core.simulation.constraints import BaseConstraint
+from magma_core.simulation.state import TaskState
 
 from magma_scenarios.templates.constraints import RelationAssignmentConstraint
 
@@ -86,12 +86,6 @@ class TeamCoffeePreferenceConstraint(BaseConstraint):
             "mode": self.mode,
             "members": self.team_members.copy(),
         }
-
-        preferences = _get_coffee_preferences(state)
-        for member in self.team_members:
-            if self.mode == "default" and member in preferences:
-                continue
-            preferences[member] = self.coffee
 
     def outdated(self, state: TaskState) -> bool:
         return self.coffee not in state.attributes.get("coffee_pod", [])

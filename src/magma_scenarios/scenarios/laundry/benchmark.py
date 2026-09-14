@@ -1,5 +1,5 @@
 from pathlib import Path
-from magma_core.base.tasks import BaseBenchmarkTask
+from magma_core.simulation.tasks import BaseBenchmarkTask
 from .load_tool import LaunchTool
 from .attributes import all_clothes, all_detergents
 from .laundry_errors import GraspClothesFailureError
@@ -27,5 +27,5 @@ class LaundryBenchmark(BaseBenchmarkTask):
     }
 
     benchmark_possible_errors = [
-        GraspClothesFailureError(5)
+        GraspClothesFailureError()
     ]

@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright (c) 2026, Loan Bernat
+
+tools:
+  detect:
+    name: [detect, scan_table_area, list_visible_objects]
+    description: [Return visible objects and their locations., Scan the work area and report visible objects with their locations., List the objects currently visible to the robot and where they are.]
+  wipe:
+    name: [wipe, clean_table, wipe_surface]
+    description: [Clean the table using the sponge., Wipe the table surface with the sponge., Use the sponge to clean the empty table.]
+  take:
+    name: [take, pick_object, grab_item]
+    description: [Pick up an object., Take the specified object with the gripper., Grab a named item from its current location.]
+    parameters:
+      name:
+        name: [name, object_name, item]
+        description: [Name of the object to pick up., Identifier of the object to take., Item that the robot must grab.]
+  put:
+    name: [put, place_object, deposit_item]
+    description: [Place the held object on a target location., Put the carried object at the requested destination., Deposit the held item on a specified location.]
+    parameters:
+      target:
+        name: [target, destination, location]
+        description: [Location where the object must be placed., Destination for the held object., Target location that should receive the item.]
+  set_light:
+    name: [set_light, control_light, switch_light]
+    description: [Turn the switch on or off., Set the light switch to the requested state., Control whether the light is on or off.]
+    parameters:
+      state:
+        name: [state, light_state, switch_state]
+        description: [Requested on or off state., State to assign to the light., Desired position of the light switch.]
+  inspect:
+    name: [inspect, check_cleanliness, examine_object]
+    description: [Inspect the object to determine if it is dirty or clean., Check whether the held object is clean or dirty., Examine the carried item for cleanliness.]
+
+semantic_attributes:
+  food_types:
+    variations:
+      - [mango, orange]
+      - [lemon, apricot]
+      - [peach, avocado]
+    forms: ["{value}", "{value}s", "{value}_1", "{value}_2"]
+  dishware_types:
+    variations:
+      - [bowl, goblet, mug]
+      - [saucer, tumbler, beaker]
+      - [platter, jar, stein]
+    forms: ["{value}", "{value}s", "{value}_1", "{value}_2"]

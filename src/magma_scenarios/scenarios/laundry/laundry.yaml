@@ -48,4 +48,47 @@ tools:
       - Start the washing machine.
     parameters: {}
 
-attributes: {}
+attributes:
+  clothes:
+    - ["t_shirt", "linen_blouse", "blue_jeans", "chino_pants", "gym_shorts", "cotton_socks", "boxer_briefs", "briefs", "baseball_cap"]
+    - ["polo_shirt", "silk_blouse", "denim_jeans", "cargo_pants", "running_shorts", "wool_socks", "trunks", "underwear", "sun_hat"]
+    - ["flannel_shirt", "lace_blouse", "black_jeans", "linen_pants", "swim_shorts", "ankle_socks", "boxer_shorts", "panty", "beanie"]
+    - ["dress_shirt", "ruffle_blouse", "skinny_jeans", "jogger_pants", "basketball_shorts", "thermal_socks", "brief_boxers", "lace_briefs", "visor_cap"]
+    - ["work_shirt", "cotton_blouse", "straight_jeans", "sweatpants", "cargo_shorts", "striped_socks", "sports_boxer", "seamless_briefs", "bucket_hat"]
+    - ["hawaiian_shirt", "satin_blouse", "white_jeans", "dress_pants", "denim_shorts", "crew_socks", "knit_boxer", "bikini_briefs", "wool_cap"]
+    - ["henley_shirt", "peasant_blouse", "grey_jeans", "track_pants", "board_shorts", "compression_socks", "cotton_boxer", "high_waist_briefs", "flat_cap"]
+    - ["oxford_shirt", "chiffon_blouse", "ripped_jeans", "khaki_pants", "cycling_shorts", "hiking_socks", "long_boxer", "classic_briefs", "newsboy_cap"]
+    - ["jersey_shirt", "embroidered_blouse", "bootcut_jeans", "corduroy_pants", "tennis_shorts", "dress_socks", "patterned_boxer", "soft_briefs", "snapback_cap"]
+    - ["linen_shirt", "wrap_blouse", "raw_denim_jeans", "pleated_pants", "training_shorts", "fuzzy_socks", "modal_boxer", "mesh_briefs", "trucker_cap"]
+    - ["graphic_tee", "button_blouse", "washed_jeans", "utility_pants", "lounge_shorts", "argyle_socks", "microfiber_boxer", "cotton_briefs", "knit_cap"]
+    - ["rugby_shirt", "sheer_blouse", "slim_jeans", "wide_leg_pants", "soccer_shorts", "no_show_socks", "stretch_boxer", "period_briefs", "running_cap"]
+    - ["thermal_shirt", "bow_blouse", "cropped_jeans", "twill_pants", "sleep_shorts", "tube_socks", "plaid_boxer", "hipster_briefs", "chef_hat"]
+    - ["camp_shirt", "velvet_blouse", "selvedge_jeans", "work_pants", "beach_shorts", "bamboo_socks", "jersey_boxer", "lace_underwear", "garden_hat"]
+    - ["football_shirt", "pleated_blouse", "acid_wash_jeans", "travel_pants", "trail_shorts", "merino_socks", "woven_boxer", "sports_briefs", "fisherman_cap"]
+    - ["bowling_shirt", "puff_sleeve_blouse", "mom_jeans", "canvas_pants", "volleyball_shorts", "diabetic_socks", "loose_boxer", "everyday_briefs", "beret"]
+    - ["base_layer_top", "tunic_blouse", "carpenter_jeans", "parachute_pants", "yoga_shorts", "ski_socks", "performance_boxer", "ribbed_briefs", "cycling_cap"]
+    - ["button_down_shirt", "smocked_blouse", "flare_jeans", "rain_pants", "walking_shorts", "cashmere_socks", "mesh_boxer", "low_rise_briefs", "straw_hat"]
+    - ["v_neck_shirt", "crochet_blouse", "tapered_jeans", "chef_pants", "boxing_shorts", "silk_socks", "breathable_boxer", "comfort_briefs", "military_cap"]
+    - ["long_sleeve_tee", "office_blouse", "loose_jeans", "scrub_pants", "golf_shorts", "slipper_socks", "athletic_boxer", "stretch_briefs", "safari_hat"]
+    - ["mock_neck_top", "collar_blouse", "dark_jeans", "pajama_pants", "climbing_shorts", "work_socks", "seamless_boxer", "maternity_briefs", "fedora_hat"]
+    - ["tank_top", "floral_blouse", "colored_jeans", "tailored_pants", "cotton_shorts", "school_socks", "bamboo_boxer", "silk_briefs", "rain_hat"]
+    - ["sweatshirt", "denim_blouse", "stonewash_jeans", "uniform_pants", "linen_shorts", "sport_socks", "quick_dry_boxer", "modal_briefs", "cadet_cap"]
+    - ["cardigan", "printed_blouse", "grey_denim", "ski_pants", "fleece_shorts", "boot_socks", "organic_boxer", "micro_briefs", "panama_hat"]
+    - ["hoodie", "cream_blouse", "indigo_jeans", "harem_pants", "workout_shorts", "dressy_socks", "plain_boxer", "cheeky_briefs", "visor"]
+    - ["pullover", "navy_blouse", "relaxed_jeans", "cotton_pants", "travel_shorts", "pattern_socks", "soft_boxer", "high_cut_briefs", "winter_hat"]
+    - ["fleece_top", "work_blouse", "vintage_jeans", "formal_pants", "mesh_shorts", "quarter_socks", "thermal_boxer", "classic_underwear", "sun_cap"]
+    - ["training_top", "striped_blouse", "stretch_jeans", "mechanic_pants", "khaki_shorts", "running_socks", "sport_trunks", "daily_briefs", "sports_cap"]
+    - ["cotton_top", "polka_dot_blouse", "blue_denim", "linen_trousers", "camping_shorts", "toe_socks", "cotton_trunks", "soft_underwear", "golf_cap"]
+    - ["jersey_top", "red_blouse", "work_jeans", "gardening_pants", "quick_dry_shorts", "warm_socks", "sleep_boxer", "seamless_underwear", "cotton_cap"]
+
+  detergents:
+    - ["detergent_TIDE", "detergent_ARIEL", "detergent_GAIN"]
+    - ["detergent_ECO", "detergent_FRESH", "detergent_SOFT"]
+    - ["detergent_LAVENDER", "detergent_CITRUS", "detergent_OCEAN"]
+    - ["detergent_ALPHA", "detergent_BETA", "detergent_GAMMA"]
+    - ["detergent_SENSITIVE", "detergent_COLOR", "detergent_WHITE"]
+    - ["detergent_MORNING", "detergent_SPRING", "detergent_NIGHT"]
+    - ["detergent_CLEAR", "detergent_BRIGHT", "detergent_PURE"]
+    - ["detergent_COTTON", "detergent_FLORAL", "detergent_MINERAL"]
+    - ["detergent_BLUE", "detergent_GREEN", "detergent_RED"]
+    - ["detergent_PLUS", "detergent_ULTRA", "detergent_BASIC"]

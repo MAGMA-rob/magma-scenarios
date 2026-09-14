@@ -1,63 +1,52 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
+
 tools:
-  launch_cycle:
-    name:
-      - start_delivery_cycle
-      - initiate_production_run
-      - execute_delivery_sequence
-      - run_dispatch_cycle
-      - trigger_manufacturing_cycle
-    description:
-      - Launch a delivery cycle under a specific manufacturing order. The cycle can produce a fixed number of deliveries or run indefinitely if delivery_number is not set. Each delivery follows the given recipe.
-      - Start a manufacturing delivery cycle for a given order, repeating according to the recipe and delivery count.
-      - Execute a delivery sequence associated with a production order, optionally running infinitely if configured.
-      - Initiate a manufacturing run where each delivery is generated following the specified recipe.
-      - Trigger a continuous or limited delivery process under the defined manufacturing order.
-
+  get_object_in_package:
+    name: [get_object_in_package, inspect_package, list_package_contents]
+    description: [List the products in the package held by the robot., Inspect the held package and report its contents., List all products currently stored in the carried package.]
+  take:
+    name: [take, take_product, pick_product_type]
+    description: [Take an available product of a given type., Pick up an available item matching the requested product type., Collect one available product of the specified type.]
     parameters:
+      type_obj:
+        name: [type_obj, product_type, item_type]
+        description: [Type of product to take., Requested product category., Type of item the robot must collect.]
+  put:
+    name: [put, place_product, deposit_item]
+    description: [Put the held product on a free table cell or inside the held package., Place the carried product on the table or in the current package., Deposit the held item at the requested table or package target.]
+    parameters:
+      target:
+        name: [target, destination, placement]
+        description: [Target table or package location., Destination for the held product., Placement target that should receive the item.]
+  move_to:
+    name: [move_to, navigate_to, go_to_station]
+    description: [Move the robot to a product or package station., Navigate the robot to the requested station., Send the robot to a product or package location.]
+    parameters:
+      target:
+        name: [target, destination, station]
+        description: [Station the robot must reach., Destination product or package location., Target station for robot navigation.]
+  mark_package:
+    name: [mark_package, assign_order, label_package]
+    description: [Assign a manufacturing order to a package., Mark a package with its manufacturing order., Associate the specified package with an order reference.]
+    parameters:
+      package:
+        name: [package, package_name, box]
+        description: [Package to mark., Name of the package receiving the order., Box to associate with the manufacturing order.]
       manufacturing_order:
-        name:
-          - manufacturing_order
-          - order_id
-          - production_order
-          - batch_code
-          - job_reference
-        description:
-          - The manufacturing order associated with the cycle.
-          - Identifier of the production or batch order linked to this delivery cycle.
-          - The job or manufacturing reference corresponding to this process.
-          - Order code used to associate this delivery sequence with a production batch.
-          - The ID of the active manufacturing order for this cycle.
-
-      delivery_number:
-        name:
-          - delivery_number
-          - delivery_count
-          - num_deliveries
-          - batch_limit
-          - repetition_number
-        description:
-          - The number of deliveries to make. Set to -1 for an infinite cycle. Defaults to -1 if not provided.
-          - Number of deliveries to produce before stopping (-1 for infinite loop).
-          - Total count of deliveries in the cycle; use -1 for continuous operation.
-          - Specifies how many deliveries should be executed. -1 means no limit.
-          - Quantity of deliveries planned in this run, or -1 for indefinite repetition.
-
-      recipe:
-        name:
-          - recipe
-          - product_list
-          - delivery_contents
-          - item_recipe
-          - box_composition
-        description:
-          - A list of product names to include in each delivery box. Repeat items in the list to include multiple instances of the same product.
-          - The sequence of product names defining the contents of each delivery.
-          - List of items that make up each delivery package (duplicates allowed).
-          - The recipe specifying which products to include per delivery cycle.
-          - Array of product identifiers to pack into every delivery box, with repeats for multiples.
+        name: [manufacturing_order, order_reference, order]
+        description: [Manufacturing order assigned to the package., Order reference to write on the package., Manufacturing order associated with the box.]
+  take_box:
+    name: [take_box, collect_package, pick_storage_box]
+    description: [Take an available package from storage., Collect the requested package from storage., Pick up an available storage box.]
+    parameters:
+      package:
+        name: [package, package_name, box]
+        description: [Package to take from storage., Name of the package to collect., Storage box the robot must pick up.]
+  drop_box:
+    name: [drop_box, release_package, put_down_box]
+    description: [Drop the package currently held by the robot., Release the carried package at the current station., Put down the box held by the robot.]
 
 attributes:
   product_type:

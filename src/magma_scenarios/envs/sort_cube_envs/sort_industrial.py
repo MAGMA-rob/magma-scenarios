@@ -7,7 +7,7 @@ import numpy as np
 import sapien
 import torch
 
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 
 from mani_skill.agents.multi_agent import MultiAgent
 from mani_skill.agents.robots.fetch.fetch import Fetch

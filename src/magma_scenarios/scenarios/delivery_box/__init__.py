@@ -1,13 +1,17 @@
-# SPDX-License-Identifier: BSD-2-Clause
-# Copyright (c) 2026, Loan Bernat
+"""Compatibility declarations derived from the scenario manifest."""
 
-SCENARIO_NAME = "delivery"
+from .manifest import SCENARIO
 
+SCENARIO_NAME = SCENARIO.id
 TASK_DEFINITIONS = {
-    "EvolvingRecipeDefinition": "delivery_definition:EvolvingRecipeDefinition",
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.definitions.items()
 }
-
 TASK_PRESETS = {
-    "BenchDeliveryTask": "simple_preset:BenchDeliveryTask",
-    "SimplePreset": "simple_preset:SimplePreset",
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.presets.items()
+}
+SKILLS = {
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.skills.items()
 }

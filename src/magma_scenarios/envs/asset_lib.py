@@ -11,6 +11,24 @@ def create_cardboard_box_builder(scene:ManiSkillScene) -> ArticulationBuilder:
     builder = make_articulation_builder(asset_name="box-100154", loader=loader)
     return builder
 
+def create_trashcan(scene:ManiSkillScene, name="trashcan"):
+    """ Create a create_trashcan from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.3, is_fix=True, density=1)
+    builder = make_articulation_builder(asset_name="trashcan", loader=loader)
+    return builder.build(name=name)
+
+def create_lamp(scene:ManiSkillScene, name="lamp"):
+    """ Create a create_lamp from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.2, is_fix=True, density=1)
+    builder = make_articulation_builder(asset_name="lamp", loader=loader)
+    return builder.build(name=name)
+
+def create_switch(scene:ManiSkillScene, name="switch"):
+    """ Create a switch from a SAPIEN urdf file."""
+    loader = make_urdf_loader(scene, scale=0.08, is_fix=True, density=50)
+    builder = make_articulation_builder(asset_name="switch", loader=loader)
+    return builder.build(name=name)
+
 def create_pen(scene:ManiSkillScene, name="pen"):
     """ Create a pen from a SAPIEN urdf file."""
     loader = make_urdf_loader(scene, scale=0.08, is_fix=False, density=50)

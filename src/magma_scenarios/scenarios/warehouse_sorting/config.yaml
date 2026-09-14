@@ -2,49 +2,6 @@
 # Copyright (c) 2026, Loan Bernat
 
 tools:
-  launch_cycle:
-    name:
-      - execute_full_sorting_cycle
-      - run_allocation_sequence
-      - process_assignment_cycle
-      - initiate_distribution_operation
-      - start_global_transfer_cycle
-    description:
-      - Launch a default cycle to sort all objects to their assigned areas.
-      - Execute a sorting sequence to distribute all references to their respective target zones.
-      - Start an automatic operation to classify and move every object to its destination.
-      - Initiate a complete sorting and placement cycle for all registered items.
-      - Run a global material allocation process to send each object to its designated area.
-
-    parameters:
-      assignment:
-        name:
-          - assignment
-          - sorting_map
-          - object_assignment
-          - distribution_plan
-          - allocation_dict
-        description:
-          - A dictionary mapping each object to its corresponding target area.
-          - Data structure linking object identifiers to their destination areas.
-          - Dictionary describing how objects should be sorted to their areas.
-          - Mapping between object names and their assigned locations.
-          - The allocation plan defining object–area associations for this cycle.
-
-      manu_order:
-        name:
-          - manufacturing_order
-          - manu_order
-          - production_order
-          - job_ref
-          - cycle_order
-        description:
-          - The Manufacturing Order associated with this sorting cycle.
-          - Identifier of the production order linked to the current cycle.
-          - Job reference defining the manufacturing context for this process.
-          - The task order number attached to this allocation operation.
-          - The manufacturing or job order related to the ongoing sorting sequence.
-
   take_obj:
     name:
       - grab_object

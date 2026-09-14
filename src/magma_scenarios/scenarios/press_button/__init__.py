@@ -1,15 +1,17 @@
-# SPDX-License-Identifier: BSD-2-Clause
-# Copyright (c) 2026, Loan Bernat
+"""Compatibility declarations derived from the scenario manifest."""
 
-SCENARIO_NAME = "press_button"
+from .manifest import SCENARIO
 
+SCENARIO_NAME = SCENARIO.id
 TASK_DEFINITIONS = {
-    "PressButtonDefinition": "button_definition:PressButtonDefinition",
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.definitions.items()
 }
-
 TASK_PRESETS = {
-    "ButtonPressOrdered": "button_preset:ButtonPressOrdered",
-    "ButtonPressNoOrdering": "button_preset:ButtonPressNoOrdering",
-    "ButtonPressPreset1": "button_preset:ButtonPressPreset1",
-    "ButtonPressPreset2": "button_preset:ButtonPressPreset2",
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.presets.items()
+}
+SKILLS = {
+    name: reference.removeprefix(__name__ + ".")
+    for name, reference in SCENARIO.skills.items()
 }

@@ -4,16 +4,15 @@
 
 from pathlib import Path
 
-from magma_core.base.tasks import BaseTask
-from magma_core.base.tasks_style import TaskStyle
+from magma_core.simulation.tasks import BaseTask
+from magma_core.simulation.stage import ConstraintBaseStage
+from magma_core.simulation.data_structures import SituationInit
 
 from .simple_tool import MakingCoffeeTool
 from .attributes import att, loaded_capsule_pose, dropped_mug_pose, build_people_assignment
 from .coffee_stages import (
     MakeOneCoffeStage,
-    ConstraintCoffeeStage,
     RefuseCoffee,
-    CoffeeCompositeStage,
     AskPeopleInTeamStage,
 )
 
@@ -34,28 +33,31 @@ named_instructions = [
 
     
 class BaseCoffee(BaseTask):
-    env_id = "MakeCoffee-v1"
+    maniskill_env_id = "MakeCoffee-v1"
 
     randomized_config_path = RANDOMIZED_CONFIG_PATH
 
     tools_constant = {"loaded_capsule_pose": loaded_capsule_pose, "dropped_mug_pose" : dropped_mug_pose, "base_pose" : sapien.Pose(p = [-0.1,0,0.4],q = [0,1,0,0])}
 
     Tools_cls = MakingCoffeeTool
-    all_task_attributes = att
+    situation_init = SituationInit(
+        att,
+        memory={"memory_list":["To prepare a coffee you must put the mug, place a capsule, then start the machine."]}
+    )
 
-class TestComposite(BaseCoffee):
+# class TestComposite(BaseCoffee):
 
-    name = "Test composite"
+#     name = "Test composite"
 
-    styles = []
-    approximal_difficulty = "Medium"
+#     styles = []
+#     approximal_difficulty = "Medium"
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.stages = [
-            MakeOneCoffeStage("milky","blabla",[],True),
-            CoffeeCompositeStage({"milky":1,"black":1})
-        ]
+#     def __init__(self) -> None:
+#         super().__init__()
+#         self.stages = [
+#             MakeOneCoffeStage("milky","blabla",[],True),
+#             CoffeeCompositeStage({"milky":1,"black":1})
+#         ]
    
 class ConstrainedPreset(BaseCoffee):
     """
@@ -63,14 +65,7 @@ class ConstrainedPreset(BaseCoffee):
     DIfficulty Medium to Hard.
     """
 
-    styles = [
-        TaskStyle.CONSTRAINED,
-        TaskStyle.LONG_STAGE
-    ]
-
     name = "Make Coffee under constraint"
-
-    randomized_config_path = "" # we let like this because we hardcode coffee in arguments
 
     def __init__(
             self,
@@ -86,11 +81,15 @@ class ConstrainedPreset(BaseCoffee):
         Medium : 1 constraint, Hard : 2+
         """
         super().__init__()
-        self.stages= [ConstraintCoffeeStage("To prepare a coffee you must have placed the mug and loaded the capsule before pressing the start button.")]
+        self.stages= [ConstraintBaseStage("To prepare a coffee you must have placed the mug and loaded the capsule before pressing the start button.")]
         for c in constraints:
-            self.stages.append(ConstraintCoffeeStage(c))
+            self.stages.append(ConstraintBaseStage(c))
         self.stages.append(RefuseCoffee(instruction_which_must_fail, verif_prompt="The robot must refuse to make a coffee for the user."))
-        self.stages.append(MakeOneCoffeStage(coffee_to_make, instruction_which_must_succeed, [],flag_answer=True))
+        self.stages.append(MakeOneCoffeStage(
+            coffee_to_make, 
+            instruction_which_must_succeed,
+            flag_answer=True
+        ))
 
         if len(constraints) > 1:
             self.approximal_difficulty = "Hard"
@@ -100,7 +99,6 @@ class ConstrainedPreset(BaseCoffee):
 
 class TeamCoffePreset(BaseCoffee):
     name = "team assinement inside coffe scenario"
-    styles = []
 
     def __init__(self, nb_team : int = 2, nb_people_per_team : int = 4) :
         super().__init__()
@@ -127,13 +125,12 @@ class TeamCoffePreset(BaseCoffee):
             else:
                 coffee_sentence += "."
 
-        self.stages = [ConstraintCoffeeStage(coffee_sentence)]
+        self.stages = [ConstraintBaseStage(coffee_sentence)]
         self.stages.append(AskPeopleInTeamStage(random_team, assigned_members))
         for team_member in team_dict[random_team] :
             self.stages.append(MakeOneCoffeStage(
                 instruction = random.choice(named_instructions).format(name = team_member),
                 capsule = preference_coffee[team_member],
-                add_memory = [],
                 flag_answer = True
             ))
         self.approximal_difficulty = "Hard"

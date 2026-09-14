@@ -1,14 +1,21 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-from magma_core.base.tools import BaseToolsAPI, register_tool
-from magma_core.base.data_structures import Log, ToolExecution, ToolResult, Observation
+from magma_core.simulation.tools import BaseToolsAPI, register_tool
+from magma_core.simulation.data_structures import (
+    Log,
+    Observation,
+    ToolErrorSupport,
+    ToolExecution,
+    ToolResult,
+)
 
 from typing import Dict, List
 import sapien, torch
 import numpy as np
 
 from .helper import BTN_STROKE
+from magma_scenarios.templates.errors import OneShotToolFailureError
 
 class Tool(BaseToolsAPI):
 
@@ -19,28 +26,34 @@ class Tool(BaseToolsAPI):
 
         # pose to move above the object
         above_obj_pos = sapien.Pose(
-            p=obj_pos + [0,0,obj_pos[2]+SEUIL],
+            p=obj_pos + [0,0,SEUIL],
             q = [0,1,0,0]
             )
 
         # poses to start and stop pushing
         start_push_pos = sapien.Pose(
-            p=obj_pos + [0,0,obj_pos[2]+button_HEIGHT/2],
+            p=obj_pos + [0,0,BTN_STROKE],
             q = [0,1,0,0]
             )
         end_push_pos = sapien.Pose(
-            p=obj_pos + [0,0,obj_pos[2]+button_HEIGHT/2-BTN_STROKE],
+            p=obj_pos + [0,0,-BTN_STROKE-button_HEIGHT],
             q = [0,1,0,0]
             )
-
         # robot pose sequence to perform the task
         return ["CLOSE", above_obj_pos, start_push_pos, end_push_pos, above_obj_pos]
 
     @register_tool(
             description="Press a button.",
             params_spec={
-                "id": {"description": "The name of the button to press", "type": str}
-            }
+                "id": {"description": "Name of the button to press.", "type": str}
+            },
+            errors=[
+                ToolErrorSupport(
+                    OneShotToolFailureError,
+                    pre=True,
+                    post=False,
+                )
+            ],
     )
     def press_button(self, obs : Observation, env_id, params : Dict) -> ToolExecution:
         """tool to press a button"""

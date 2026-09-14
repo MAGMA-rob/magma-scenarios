@@ -1,25 +1,34 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 
-#Author: Mathieu Zimmermann
-from typing import Any, Dict, Union
-
+# Author: Mathieu Zimmermann
 from math import pi
+from pathlib import Path
+from typing import Dict
+
 import numpy as np
 import sapien
 import torch
 from transforms3d.euler import euler2quat
 
-from magma_scenarios.envs.asset_lib import create_cardboard_box_builder, create_jar, create_pen, create_water_bottle
+from magma_scenarios.envs.asset_lib import create_cardboard_box_builder
+from magma_scenarios.envs.visual_assets import OBJECT_VISUALS
 
-from mani_skill.utils.building import actors
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
 
-from magma_core.base.envs import DefaultEnv
+from magma_core.simulation.envs import DefaultEnv
 
 containers_poses = [[-1,-0.25,-0.1], [-1,0.0,-0.1], [-1,0.25,-0.1],[-1,-0.5,-0.1], [-1,0.5,-0.1]]
+
+WAREHOUSE_OBJECTS = (
+    ("ref_obj_1", np.array([80, 140, 240, 255]) / 255, "electronic"),
+    ("ref_obj_2", np.array([220, 180, 60, 255]) / 255, "book"),
+    ("ref_obj_3", np.array([90, 190, 100, 255]) / 255, "pen"),
+)
+
+VISUAL_ASSETS_DIR = Path(__file__).resolve().parents[2] / "assets" / "visuel"
 
 # register the environment by a unique ID and specify a max time limit. Now once this file is imported you can do gym.make("CustomEnv-v0")
 @register_env("SortingCubesWarehouse-v1", max_episode_steps=200)
@@ -37,23 +46,11 @@ class WarehouseSortingEnv(DefaultEnv):
     cube_half_size = 0.02
     size_box = 0.2
     thickness_box = 0.01
-    USE_TV_OBJECTS = False
-
     def __init__(self, *args, robot_uids="panda", **kwargs):
         super().__init__(*args, robot_uids=robot_uids, robot_init_qpos_noise=0, **kwargs)
 
     def _load_agent(self, options: Dict, initial_agent_poses = sapien.Pose(p=[0, 0, 0])):
         return super()._load_agent(options, initial_agent_poses)
-
-    def _build_cube_object(self, name: str, color: np.ndarray):
-        return actors.build_cube(
-            self.scene,
-            half_size=self.cube_half_size,
-            color=color,
-            name=name,
-            body_type="dynamic",
-            initial_pose=sapien.Pose(p=[0, 0, self.cube_half_size]),
-        )
 
     def _load_scene(self, options: dict):
          # we use a prebuilt scene builder class that automatically loads in a floor and table.
@@ -62,18 +59,17 @@ class WarehouseSortingEnv(DefaultEnv):
         )
         self.table_scene.build()
 
-        if self.USE_TV_OBJECTS:
-            self.industrial_objects = [
-                create_water_bottle(self.scene, "ref_obj_1"),
-                create_jar(self.scene, "ref_obj_2"),
-                create_pen(self.scene, "ref_obj_3")
-            ]
-        else:
-            self.industrial_objects = [
-                self._build_cube_object("ref_obj_1", np.array([80, 140, 240, 255]) / 255),
-                self._build_cube_object("ref_obj_2", np.array([220, 180, 60, 255]) / 255),
-                self._build_cube_object("ref_obj_3", np.array([90, 190, 100, 255]) / 255),
-            ]
+        self.industrial_objects = [
+            self.build_box_object(
+                name=name,
+                half_size=(self.cube_half_size,) * 3,
+                color=color,
+                body_type="dynamic",
+                visual=OBJECT_VISUALS[visual_name],
+                visual_assets_dir=VISUAL_ASSETS_DIR,
+            )
+            for name, color, visual_name in WAREHOUSE_OBJECTS
+        ]
 
         self.containers = []
         self.cardboard_box = []
@@ -137,4 +133,4 @@ class WarehouseSortingEnv(DefaultEnv):
 
 @register_env("SortingCubesWarehouseTV-v1", max_episode_steps=200)
 class WarehouseSortingEnvTV(WarehouseSortingEnv):
-    USE_TV_OBJECTS = True
+    """Backward-compatible environment ID; visuals are controlled at runtime."""

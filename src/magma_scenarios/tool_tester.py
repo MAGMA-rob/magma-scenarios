@@ -1,19 +1,23 @@
+from __future__ import annotations
+
 # Author : Loan BERNAT
 # BSD-2-Clause
 
 # example command:
 # python3 -m magma_scenarios.tool_tester --nb_env 1 WarehouseSortingSimp
 
-import argparse, sys, ast
-from typing import Dict, Any, Optional
+import argparse, ast
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .executor import ToolsTestingExecutor
 import threading, queue
 from pathlib import Path
-import torch
+from magma_scenarios import load_preset
 
-from .executor import ToolsTestingExecutor
-from .registry_loader import load_preset
 from magma_core.configs import MAGMAConfig
 from magma_core.utils.text_utils import auto_cast
+from magma_core.domain import Call
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Launch a tool tester program to try your task")
@@ -23,7 +27,7 @@ def parse_args():
         help="Name of the task class to use (e.g., SortCubeRedCycleBluePick, PressButton)"
     )
     parser.add_argument(
-        "--nb_env", '-n',
+        '--nb-env', '--nb_env', '-n',
         type=int,
         default=2,
         help="The number of env to try"
@@ -53,36 +57,58 @@ def parse_args():
     args.extra = extra_args
     return args
 
-def parse_cmd(line: str) -> Dict[str, Any]:
+def _parse_value(node):
+    try:
+        return ast.literal_eval(node)
+    except (ValueError, SyntaxError):
+        if isinstance(node, ast.Name):
+            return node.id
+        return ast.unparse(node)
+
+
+def parse_cmd(line: str) -> list[Call]:
     line = line.strip()
     if not line:
-        return {}
+        return []
 
-    if "(" in line and line.endswith(")"):
-        name, argstr = line.split("(", 1)
-        name = name.strip()
-        argstr = argstr[:-1]  # drop trailing ')'
+    try:
+        expr = ast.parse(line, mode="eval").body
+    except SyntaxError:
+        return [Call(name=line,arguments={})]
 
-        arguments = {}
-        if argstr.strip():
-            for pair in argstr.split(","):
-                if "=" in pair:
-                    key, value = pair.split("=", 1)
-                    key = key.strip()
-                    value = value.strip()
-                    try:
-                        if '|' in value:
-                            value = value.replace('|',',')
-                        parsed_value = ast.literal_eval(value)
-                    except (ValueError, SyntaxError):
-                        parsed_value = value
-                    arguments[key] = parsed_value
-                else:
-                    # handle case with no '='
-                    arguments[pair.strip()] = None
-        return {"name": name, "arguments": arguments}
+    if not isinstance(expr, ast.Call):
+        return [Call(name=line,arguments={})]
+
+    robot_name = "panda"
+
+    if isinstance(expr.func, ast.Attribute) and isinstance(expr.func.value, ast.Name):
+        robot_name = expr.func.value.id
+        tool_name = expr.func.attr
+    elif isinstance(expr.func, ast.Name):
+        tool_name = expr.func.id
     else:
-        return {"name": line, "arguments": {}}
+        raise ValueError(f"Unsupported command syntax: {line}")
+
+    arguments = {}
+    
+
+    for keyword in expr.keywords:
+        if keyword.arg is None:
+            raise ValueError("**kwargs are not supported in tool tester commands")
+        arguments[keyword.arg] = _parse_value(keyword.value)
+
+    if expr.args:
+        raise ValueError("Positional arguments are not supported. Use key=value.")
+
+    tool_call = [
+        Call(
+            name=tool_name,
+            arguments=arguments,
+            target_robot_name=robot_name
+        )
+    ]
+
+    return tool_call
 
 def get_tools_name(tool_executor : ToolsTestingExecutor) -> str:
     tools = tool_executor.get_tools()
@@ -95,21 +121,19 @@ def get_tools_name(tool_executor : ToolsTestingExecutor) -> str:
     return s + "\n========\n"
 
 
-attributes = None
 def format_attributes(att : str) -> str:
     s= "=== Attributes ===\n"
     s+= att
     return s + "\n========\n"
 
+
 def input_thread(q: queue.Queue, tool_executor : ToolsTestingExecutor):
-    global attributes
     tools_names = get_tools_name(tool_executor)
     while True:
         try:
             print("\nAvailable tools:\n", tools_names, flush=True)
-            print(format_attributes(str(attributes)), flush=True)
-            print("> ", end="", flush=True)
-            line = sys.stdin.readline().strip()
+            print(format_attributes(str(tool_executor.attributes)), flush=True)
+            line = input("> ").strip()
             q.put(line)
         except (EOFError, KeyboardInterrupt):
             q.put("EXIT")
@@ -136,7 +160,8 @@ def resolve_config_path(path: Optional[str]) -> Optional[Path]:
     return None
 
 def main(args):
-    global attributes
+    import torch
+    from .executor import ToolsTestingExecutor
 
     default_path = resolve_config_path(None)
     magma_config = MAGMAConfig.load(default_path, accept_no_backend=True)
@@ -156,15 +181,17 @@ def main(args):
     cmd_queue = queue.Queue()
     
     
-    obs, _ = env.reset(seed=0,options=tool_executor.get_env_options(0)) # reset with a seed for determinism
-    situation = tool_executor.get_init_situation(0)
+    obs, _ = tool_executor.reset_environment(
+        tool_executor.get_env_options(),
+        seed=0,
+        reconfigure=False,
+    )
     threading.Thread(target=input_thread, args=(cmd_queue,tool_executor), daemon=True).start()
     actions = None
     stopped = []
-    attributes = situation.attributes
-    print("INSTRUCTION : ", situation.instruction.get_content())
+    print("INSTRUCTION : ", tool_executor.get_instruction(0).get_content())
     while True:
-        env.render_human()
+        env.unwrapped.render_human()
 
         if not actions:
             try:
@@ -176,12 +203,16 @@ def main(args):
                 if line == "EXIT":
                     break
                 elif line.strip() == "reset":
-                    obs, _ = env.reset(seed=0,options=tool_executor.get_env_options(0))
+                    obs, _ = tool_executor.reset_environment(
+                        tool_executor.get_env_options(),
+                        seed=0,
+                        reconfigure=False,
+                    )
                     continue
                 else:
                     cmd = parse_cmd(line)
-                    print("CMD : ", cmd)
-                    actions = {k: cmd.copy() for k in range(args.nb_env)}
+                    print("CMD : ", [c.to_string() for c in cmd])
+                    actions = {k: cmd for k in range(args.nb_env)}
                     tool_executor.compute_actions(
                         tools_call=actions
                     )
@@ -199,15 +230,6 @@ def main(args):
                 print("RETURN STATUS: ", val)
                 out = tool_executor.check_env_state(obs)
                 print("REWARD: ", out)
-                if val['att_modif']:
-                    if all([score != -1 for score in out]):
-                        for action, content in val['att_modif']:
-                            if action == "ADD":
-                                attributes[content[0]].append(content[1])
-                            else:
-                                attributes[content[0]].remove(content[1])
-                    else:
-                        print("[TESTER] Skipping att modif due to no-stage completion")
             actions = None
         
     env.close()

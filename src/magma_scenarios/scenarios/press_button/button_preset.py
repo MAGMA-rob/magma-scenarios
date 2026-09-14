@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026, Loan Bernat
 # Author: Arthur TANNEAU
-from magma_core.base.data_structures import UserInstruction, EmptyInstruction, Instruction, Log, Situation
-from magma_core.base.tasks import BaseTask
-from magma_core.base.tasks_style import TaskStyle
+from magma_core.simulation.data_structures import UserInstruction, EmptyInstruction, SituationInit
+from magma_core.simulation.tasks import BaseTask
+from magma_core.simulation.stage import ConstraintBaseStage
 
 import random
 from typing import List
@@ -11,9 +11,21 @@ from pathlib import Path
 
 from .tool import Tool
 from .helper import attributes
-from .button_stages import PressMultipleButton, PressButton, PressConstraintStage
+from .button_stages import PressMultipleButton, PressButton
 
-class ButtonPressNoOrdering(BaseTask):
+class BaseButton(BaseTask):
+
+    maniskill_env_id = "PressButtonBasic-v1"
+    randomized_config_path = str(Path(__file__).parent.joinpath("press_button_cfg.yaml"))
+    Tools_cls = Tool
+    all_task_attributes = attributes
+    situation_init = SituationInit(
+        attributes=attributes,
+        all_task_attributes=attributes
+    )
+
+
+class ButtonPressNoOrdering(BaseButton):
     """
     Task to press multiple buttons without explicit ordering.
     You can specify any button betwen sw0 and sw4.
@@ -22,34 +34,27 @@ class ButtonPressNoOrdering(BaseTask):
     """
 
     name : str = "Pressing button without ordering"
-    env_id = "PressButtonBasic-v1"
-    randomized_config_path = str(Path(__file__).parent.joinpath("press_button_cfg.yaml"))
-    Tools_cls = Tool
 
-    styles = [
-        TaskStyle.LONG_STAGE
-    ]
-    all_task_attributes = attributes
-    
-    approximal_difficulty = "Easy"
-
-    def __init__(self, button_names : List[str] = ["sw2","sw1","sw2"], instruction : str = "Can you press the button 2 two times and one time the button one") -> None:
+    def __init__(
+            self,
+            button_names : List[str] = ["sw2","sw1"],
+            instruction : str = "Can you press the button 2 and button one"
+        ) -> None:
         """
         You can set an instruction and the list of button that need to be pressed according to your instruction.
         """
         super().__init__()
+        self.situation_init.attributes = {"objects": ["sw0","sw1","sw2"]}
         main_instruction = UserInstruction(instruction)
         self.stages = []
-        a = ["sw0","sw1","sw2"]
-        for i in range(1,len(a)+1):
+        for i in range(1,len(button_names)+1):
             self.stages.append(
                 PressMultipleButton(i,button_names,main_instruction,False)
             )
-            self.stages[-1].situation.attributes = {"objects":a}
             main_instruction = EmptyInstruction()
-    
 
-class ButtonPressOrdered(BaseTask):
+
+class ButtonPressOrdered(BaseButton):
     """
     Task to press multiple buttons with an explicit order communicated by the user in a instruction.
     You can specify any button betwen sw0 and sw4.
@@ -57,17 +62,7 @@ class ButtonPressOrdered(BaseTask):
     Difficulty range from easy to medium
     """
 
-    name : str = "Pressing button without ordering"
-    env_id = "PressButtonBasic-v1"
-    randomized_config_path = str(Path(__file__).parent.joinpath("press_button_cfg.yaml"))
-    Tools_cls = Tool
-
-    styles = [
-        TaskStyle.LONG_STAGE
-    ]
-    all_task_attributes = attributes
-
-    approximal_difficulty = "Medium"
+    name : str = "Pressing button ordered"
     
 
     def __init__(self, sequence_of_buttons : List[str] = ["sw0","sw0","sw4"], instruction : str = "Please press two times sw0 then sw4?") -> None:
@@ -85,26 +80,15 @@ class ButtonPressOrdered(BaseTask):
             )
             main_instruction = EmptyInstruction()
 
-class ButtonPressPreset2(BaseTask):
+class ButtonPressPreset2(BaseButton):
 
     name : str = "Complex button pressing instruction"
-    env_id = "PressButtonBasic-v1"
-    randomized_config_path = str(Path(__file__).parent.joinpath("press_button_cfg.yaml"))
-    Tools_cls = Tool
-
-    styles = [
-        TaskStyle.CONSTRAINED,
-        TaskStyle.LONG_STAGE
-    ]
-
-    all_task_attributes = attributes
-
-    approximal_difficulty = "Medium"
 
     def __init__(self, nb_of_stage : int = 8) -> None:
         btn = attributes["objects"].copy()
         random.shuffle(btn)
         att = btn[:-2]
+        self.situation_init.attributes = {"objects":att}
 
         self.stages = []
         for i in range(nb_of_stage):
@@ -114,30 +98,15 @@ class ButtonPressPreset2(BaseTask):
                     PressButton(btns[0], UserInstruction(f"Ok press {btns[0]}, then {btns[1]}"), last=False),
                     PressButton(btns[1], EmptyInstruction(), last=True),
                 ])
-                self.stages[-2].situation.attributes = {"objects":att}
-                self.stages[-1].situation.attributes = {"objects":att}
             else:
                 b = random.choice(att)
                 self.stages.append(PressButton(b, UserInstruction(f"Let's press {b} now"), last=True))    
-            self.stages[-1].situation.attributes = {"objects":att}
             
         super().__init__()
 
-class ButtonPressPreset1(BaseTask):
+class ButtonPressPreset1(BaseButton):
 
     name : str = "Button press constraint"
-    env_id = "PressButtonBasic-v1"
-    randomized_config_path = str(Path(__file__).parent.joinpath("press_button_cfg.yaml"))
-    Tools_cls = Tool
-
-    styles = [
-        TaskStyle.CONSTRAINED,
-        TaskStyle.LONG_STAGE
-    ]
-
-    all_task_attributes = attributes
-
-    approximal_difficulty = "Medium"
 
     def __init__(self, difficulty : int = 2, constraint_overriding : bool = False) -> None:
         btn = attributes["objects"].copy()[:-1]
@@ -147,7 +116,7 @@ class ButtonPressPreset1(BaseTask):
         self.stages : List = [
             PressButton(instruction=UserInstruction(f"Please press {btn[0]}"),button=btn[0], last=True),
             PressButton(instruction=UserInstruction(f"Please press {btn[1]}"),button=btn[1], last=True),
-            PressConstraintStage(f"Each time you are asked to press a button, press {first_btn} first")
+            ConstraintBaseStage(f"Each time you are asked to press a button, press {first_btn} first")
             ]
         random.shuffle(btn)
         for i in range(difficulty):
@@ -162,13 +131,13 @@ class ButtonPressPreset1(BaseTask):
 
             if constraint_overriding:
                 self.stages.extend([
-                    PressConstraintStage(f"Ok let's forget the order to press {first_btn} first, okay?"),
+                    ConstraintBaseStage(f"Ok let's forget the order to press {first_btn} first, okay?"),
                     PressButton(instruction=UserInstruction(f"Please press {btn_to_press} now"),button=btn_to_press, last=True)
                 ])
                 if i != difficulty-1:
                     first_btn = random.choice(past_btn)
                     self.stages.extend([
-                        PressConstraintStage(f"Hey now you need to press {first_btn} before pressing any buttons that i ask, understood?"),
+                        ConstraintBaseStage(f"Hey now you need to press {first_btn} before pressing any buttons that i ask, understood?"),
                     ])
             
         super().__init__()

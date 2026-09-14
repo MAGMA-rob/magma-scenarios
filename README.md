@@ -1,47 +1,77 @@
 # MAGMA Scenarios
 
-This repository contains a python package that store task implementation for use in [MAGMA-GEN](https://github.com/MAGMA-s/magma-gen) and [MAGMA-BENCH](https://github.com/MAGMA-s/magma-bench)
+Official robotic task scenarios and the shared scenario registry for MAGMA-GEN
+and MAGMA-BENCH. The package provides simulation environments, task definitions,
+presets, skills, and functions for discovering and loading scenarios from
+installed Python packages.
 
----
+You can add your own scenarios in a separate package without modifying this
+repository or the generation pipeline.
 
-## Getting started
+## Installation
 
-You can find in this package the task definition used in MAGMA. 
-
-- **benchmark** : contains benchmark task instance. Until september 2026, full benchmark is kept private. Only tasks used in the MAGMA-GEN paper are available.
-- **envs** : contains different maniskill3 environments which supports the different scenarios.
-- **scenarios** : contains per-scenario task definition (Tool API, Stage and potential preset)
-
----
-## How to use
-
-This repository must be cloned and installed in the same environment as the rest of MAGMA packages. magma_gen and magma-bench will import it to instanciate tasks.
-
-For development, install it from the cloned source in editable mode:
+Python 3.12 is required. Simulation installation has been checked on Linux x86_64.
 
 ```bash
-git clone https://github.com/MAGMA-rob/magma-scenarios.git
-cd magma-scenarios
-pip install "git+https://github.com/MAGMA-rob/magma-core.git@v0.1.0"
-pip install -e .
+python -m pip install "magma_scenarios==2.0.0"
 ```
 
-Editable installation keeps the package linked to this checkout, so changes to scenarios,
-tasks, configs, and assets are immediately visible to MAGMA-GEN.
+This installs `magma_core[simulation]` and the simulation dependencies, including
+ManiSkill, SAPIEN, and PyTorch. Version 2.0.0 is a stable release of this package;
+it accepts MAGMA Core starting at `2.0.0b1`, including subsequent stable v2
+releases. GPU rendering requires suitable system drivers.
 
----
-## How to contribute
+To install the release directly from GitHub:
 
-You can create your own scenario and open a merge request.
+```bash
+python -m pip install "magma_scenarios @ git+https://github.com/MAGMA-rob/magma-scenarios.git@v2.0.0"
+```
 
----
+This installs the scenario code from GitHub and resolves dependencies from PyPI.
+For development, clone this repository and run `python -m pip install -e .`.
 
-## Support
-You can contact me at l.bernat@sileane.com
+## Discover and load scenarios
 
-## Authors and acknowledgment
-Loan BERNAT (l.bernat@sileane.com)
-Abdelbasset HOUDASS (internship)
+```bash
+magma-scenarios list
+magma-scenarios show press_button
+```
 
-## License
-BSD 2 clauses
+The same registry is available in Python:
+
+```python
+from magma_scenarios import get_scenario, list_scenarios, load_definition, load_preset
+
+print(list_scenarios())
+manifest = get_scenario("press_button")
+definition_type = load_definition("press_button.Definition")
+preset_type = load_preset("press_button.ButtonPressOrdered")
+```
+
+Listing scenarios and reading manifests do not start a simulator or register
+simulation environments. Loading a definition, preset, or skill registers its
+scenario's environments and returns the component class; it does not create an
+environment. Benchmarks can register an environment by ID with
+`register_environment("PressButtonBasic-v1")`.
+
+Included scenarios cover button pressing, sorting, delivery, table cleaning,
+laundry, coffee preparation, and packaging. Use `magma-scenarios list` to see
+all installed scenario providers.
+
+## Add your own scenarios
+
+Please refer to the official [documentation site](https://magma-rob.github.io/docs/intro)
+
+## Development and support
+
+Use `magma-scenarios --help` for all commands. `test-tools` and `test-requests`
+provide interactive checks for scenario implementations; see their `--help`
+for configuration options.
+
+Report bugs through [GitHub Issues](https://github.com/MAGMA-rob/magma-scenarios/issues)
+or contact [Loan Bernat](mailto:l.bernat@sileane.com).
+
+## Authors and license
+
+Loan Bernat, with contributions from Abdelbasset Houdass (internship).
+Licensed under the [BSD 2-Clause License](https://github.com/MAGMA-rob/magma-scenarios/blob/main/LICENSE).

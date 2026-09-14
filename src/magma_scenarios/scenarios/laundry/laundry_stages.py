@@ -1,13 +1,18 @@
-import random
 from typing import List, Dict
-import torch
-from magma_core.base.stage.stage_template import AskingBaseStage
-from magma_core.utils.env_utils import is_object_inside_target
-from magma_core.base.stage import BaseTaskStage, ConstraintBaseStage
-from magma_core.base.data_structures import Situation, EmptyInstruction, UserInstruction, Instruction, Log
-from magma_core.base.goals import At, AtLeastCountAt
 
-from .attributes import all_clothes, all_detergents
+from magma_core.simulation.stage.stage_template import AskingBaseStage
+from magma_core.simulation.stage import (
+    BaseTaskStage,
+    StageErrorParameters,
+    StageGlobalParameters,
+)
+from magma_core.simulation.data_structures import (
+    EmptyInstruction, UserInstruction,
+    Instruction, Log, StageInput
+)
+from magma_core.simulation.goals import AtLeastCountAt
+from magma_core.utils.text_utils import join_with_and
+
 from .laundry_errors import GraspClothesFailureError
 
 class LoadClotheStage(BaseTaskStage):
@@ -15,53 +20,75 @@ class LoadClotheStage(BaseTaskStage):
     Stage to load desired clothes in the machine
     """
 
-    target_steps = 2
-    acceptance_steps = 1
+    target_tool_calls = 2
+    max_tool_calls = 3
 
-    def __init__(self, n : int, clothes_to_load : List[str], instruction : Instruction = EmptyInstruction()) -> None:       
-        super().__init__([AtLeastCountAt(clothes_to_load,"washing_machine_basket",n)],False, f"The goal of this stage is to have {n} clothes from the list {clothes_to_load} in the washing machine")
-        self.possible_errors = [
-            GraspClothesFailureError(clothes_to_load)
-        ]
-        self.situation = Situation(
-            memory = [
-                "To wash clothes, I need to put them inside the wash-machine, add detergents and then use 'wash'.",
-                "Detergent must always be put last in the wash-machine"
-            ],
-            preserved_memory_indices= [0],
-            attributes={
-                "clothes": all_clothes.copy(),
-                "additionals": ["detergent"],
-            },
-            instruction = instruction,
-            flag_answer_to_user=False
+    def __init__(
+        self,
+        n: int,
+        clothes_to_load: List[str],
+        instruction: Instruction = EmptyInstruction(),
+        linked_to_prev: bool | None = None,
+    ) -> None:
+        self.n = n
+        self.clothes_to_load = clothes_to_load.copy()
+        super().__init__(
+            [AtLeastCountAt(clothes_to_load,"washing_machine_basket",n)],
+            f"The goal of this stage is to have {n} clothes from the list {clothes_to_load} in the washing machine",
+            StageInput(
+                instruction = instruction,
+                flag_answer_to_user=False,
+                linked_to_prev=linked_to_prev,
+            ),
+            error_parameters=StageErrorParameters(
+                possible_errors=[GraspClothesFailureError(clothes_to_load)]
+            ),
         )
+
+    def _to_spec_arguments(self) -> Dict:
+        return {
+            "n": self.n,
+            "clothes_to_load": self.clothes_to_load.copy(),
+            "instruction": self.get_stage_input().instruction,
+            "linked_to_prev": self.get_stage_input().linked_to_prev,
+        }
 
 class WashStage(BaseTaskStage):
     """
     Stage for putting detergent and then launching the washing machine.
     """
 
-    target_steps = 3
-    acceptance_steps = 1
+    target_tool_calls = 4
+    max_tool_calls = 4
 
-    def __init__(self, target_detergent : str , target_clothes : list ) -> None:
+    def __init__(
+            self,
+            target_detergent: str,
+            target_clothes: list,
+        flag_answer: bool = True,
+        ) -> None:
+        self.target_tool_calls = 4 if flag_answer else 3
         super().__init__([],
-        True, 
-        f"The goal of this stage is to put the target detergent {target_detergent} into the washing machine then launch the cycle")
+        f"The goal of this stage is to put the target detergent {target_detergent} into the washing machine then launch the cycle",
+        StageInput(
+            instruction= EmptyInstruction(),
+            flag_answer_to_user=flag_answer,
+            linked_to_prev=True ## It will be set to true automatically
+        ),
+        StageGlobalParameters(
+            reset_at_end=True
+        ))
 
         self.to_clean = target_clothes
         self.target_detergent = target_detergent
-        self.situation = Situation(
-            memory = [],
-            preserved_memory_indices= [],
-            attributes={
-                "clothes": all_clothes.copy(),
-                "detergents": all_detergents.copy(),
-            },
-            instruction= EmptyInstruction(),
-            flag_answer_to_user=True
-        )
+        self.flag_answer = flag_answer
+
+    def _to_spec_arguments(self) -> Dict:
+        return {
+            "target_detergent": self.target_detergent,
+            "target_clothes": self.to_clean.copy(),
+            "flag_answer": self.flag_answer,
+        }
 
     def verif_log_completion(self, stage_log : List[Log], full_log : List[Log]) -> int:
         if len(stage_log) == 0:
@@ -82,38 +109,28 @@ class WashStage(BaseTaskStage):
         
         return 1
 
-class ContraintWashStage(ConstraintBaseStage):
-    def __init__(self,contraint : str) -> None:
-
-        mem = ["you must not mix different detergents in the same wash.",
-                "each cloth requires a specific detergent."]
-        
-        super().__init__(contraint,mem,{
-                "clothes": all_clothes.copy(),
-                "detergents": all_detergents.copy(),
-            },)
-
-
-
 class RefuseLaundryStage(BaseTaskStage):
-    acceptance_steps = 0
-    target_steps = 1
+    target_tool_calls = 1
+    max_tool_calls = 1
 
     def __init__(self, instruction, verif_prompt : str) -> None:
-        super().__init__([], False, "")
-
-        self.situation = Situation(
-            memory=[],
-            preserved_memory_indices=[],
-            attributes={
-                "all_clothes" : all_clothes.copy(),
-                "all_detergents" : all_detergents.copy()
-            },
-            flag_answer_to_user=False,
-            instruction=UserInstruction(instruction),
+        super().__init__(
+            [],
+            "The goal of this stage is to refuse the user request.",
+            StageInput(
+                flag_answer_to_user=False,
+                instruction=UserInstruction(instruction),
+            ),
+            StageGlobalParameters(
+                verification_prompt=verif_prompt
+            )
         )
 
-        self.verification_prompt = verif_prompt
+    def _to_spec_arguments(self) -> Dict:
+        return {
+            "instruction": self.get_stage_input().instruction.get_content(),
+            "verif_prompt": self.get_verification_prompt(),
+        }
 
 class AskClothesDetergentStage(AskingBaseStage):
     """
@@ -126,7 +143,7 @@ class AskClothesDetergentStage(AskingBaseStage):
         clothes_to_detergent : Dict[str, str],
         target_detergent : str ) -> None :
 
-        question = f"Wich clothes use '{target_detergent}' ?"
+        question = f"Which clothes use '{target_detergent}'?"
         clothes = [ cloth for cloth,detergent in clothes_to_detergent.items() 
             if detergent == target_detergent ]
             
@@ -138,21 +155,16 @@ class AskClothesDetergentStage(AskingBaseStage):
         super().__init__(
             question=question,
             answer=answer,
-            memory=[],
-            attributes={
-                "all_clothes" : all_clothes.copy(),
-                "all_detergents" : all_detergents.copy()
-            },
-            linked_to_prev=True,
             allow_tools_before_answer=False
         )
+        self.clothes_to_detergent = clothes_to_detergent.copy()
+        self.target_detergent = target_detergent
 
-def _join_values(values: List[str]) -> str:
-    if len(values) == 1:
-        return values[0]
-    if len(values) == 2:
-        return f"{values[0]} and {values[1]}"
-    return ", ".join(values[:-1]) + f", and {values[-1]}"
+    def _to_spec_arguments(self) -> Dict:
+        return {
+            "clothes_to_detergent": self.clothes_to_detergent.copy(),
+            "target_detergent": self.target_detergent,
+        }
 
 
 def _plural(word: str, values: List[str]) -> str:
@@ -168,7 +180,7 @@ class AskClothesDetergentStageInverse(AskingBaseStage):
     ) -> None:
 
         question = (
-            f"What {_plural('detergent', clothes)} can wash {_join_values(clothes)}?"
+            f"What {_plural('detergent', clothes)} can wash {join_with_and(clothes)}?"
         )
 
         grouped_clothes = {}
@@ -183,22 +195,24 @@ class AskClothesDetergentStageInverse(AskingBaseStage):
 
         if len(grouped_clothes) == 0:
             answer = (
-                f"No detergent is associated with {_join_values(clothes)}."
+                f"No detergent is associated with {join_with_and(clothes)}."
             )
         else:
             answer = ", ".join(
-                f"{_join_values(clothes_list)} can be washed with {detergent}"
+                f"{join_with_and(clothes_list)} can be washed with {detergent}"
                 for detergent, clothes_list in grouped_clothes.items()
             )
 
         super().__init__(
             question=question,
             answer=answer,
-            memory=[],
-            attributes={
-                "all_clothes" : all_clothes.copy(),
-                "all_detergents" : all_detergents.copy()
-            },
-            linked_to_prev=True,
             allow_tools_before_answer=False
         )
+        self.clothes_to_detergent = clothes_to_detergent.copy()
+        self.clothes = clothes.copy()
+
+    def _to_spec_arguments(self) -> Dict:
+        return {
+            "clothes_to_detergent": self.clothes_to_detergent.copy(),
+            "clothes": self.clothes.copy(),
+        }
