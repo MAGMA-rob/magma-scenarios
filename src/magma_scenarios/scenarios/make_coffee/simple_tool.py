@@ -76,7 +76,6 @@ class MakingCoffeeTool(BaseToolsAPI):
             q = [0,1,0,0]
             )
         for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
-            print(obj_name)
             if coffee_name == obj_name:
                 pods_name = obj_name
                 poses = compute_grasp_drop_trajectory(
