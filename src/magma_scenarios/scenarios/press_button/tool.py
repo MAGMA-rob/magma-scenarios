@@ -22,7 +22,8 @@ class Tool(BaseToolsAPI):
     def _compute_seq_push_poses(self, obj_pos: np.ndarray) -> List[sapien.Pose]:
         """ Compute action sequence to push an object, we suppose that the wrench is open by default. """
         SEUIL = 0.05
-        button_HEIGHT = 0.01
+        button_half_height = 0.005
+        press_depth = BTN_STROKE / 2 + 0.002
 
         # pose to move above the object
         above_obj_pos = sapien.Pose(
@@ -32,11 +33,11 @@ class Tool(BaseToolsAPI):
 
         # poses to start and stop pushing
         start_push_pos = sapien.Pose(
-            p=obj_pos + [0,0,BTN_STROKE],
+            p=obj_pos + [0, 0, BTN_STROKE + button_half_height],
             q = [0,1,0,0]
             )
         end_push_pos = sapien.Pose(
-            p=obj_pos + [0,0,-BTN_STROKE-button_HEIGHT],
+            p=start_push_pos.p + [0, 0, -press_depth],
             q = [0,1,0,0]
             )
         # robot pose sequence to perform the task
@@ -69,7 +70,8 @@ class Tool(BaseToolsAPI):
         # define verifier inline
         def verifier(new_obs: Dict) -> ToolResult:
             reason=f"No object with {id} id was found. You must pass the id of the button to press."
-            ok = new_obs["extra"][id][env_id][-1] < -BTN_STROKE/2
+            button_state = new_obs["extra"][id][env_id]
+            ok = button_state[-1] < -BTN_STROKE/2
             if ok:
                 reason = f"You have the {id} button pressed."
                 return ToolResult(ok,reason,logs=Log(content=id))

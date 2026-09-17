@@ -143,7 +143,7 @@ class PressButtonsEnv(DefaultEnv):
             # place buttons on line and with upward orientation
             i = 1
             for button in self.buttons:
-                pose = Pose.create_from_pq(p=[0, 0.05*len(self.buttons)-0.1*i, 0.051], q=euler2quat(0, -np.deg2rad(90), 0))
+                pose = Pose.create_from_pq(p=[0, 0.05*len(self.buttons)-0.1*i, 0.005], q=euler2quat(0, -np.deg2rad(90), 0))
                 button.set_pose(pose)
                 i = i+1
 
