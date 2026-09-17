@@ -67,6 +67,7 @@ class LaunchTool(BaseToolsAPI):
             )
 
         poses = compute_grasp_trajectory(self.get_agent(),obj["pose"][env_id].cpu().numpy())
+        poses.append(sapien.Pose(p=[0,0,0.3],q=[0,1,0,0]))
 
         def verifier(new_obs: dict) -> ToolResult:
             """The object must be in the gripper."""
