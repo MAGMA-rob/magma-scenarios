@@ -123,6 +123,7 @@ class LaunchTool(BaseToolsAPI):
             drop_seuil=0.2,
             approach_seuil=0.3
         ))
+        poses.append(sapien.Pose(p=[0,0,0.3],q=[0,1,0,0]))
 
         def verifier(new_obs: dict) -> ToolResult:
             """The object must be in the container and not in the gripper."""
