@@ -3,7 +3,7 @@
 
 [project]
 name = "magma_scenarios"
-version = "2.0.0"
+version = "2.0.1"
 description = "Official scenarios and extensible scenario registry for MAGMA-GEN and MAGMA-BENCH"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -14,6 +14,9 @@ dependencies = [
     "mani_skill",
     "PyYAML",
 ]
+
+[project.urls]
+Changelog = "https://github.com/MAGMA-rob/magma-scenarios/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["pytest"]
