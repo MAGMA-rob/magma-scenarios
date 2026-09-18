@@ -8,7 +8,12 @@ import numpy as np
 import sapien
 import torch
 
-from magma_scenarios.envs.asset_lib import create_cardboard_box_builder
+from magma_scenarios.scenarios.warehouse_sorting.att import (
+    AREAS,
+    AREA_POSITIONS,
+    AREA_SIZE,
+    OBJECT_POSITIONS,
+)
 
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
@@ -16,8 +21,6 @@ from mani_skill.utils.registration import register_env
 from mani_skill.sensors.camera import CameraConfig
 from mani_skill.utils import sapien_utils
 from magma_core.simulation.envs import DefaultEnv
-
-containers_poses = [[-1,-0.25,-0.1], [-1,0.0,-0.1], [-1,0.25,-0.1],[-1,-0.5,-0.1], [-1,0.5,-0.1]]
 
 WAREHOUSE_OBJECTS = (
     ("ref_obj_1", np.array([80, 140, 240, 255]) / 255),
@@ -36,11 +39,10 @@ class WarehouseSortingEnv(DefaultEnv):
 
     Randomizations
     --------------
-    Positions of references are randomized.
+    References are randomly assigned to three fixed, collision-safe positions.
     """
     cube_half_size = 0.02
-    size_box = 0.2
-    thickness_box = 0.01
+
     def __init__(self, *args, robot_uids="panda", **kwargs):
         super().__init__(*args, robot_uids=robot_uids, robot_init_qpos_noise=0, **kwargs)
 
@@ -74,13 +76,16 @@ class WarehouseSortingEnv(DefaultEnv):
             for name, color in WAREHOUSE_OBJECTS
         ]
 
-        self.containers = []
-        self.cardboard_box = []
-        box_builder = create_cardboard_box_builder(scene=self.scene)
-        for i in range(len(containers_poses)):
-            self.containers.append(
-                box_builder.build(name=f"area{i + 1}")
+        self.containers = [
+            self.create_box(
+                size=AREA_SIZE,
+                thickness=0.008,
+                height=0.05,
+                name=area_name,
+                initial_pose=sapien.Pose(p=position),
             )
+            for area_name, position in zip(AREAS, AREA_POSITIONS)
+        ]
 
 	
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
@@ -88,36 +93,19 @@ class WarehouseSortingEnv(DefaultEnv):
             b = len(env_idx)
             self.table_scene.initialize(env_idx)
 
-            # set cardboard box position and widely open
-            r = 0.15
             q = [1,0,0,0]
-            for i in range(len(containers_poses)):
-                p = containers_poses[i]
-                p_batched = torch.tensor(p).repeat(b,1)
-                box = self.containers[i]
-                qpos = box.get_qpos()
-                qpos[env_idx] = 0.6
-                box.set_qpos(qpos)
-                box.set_pose(Pose.create_from_pq(p=p_batched,q=q))
+            for container, position in zip(self.containers, AREA_POSITIONS):
+                xyz = torch.tensor(position, dtype=torch.float32).repeat(b, 1)
+                container.set_pose(Pose.create_from_pq(p=xyz, q=q))
 
-            available_cells = [(-r,-r),(-r,0),(-r,r),
-                (0,-r),(0,0),(0,r),
-                (r,-r),(r,0),(r,r)]
-            
-            q = [1, 0, 0, 0]
-            for elem_list in [self.industrial_objects]:
-                for elem in elem_list:
-                    #Get a random availaible cell
-                    random_index = torch.randint(0, len(available_cells), (1,)).item()
-                    # Get the random item
-                    random_cell = available_cells[random_index]
-                    available_cells.pop(random_index)
-
-                    xyz = torch.tensor([random_cell[0], random_cell[1], self.cube_half_size]).repeat(b, 1)
-
-                    obj_pose = Pose.create_from_pq(p=xyz, q=q)
-                    
-                    elem.set_pose(obj_pose)
+            fixed_positions = torch.tensor(OBJECT_POSITIONS, dtype=torch.float32)
+            position_indices = torch.stack([
+                torch.randperm(len(OBJECT_POSITIONS))
+                for _ in range(b)
+            ])
+            for object_index, industrial_object in enumerate(self.industrial_objects):
+                xyz = fixed_positions[position_indices[:, object_index]]
+                industrial_object.set_pose(Pose.create_from_pq(p=xyz, q=q))
 
     def _get_obs_extra(self, info: Dict):
         obs = dict(

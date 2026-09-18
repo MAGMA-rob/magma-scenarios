@@ -16,6 +16,7 @@ from magma_core.simulation.data_structures.situation import Instruction
 
 from magma_core.utils.text_utils import join_with_and, is_or_are
 from magma_scenarios.templates.errors import OneShotToolFailureError
+from .att import AREA_THRESHOLD
 
 from typing import List, Dict
 import torch
@@ -45,7 +46,7 @@ class AtLeastAssignedObjectCount(BaseGoal):
             count += is_object_inside_target(
                 _get_pose(obs["extra"][obj]),
                 _get_pose(obs["extra"][target]),
-                thresh=0.2,
+                thresh=AREA_THRESHOLD,
                 keep_tensor=True,
             ).int()
 
@@ -88,7 +89,12 @@ class ObjectToZone(BaseTaskStage):
         for obj, target in assignment.items():
             forbidden_areas = [area for area in known_areas if area != target]
             if forbidden_areas:
-                goals.append(NotAt(obj, forbidden_areas, True))
+                goals.append(NotAt(
+                    obj,
+                    forbidden_areas,
+                    True,
+                    thresh=AREA_THRESHOLD,
+                ))
 
         super().__init__(
             goals=goals,

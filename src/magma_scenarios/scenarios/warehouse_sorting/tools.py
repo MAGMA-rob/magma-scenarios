@@ -15,7 +15,7 @@ from magma_core.simulation.data_structures import Log
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 from magma_scenarios.templates.errors import OneShotToolFailureError
 
-from .att import AREAS, OBJECTS
+from .att import AREAS, AREA_THRESHOLD, OBJECTS
 
 from typing import Dict
 import sapien, torch
@@ -32,7 +32,7 @@ class WarehouseSortingTool(BaseToolsAPI):
             if is_object_inside_target(
                 obj_pose[env_id],
                 obs_extra[target][env_id],
-                thresh=0.2,
+                thresh=AREA_THRESHOLD,
                 keep_tensor=False
             ):
                 return True
@@ -125,7 +125,7 @@ class WarehouseSortingTool(BaseToolsAPI):
             if not is_object_inside_target(
                 obj_pose,
                 new_obs["extra"][area_name][env_id],
-                thresh=0.3,
+                thresh=AREA_THRESHOLD,
                 keep_tensor=False,
             ):
                 return ToolResult(False, reason=f"The object is not in the box and not in the gripper")
@@ -149,8 +149,8 @@ class WarehouseSortingTool(BaseToolsAPI):
             poses = compute_drop_trajectory(
                 self.get_agent(),
                 drop_pose=extra[area_name][env_id].cpu().numpy(),
-                drop_seuil=0.3,
-                approach_seuil=0.1,
+                drop_seuil=0.12,
+                approach_seuil=0.18,
             )
 
         return ToolExecution(
