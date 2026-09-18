@@ -45,7 +45,7 @@ class AtLeastAssignedObjectCount(BaseGoal):
             count += is_object_inside_target(
                 _get_pose(obs["extra"][obj]),
                 _get_pose(obs["extra"][target]),
-                thresh=0.1,
+                thresh=0.2,
                 keep_tensor=True,
             ).int()
 

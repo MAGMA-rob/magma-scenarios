@@ -15,10 +15,10 @@ from magma_core.simulation.data_structures import Log
 from magma_scenarios.utils import compute_grasp_trajectory, compute_drop_trajectory
 from magma_scenarios.templates.errors import OneShotToolFailureError
 
-from .att import AREAS
+from .att import AREAS, OBJECTS
 
 from typing import Dict
-import torch
+import sapien, torch
 
 class WarehouseSortingTool(BaseToolsAPI):
 
@@ -32,6 +32,7 @@ class WarehouseSortingTool(BaseToolsAPI):
             if is_object_inside_target(
                 obj_pose[env_id],
                 obs_extra[target][env_id],
+                thresh=0.2,
                 keep_tensor=False
             ):
                 return True
@@ -44,13 +45,19 @@ class WarehouseSortingTool(BaseToolsAPI):
         r = ""
 
         name_obj = params.get("obj", None)
+        if name_obj not in OBJECTS:
+            return ToolExecution(
+                poses=[],
+                verifier=None,
+                reason=f"Unknown object {name_obj}. Please use only reference objects.",
+            )
 
         for obj_name, obj_pos in obs.maniskill_obs["extra"].items():
-            if name_obj in obj_name:
+            if obj_name == name_obj:
                 if is_object_in_gripper(
                     obs.maniskill_obs["extra"]["agent_tcp"][env_id],
                     obj_pos[env_id],
-                    threshold=0.05,
+                    threshold=0.02,
                 ):
                     return ToolExecution(
                         poses=[],
@@ -65,6 +72,7 @@ class WarehouseSortingTool(BaseToolsAPI):
 
                 selected_object = obj_name
                 poses = compute_grasp_trajectory(self.get_agent(),obj_pos[env_id].cpu().numpy())
+                poses.append(sapien.Pose(p=[0,0,0.3],q=[0,1,0,0]))
                 break
         if not poses:
             r=f"No objects names corresponding to {name_obj}. You must pass the name of the object to take."
@@ -79,7 +87,7 @@ class WarehouseSortingTool(BaseToolsAPI):
                 ok = is_object_in_gripper(
                     new_obs["extra"]["agent_tcp"][env_id],
                     obj_pos[env_id],
-                    threshold=0.05,
+                    threshold=0.02,
                 )
                 if ok:
                     reason = f"You have a {name_obj} object in your gripper"
@@ -102,30 +110,48 @@ class WarehouseSortingTool(BaseToolsAPI):
         r = ""
         area_name = params.get("target", None)
 
+        if area_name not in AREAS or area_name not in obs.maniskill_obs["extra"]:
+            return ToolExecution(
+                poses=[],
+                verifier=None,
+                reason=f"Unknown area {area_name}. Please use only known areas.",
+            )
+
         def verifier(new_obs: Dict) -> ToolResult:
             # Check if the object is no longer in the gripper and is now in the area
             obj_pose = new_obs["extra"][obj_in_gripper][env_id]
             if is_object_in_gripper(new_obs["extra"]["agent_tcp"][env_id], obj_pose):
                 return ToolResult(False, reason=f"The object is still in the gripper")
-            if not is_object_inside_target(obj_pose, new_obs["extra"][area_name][env_id], keep_tensor=False):
+            if not is_object_inside_target(
+                obj_pose,
+                new_obs["extra"][area_name][env_id],
+                thresh=0.3,
+                keep_tensor=False,
+            ):
                 return ToolResult(False, reason=f"The object is not in the box and not in the gripper")
             return ToolResult(True, reason=f"Successfully depose {obj_in_gripper} in {area_name}")
         
-        reduced_obs = {k: v[env_id][:3] for k, v in obs.maniskill_obs["extra"].items()}
-        agent_tcp_pos = reduced_obs.pop("agent_tcp", None)
-        obj_in_gripper = find_object_in_gripper(
-            agent_tcp_pos,
-            reduced_obs
-        )
+        extra = obs.maniskill_obs["extra"]
+        object_poses = {
+            name: extra[name][env_id][:3]
+            for name in OBJECTS
+            if name in extra
+        }
+        if object_poses:
+            obj_in_gripper = find_object_in_gripper(
+                extra["agent_tcp"][env_id][:3],
+                object_poses,
+            )
 
         if obj_in_gripper is None:
             r = f"There is no object currently in the gripper. You must pick one first."
         else:
-            if not area_name in obs.maniskill_obs["extra"]:
-                r = f"Unknown area {area_name}. Please use only known area."
-            else:
-                poses = compute_drop_trajectory(self.get_agent(), drop_pose=obs.maniskill_obs["extra"][area_name][env_id].cpu().numpy(),
-                                                drop_seuil=0.3, approach_seuil=0.2)
+            poses = compute_drop_trajectory(
+                self.get_agent(),
+                drop_pose=extra[area_name][env_id].cpu().numpy(),
+                drop_seuil=0.3,
+                approach_seuil=0.1,
+            )
 
         return ToolExecution(
             poses=poses,

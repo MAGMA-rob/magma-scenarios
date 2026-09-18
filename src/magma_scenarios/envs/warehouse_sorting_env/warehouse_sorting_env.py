@@ -2,33 +2,28 @@
 # Copyright (c) 2026, Loan Bernat
 
 # Author: Mathieu Zimmermann
-from math import pi
-from pathlib import Path
 from typing import Dict
 
 import numpy as np
 import sapien
 import torch
-from transforms3d.euler import euler2quat
 
 from magma_scenarios.envs.asset_lib import create_cardboard_box_builder
-from magma_scenarios.envs.visual_assets import OBJECT_VISUALS
 
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.registration import register_env
-
+from mani_skill.sensors.camera import CameraConfig
+from mani_skill.utils import sapien_utils
 from magma_core.simulation.envs import DefaultEnv
 
 containers_poses = [[-1,-0.25,-0.1], [-1,0.0,-0.1], [-1,0.25,-0.1],[-1,-0.5,-0.1], [-1,0.5,-0.1]]
 
 WAREHOUSE_OBJECTS = (
-    ("ref_obj_1", np.array([80, 140, 240, 255]) / 255, "electronic"),
-    ("ref_obj_2", np.array([220, 180, 60, 255]) / 255, "book"),
-    ("ref_obj_3", np.array([90, 190, 100, 255]) / 255, "pen"),
+    ("ref_obj_1", np.array([80, 140, 240, 255]) / 255),
+    ("ref_obj_2", np.array([220, 180, 60, 255]) / 255),
+    ("ref_obj_3", np.array([90, 190, 100, 255]) / 255),
 )
-
-VISUAL_ASSETS_DIR = Path(__file__).resolve().parents[2] / "assets" / "visuel"
 
 # register the environment by a unique ID and specify a max time limit. Now once this file is imported you can do gym.make("CustomEnv-v0")
 @register_env("SortingCubesWarehouse-v1", max_episode_steps=200)
@@ -52,6 +47,16 @@ class WarehouseSortingEnv(DefaultEnv):
     def _load_agent(self, options: Dict, initial_agent_poses = sapien.Pose(p=[0, 0, 0])):
         return super()._load_agent(options, initial_agent_poses)
 
+    @property
+    def _default_human_render_camera_configs(self):
+        # this is just like _sensor_configs, but for adding cameras used for rendering when you call env.render()
+        # when render_mode="rgb_array" or env.render_rgb_array()
+        # Another feature here is that if there is a camera called render_camera, this is the default view shown initially when a GUI is opened
+        pose = sapien_utils.look_at([1, 0, 0.6], [0.0, 0.0, 0.35])
+        return CameraConfig(
+            "render_camera", pose=pose, width=512, height=512, fov=1, near=0.01, far=100
+        )
+
     def _load_scene(self, options: dict):
          # we use a prebuilt scene builder class that automatically loads in a floor and table.
         self.table_scene = TableSceneBuilder(
@@ -65,10 +70,8 @@ class WarehouseSortingEnv(DefaultEnv):
                 half_size=(self.cube_half_size,) * 3,
                 color=color,
                 body_type="dynamic",
-                visual=OBJECT_VISUALS[visual_name],
-                visual_assets_dir=VISUAL_ASSETS_DIR,
             )
-            for name, color, visual_name in WAREHOUSE_OBJECTS
+            for name, color in WAREHOUSE_OBJECTS
         ]
 
         self.containers = []
@@ -93,10 +96,7 @@ class WarehouseSortingEnv(DefaultEnv):
                 p_batched = torch.tensor(p).repeat(b,1)
                 box = self.containers[i]
                 qpos = box.get_qpos()
-                qpos[0][0] = 0.6
-                qpos[0][1] = 0.6
-                qpos[0][2] = 0.6
-                qpos[0][3] = 0.6
+                qpos[env_idx] = 0.6
                 box.set_qpos(qpos)
                 box.set_pose(Pose.create_from_pq(p=p_batched,q=q))
 
@@ -104,7 +104,7 @@ class WarehouseSortingEnv(DefaultEnv):
                 (0,-r),(0,0),(0,r),
                 (r,-r),(r,0),(r,r)]
             
-            q = euler2quat(0, pi/2, 0)
+            q = [1, 0, 0, 0]
             for elem_list in [self.industrial_objects]:
                 for elem in elem_list:
                     #Get a random availaible cell
@@ -114,7 +114,6 @@ class WarehouseSortingEnv(DefaultEnv):
                     available_cells.pop(random_index)
 
                     xyz = torch.tensor([random_cell[0], random_cell[1], self.cube_half_size]).repeat(b, 1)
-                    xyz[..., :2] = xyz[..., :2] + torch.rand((b, 2)) * 0.05 - 0.05
 
                     obj_pose = Pose.create_from_pq(p=xyz, q=q)
                     
@@ -133,4 +132,4 @@ class WarehouseSortingEnv(DefaultEnv):
 
 @register_env("SortingCubesWarehouseTV-v1", max_episode_steps=200)
 class WarehouseSortingEnvTV(WarehouseSortingEnv):
-    """Backward-compatible environment ID; visuals are controlled at runtime."""
+    """Backward-compatible environment ID."""

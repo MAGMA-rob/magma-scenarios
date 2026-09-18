@@ -138,7 +138,7 @@ def compute_drop_trajectory(agent : BaseAgent, drop_pose: Union[np.ndarray, torc
     if not isinstance(drop_pose, sapien.Pose):
         _drop_pose = to_numpy(drop_pose)
         drop_pose = sapien.Pose(
-            p= _drop_pose[:3]+[0,0,_drop_pose[2]+drop_seuil],
+            p=_drop_pose[:3] + [0, 0, drop_seuil],
             q = [0, 1, 0, 0]
         )
 
