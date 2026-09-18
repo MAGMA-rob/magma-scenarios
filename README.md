@@ -13,18 +13,18 @@ repository or the generation pipeline.
 Python 3.12 is required. Simulation installation has been checked on Linux x86_64.
 
 ```bash
-python -m pip install "magma_scenarios==2.0.1"
+python -m pip install "magma_scenarios==2.0.2"
 ```
 
 This installs `magma_core[simulation]` and the simulation dependencies, including
-ManiSkill, SAPIEN, and PyTorch. Version 2.0.1 is a stable release of this package;
+ManiSkill, SAPIEN, and PyTorch. Version 2.0.2 is a stable release of this package;
 it accepts MAGMA Core starting at `2.0.0b1`, including subsequent stable v2
 releases. GPU rendering requires suitable system drivers.
 
 To install the release directly from GitHub:
 
 ```bash
-python -m pip install "magma_scenarios @ git+https://github.com/MAGMA-rob/magma-scenarios.git@v2.0.1"
+python -m pip install "magma_scenarios @ git+https://github.com/MAGMA-rob/magma-scenarios.git@v2.0.2"
 ```
 
 This installs the scenario code from GitHub and resolves dependencies from PyPI.
