@@ -11,10 +11,13 @@ def create_cardboard_box_builder(scene:ManiSkillScene) -> ArticulationBuilder:
     builder = make_articulation_builder(asset_name="box-100154", loader=loader)
     return builder
 
-def create_trashcan(scene:ManiSkillScene, name="trashcan"):
+def create_trashcan(scene: ManiSkillScene, name="trashcan", add_collision=True):
     """ Create a create_trashcan from a SAPIEN urdf file."""
     loader = make_urdf_loader(scene, scale=0.3, is_fix=True, density=1)
     builder = make_articulation_builder(asset_name="trashcan", loader=loader)
+    if not add_collision:
+        for link_builder in builder.link_builders:
+            link_builder.collision_records = []
     return builder.build(name=name)
 
 def create_lamp(scene:ManiSkillScene, name="lamp"):

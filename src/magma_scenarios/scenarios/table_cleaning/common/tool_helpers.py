@@ -200,7 +200,10 @@ class TableCleaningToolHelpers:
         tcp_pose = self._tcp_pose(obs, env_id, tcp_key)
         object_state = extra[held_object]["state"][env_id]
 
-        if target in container_targets:
+        if target == "trashcan":
+            drop_seuil = 0.15
+            approach_seuil = 0.15
+        elif target in container_targets:
             drop_seuil = 0.2
             approach_seuil = 0.35
         else:

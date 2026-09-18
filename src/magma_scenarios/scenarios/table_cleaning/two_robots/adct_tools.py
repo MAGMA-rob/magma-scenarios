@@ -42,7 +42,7 @@ TCP_KEYS = {
 
 ROBOT_POSE = {
     TABLE_ROBOT: sapien.Pose(
-        p=[-7.0000e-01,  6.6501e-01,  1.6978e-01],
+        p=[-6.0000e-01,  6.6501e-01,  1.6978e-01],
         q=[-9.3028e-08,  7.0711e-01,
          -7.0711e-01,  8.6920e-08], 
     ),
@@ -109,30 +109,20 @@ class AdvancedCleaningTools(BaseToolsAPI, TableCleaningToolHelpers):
                 continue
 
             pos = data["pose"][env_id][:3]
-            x, y, _ = pos
 
             if "state" in data:
                 state = int(data["state"][env_id].item())
                 if state == DIRTY_STATE:
                     dirty_objects.append(name)
 
-            if x > -0.4 and y < 0:
-                detected_obj["table"][name] = pos
-
-            if x < -0.6 and y > 0.2:
-                detected_obj["trashcan"][name] = pos
-
-            if x < -0.35 and y < 0:
-                detected_obj["drying_zone"][name] = pos
-
-            if x > 0.2 and y < 0:
-                detected_obj["sink"][name] = pos
-
-            if -0.4 < x < -0.12 and y > 0:
-                detected_obj["food_storage"][name] = pos
-
-            if x > -0.12 and y > 0:
-                detected_obj["dish_storage"][name] = pos
+            location = self._object_location(
+                obs,
+                env_id,
+                name,
+                ADVANCED_LOCATIONS,
+            )
+            if location is not None:
+                detected_obj[location][name] = pos
 
         def verifier(new_obs: Dict) -> ToolResult:
             if all(not objects for objects in detected_obj.values()):
@@ -253,6 +243,7 @@ class AdvancedCleaningTools(BaseToolsAPI, TableCleaningToolHelpers):
         elif robot_name == TABLE_ROBOT:
             allowed_targets = (
                 "table",
+                "drying_zone",
                 "food_storage",
                 "dish_storage",
                 "trashcan",
@@ -272,6 +263,12 @@ class AdvancedCleaningTools(BaseToolsAPI, TableCleaningToolHelpers):
             if target == "dish_storage":
                 if held_object not in dishware or state != CLEAN_STATE:
                     return self._return_failed_tool("Only clean dishware can be stored.")
+
+            if target == "drying_zone":
+                if held_object not in dishware or state != CLEAN_STATE:
+                    return self._return_failed_tool(
+                        "Only clean dishware can be put in the drying zone."
+                    )
 
         tool_execution = self._put_object(
             obs=obs,

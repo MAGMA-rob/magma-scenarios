@@ -36,7 +36,9 @@ att = {
 
 generic_rules = [
     "Dirty dishware must be cleaned in the sink and dirty food must be placed in the trashcan.",
-    "Only dish_robot can put object in the sink"
+    "dish_robot can only take dishware from the table, sink, or drying_zone.",
+    "Both robots can take from and put clean dishware in drying_zone.",
+    "Only table_robot can access food_storage and dish_storage.",
 ]
 generic_rules_simplified = [
     "Dirty food cannot be cleaned or stored and must be placed in the trashcan.",

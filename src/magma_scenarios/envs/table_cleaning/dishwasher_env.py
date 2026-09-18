@@ -4,23 +4,19 @@
 from math import pi
 from typing import Dict
 
-import random
 import sapien
 import torch
 from mani_skill.utils.registration import register_env
 from transforms3d.euler import euler2quat
 
 from magma_core.simulation.envs import DefaultEnv
-from magma_scenarios.envs.asset_lib import create_lamp, create_switch, create_wash_machine
+from magma_scenarios.envs.asset_lib import create_wash_machine
 
 from .common import CleanTableCommonMixin
 
 
 @register_env("Cleaning_Table", max_episode_steps=200)
 class CleaningTableEnv(CleanTableCommonMixin, DefaultEnv):
-    switch_pose = [0.2, -0.3, 0.3]
-    lamp_pose = [0.5, 0, 0.8]
-
     washing_machine_pose = [-0.8, -0.5, 0]
     washing_machine_collision_pose = [-0.8, -0.5, 0.02]
 
@@ -37,9 +33,6 @@ class CleaningTableEnv(CleanTableCommonMixin, DefaultEnv):
             0.3,
         )
 
-        self.switch = create_switch(self.scene)
-        self.lamp = create_lamp(self.scene)
-
     def _initialize_episode(self, env_idx: torch.Tensor, options: dict):
         self._load_layout_options(options)
         self._initialize_common_episode(env_idx)
@@ -47,22 +40,6 @@ class CleaningTableEnv(CleanTableCommonMixin, DefaultEnv):
 
     def _initialize_fixed_actors(self):
         self._initialize_common_fixed_actors()
-        self.lamp.set_pose(
-            sapien.Pose(
-                p=self.lamp_pose,
-                q=euler2quat(0, 0, 0),
-            )
-        )
-
-        self.switch.set_pose(
-            sapien.Pose(
-                p=self.switch_pose,
-                q=euler2quat(0, 0, 0),
-            )
-        )
-        qpos = self.switch.get_qpos()
-        qpos[0] = int(random.random() > 0)
-        self.switch.set_qpos(qpos)
         self._set_first_joint(self.trash, pi)
 
         self.machine_actor.set_pose(
@@ -72,11 +49,6 @@ class CleaningTableEnv(CleanTableCommonMixin, DefaultEnv):
             )
         )
         self._set_first_joint(self.machine_actor, pi / 2)
-
-
-    def is_switch_on(self):
-        qpos = self.switch.get_qpos()
-        return (qpos[:, 0] > 0.2).to(torch.int32)
 
     def _get_obs_extra(self, info: Dict):
         obs = {
@@ -93,12 +65,5 @@ class CleaningTableEnv(CleanTableCommonMixin, DefaultEnv):
             self.wash_machine_collision.name,
             self.wash_machine_collision.pose.raw_pose,
         )
-        self._add_static_obs(
-            obs,
-            self.switch.name,
-            self.switch.pose.raw_pose,
-            light=self.is_switch_on(),
-        )
-
         self._add_object_obs(obs)
         return obs

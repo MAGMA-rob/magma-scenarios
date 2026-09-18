@@ -40,7 +40,7 @@ class AdvancedCleaningTableEnv(CleanTableCommonMixin, DefaultMultiAgentEnv):
 
     
     table_robot_pose = sapien.Pose(
-        p=[-0.7, 0.05, 0],
+        p=[-0.6, 0.05, 0],
         q=euler2quat(0, 0, pi/2),
     )
 

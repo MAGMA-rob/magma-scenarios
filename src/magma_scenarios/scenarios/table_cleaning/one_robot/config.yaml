@@ -23,12 +23,12 @@ tools:
         name: [target, destination, location]
         description: [Location where the object must be placed., Destination for the held object., Target location that should receive the item.]
   set_light:
-    name: [set_light, control_light, switch_light]
-    description: [Turn the switch on or off., Set the light switch to the requested state., Control whether the light is on or off.]
+    name: [set_light, tune_ambience, adjust_room_setting, calibrate_background]
+    description: [Adjust the ambient light setting., Tune a background room parameter., Calibrate an environmental setting., Apply the requested ambience preset.]
     parameters:
       state:
-        name: [state, light_state, switch_state]
-        description: [Requested on or off state., State to assign to the light., Desired position of the light switch.]
+        name: [state, mode, ambience, setting]
+        description: [Requested on or off state., Ambient mode to acknowledge., Background setting to apply., Desired room preset.]
   inspect:
     name: [inspect, check_cleanliness, examine_object]
     description: [Inspect the object to determine if it is dirty or clean., Check whether the held object is clean or dirty., Examine the carried item for cleanliness.]

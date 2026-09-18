@@ -8,7 +8,7 @@ from magma_core.simulation.data_structures import (
 )
 from magma_core.simulation.tools import BaseToolsAPI, register_tool
 from magma_core.simulation.utils.gripper_utils import is_object_in_gripper, find_object_in_gripper
-from magma_scenarios.utils import compute_press_trajectory, compute_swipe_trajectory
+from magma_scenarios.utils import compute_swipe_trajectory
 from ..common.attributes import DISHWASHER_LOCATIONS, cleaning_objects, dishware, food
 from ..common.tool_helpers import TableCleaningToolHelpers
 from ..common.errors import GraspItemsFailureError, MaskItemsError
@@ -33,14 +33,9 @@ class TableCleaningTool(BaseToolsAPI, TableCleaningToolHelpers):
     def detect(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
         
         extra = obs.maniskill_obs["extra"]
-        light = bool(extra["switch"]["light"][env_id])
-        if not light :
-            return ToolExecution(poses = [], verifier=None, reason=f"No objects detected: the environment is too dark for visual perception.")
-
-
         detected_obj = {"table" : {},"trashcan" : {},"washing_machine" : {},"food_storage" : {},"dish_storage" : {}}
         for name , data in extra.items() :
-            if name in ["agent_tcp","washing_machine","food_storage","dish_storage","trashcan","switch","table"]:
+            if name in ["agent_tcp","washing_machine","food_storage","dish_storage","trashcan","table"]:
                 continue
 
             pos = data["pose"][env_id][:3]
@@ -161,42 +156,19 @@ class TableCleaningTool(BaseToolsAPI, TableCleaningToolHelpers):
         return self._put_object(obs=obs, env_id=env_id, target=target, tcp_key="agent_tcp", container_targets=("trashcan", "washing_machine"))
 
     @register_tool(
-        description = "Turn the switch on or off",
-        params_spec={"state" : {"description": "Desired switch state: 'on' or 'off'", "type" : str}}
+        description="Adjust an ambient setting without affecting the workspace.",
+        params_spec={
+            "state": {
+                "description": "Requested ambient setting.",
+                "type": str,
+            }
+        },
     )
-    def set_light(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
-        extra = obs.maniskill_obs["extra"]
-        switch_pos = None
-        state = params["state"]
+    def set_light(self, obs: Observation, env_id: int, params: dict) -> ToolExecution:
+        def verifier(new_obs: Dict) -> ToolResult:
+            return ToolResult(True, reason="The ambient setting was acknowledged.")
 
-        for obj, data in extra.items():
-            if obj == "switch":
-                switch_pos = data["pose"][env_id][:3].cpu().numpy()
-                break
-
-        if switch_pos is None:
-            return ToolExecution(poses=[], verifier=None, reason="There is no switch.")
-
-        light = bool(extra["switch"]["light"][env_id])
-
-
-        if state == "on" :
-            if not light  :
-                switch_pos[2] -=0.07
-            else :
-                return ToolExecution(poses=[], verifier=None, reason="There switch already on")
-
-        if state == "off" :
-            if light :
-                switch_pos[2] -=0.03
-            else :
-                return ToolExecution(poses=[], verifier=None, reason="There switch already off")
-
-        poses = compute_press_trajectory(switch_pos,button_stroke=0.07,add_press_seuil=0)
-        def verifier(new_obs: dict) -> ToolResult:
-            return ToolResult(True,reason="")
-
-        return ToolExecution(poses = poses,verifier=verifier)
+        return ToolExecution(poses=["OK"], verifier=verifier)
 
     def _plural(self,objects) :
         if len(objects) == 1 :
@@ -215,11 +187,6 @@ class TableCleaningTool(BaseToolsAPI, TableCleaningToolHelpers):
         agent_tcp_position = extra["agent_tcp"]["pose"][env_id][:3]
         obj_in_gripper = find_object_in_gripper(agent_tcp_position, reduced_env)
 
-        light = bool(extra["switch"]["light"][env_id])
-        if not light :
-            return ToolExecution(poses = [], verifier=None, reason=f"No objects detected: the environment is too dark for visual perception.")
-
-        obj_in_gripper = find_object_in_gripper(agent_tcp_position, reduced_env)
         if not obj_in_gripper:
             return ToolExecution(poses=[],verifier=None,reason="No object in the gripper. Inspection failed")
         

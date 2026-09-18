@@ -8,6 +8,8 @@ import torch
 from mani_skill.utils.building import actors
 from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose
+from mani_skill.sensors.camera import CameraConfig
+from mani_skill.utils import sapien_utils
 from math import pi
 from transforms3d.euler import euler2quat
 from magma_scenarios.envs.asset_lib import create_trashcan
@@ -81,11 +83,15 @@ class CleanTableCommonMixin:
             for name in cleaning_objects
         ]
 
-        self.trash = create_trashcan(self.scene)
-        self.trash_collision = self._build_collision_box(
-            "trash_basket",
-            self.trash_pose,
-            0.19,
+        self.trash = create_trashcan(self.scene, add_collision=False)
+        trash_catcher_builder = self.scene.create_actor_builder()
+        trash_catcher_builder.add_box_collision(
+            pose=sapien.Pose(p=[0, 0, 0.01]),
+            half_size=[0.09, 0.09, 0.01],
+        )
+        trash_catcher_builder.set_initial_pose(sapien.Pose(p=self.trash_pose))
+        self.trash_catcher = trash_catcher_builder.build_kinematic(
+            name="trash_catcher"
         )
 
     def _load_layout_options(self, options: dict):
@@ -164,6 +170,7 @@ class CleanTableCommonMixin:
                 q=euler2quat(0, 0, -pi),
             )
         )
+        self.trash_catcher.set_pose(sapien.Pose(p=self.trash_pose))
         self._set_first_joint(self.trash, pi)
         
     def _initialize_common_episode(self, env_idx: torch.Tensor):
@@ -264,7 +271,7 @@ class CleanTableCommonMixin:
 
     def _add_common_static_obs(self, obs: Dict):
         static_entries = [
-            (self.trash.name, self.trash_collision.pose.raw_pose, {}),
+            (self.trash.name, self.trash.pose.raw_pose, {}),
             (self.dish_storage.name, self.dish_storage.pose.raw_pose, {}),
             (self.food_storage.name, self.food_storage.pose.raw_pose, {}),
             ("table", self._table_pose(), {}),
@@ -306,3 +313,13 @@ class CleanTableCommonMixin:
         qpos = actor.get_qpos()
         qpos[0] = value
         actor.set_qpos(qpos)
+
+    @property
+    def _default_human_render_camera_configs(self):
+        # this is just like _sensor_configs, but for adding cameras used for rendering when you call env.render()
+        # when render_mode="rgb_array" or env.render_rgb_array()
+        # Another feature here is that if there is a camera called render_camera, this is the default view shown initially when a GUI is opened
+        pose = sapien_utils.look_at([1, 0, 0.6], [0.0, 0.0, 0.35])
+        return CameraConfig(
+            "render_camera", pose=pose, width=512, height=512, fov=1, near=0.01, far=100
+        )
