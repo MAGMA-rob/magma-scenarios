@@ -69,7 +69,10 @@ class NoManuPreset(BaseTask):
 
         self.situation_init = SituationInit(
             attributes = task_attributes,
-            all_task_attributes = ALL_TASK_ATTRIBUTES
+            all_task_attributes = ALL_TASK_ATTRIBUTES,
+            memory={"memory_list": [
+                "Launching a cycle means sending the requested objects to their assigned areas."
+            ]},
         )
 
         self.stages = []

@@ -83,7 +83,7 @@ class TableCleaningTool(BaseToolsAPI, TableCleaningToolHelpers):
         return True
     
     @register_tool(
-        description ="Clean the table using the sponge",
+        description="Wipe the empty table while holding the sponge.",
         params_spec={}
     )    
     def wipe(self, obs: Observation, env_id: int, params: dict)-> ToolExecution :
@@ -176,7 +176,7 @@ class TableCleaningTool(BaseToolsAPI, TableCleaningToolHelpers):
         return "are"
 
     @register_tool(
-        description ="Inspect the object to determine if it is dirty or clean.",
+        description="Inspect the held object to determine if it is dirty or clean.",
         params_spec={},
         is_detection=True,
     )

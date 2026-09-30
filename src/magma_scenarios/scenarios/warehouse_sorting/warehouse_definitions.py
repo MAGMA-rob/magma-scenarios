@@ -60,6 +60,9 @@ class SimpleSortingDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
+            memory={"memory_list": [
+                "Launching a cycle means sending the requested objects to their assigned areas."
+            ]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)
@@ -99,6 +102,9 @@ class SortingWithInterdictionsDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
+            memory={"memory_list": [
+                "Launching a cycle means sending the requested objects to their assigned areas."
+            ]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)
@@ -146,6 +152,9 @@ class SortingCategoryDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
+            memory={"memory_list": [
+                "Launching a cycle means sending the requested objects to their assigned areas."
+            ]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)

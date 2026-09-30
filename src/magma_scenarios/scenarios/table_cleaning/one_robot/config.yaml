@@ -7,7 +7,7 @@ tools:
     description: [Return visible objects and their locations., Scan the work area and report visible objects with their locations., List the objects currently visible to the robot and where they are.]
   wipe:
     name: [wipe, clean_table, wipe_surface]
-    description: [Clean the table using the sponge., Wipe the table surface with the sponge., Use the sponge to clean the empty table.]
+    description: [Wipe the empty table while holding the sponge., Clean the empty table surface with the sponge in hand., Hold the sponge to wipe the table after clearing it.]
   take:
     name: [take, pick_object, grab_item]
     description: [Pick up an object., Take the specified object with the gripper., Grab a named item from its current location.]
@@ -31,7 +31,7 @@ tools:
         description: [Requested on or off state., Ambient mode to acknowledge., Background setting to apply., Desired room preset.]
   inspect:
     name: [inspect, check_cleanliness, examine_object]
-    description: [Inspect the object to determine if it is dirty or clean., Check whether the held object is clean or dirty., Examine the carried item for cleanliness.]
+    description: [Inspect the held object to determine if it is dirty or clean., Check whether the held object is clean or dirty., Examine the carried item for cleanliness.]
 
 semantic_attributes:
   food_types:
