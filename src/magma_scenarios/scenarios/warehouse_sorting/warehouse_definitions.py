@@ -29,6 +29,9 @@ WAREHOUSE_ATTRIBUTES = {
     "target_areas": AREAS,
 }
 WAREHOUSE_RANDOMIZED_CONFIG_PATH = str(Path(__file__).parent.joinpath("config.yaml"))
+WAREHOUSE_CYCLE_RULE = (
+    "Launching a cycle means sending the requested objects to their assigned areas."
+)
 
 class SimpleSortingDefinition(TaskDefinition):
 
@@ -60,9 +63,7 @@ class SimpleSortingDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
-            memory={"memory_list": [
-                "Launching a cycle means sending the requested objects to their assigned areas."
-            ]},
+            memory={"memory_list": [WAREHOUSE_CYCLE_RULE]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)
@@ -102,9 +103,7 @@ class SortingWithInterdictionsDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
-            memory={"memory_list": [
-                "Launching a cycle means sending the requested objects to their assigned areas."
-            ]},
+            memory={"memory_list": [WAREHOUSE_CYCLE_RULE]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)
@@ -152,9 +151,7 @@ class SortingCategoryDefinition(TaskDefinition):
         situation_init = SituationInit(
             attributes=attributes,
             all_task_attributes=deepcopy(WAREHOUSE_ATTRIBUTES),
-            memory={"memory_list": [
-                "Launching a cycle means sending the requested objects to their assigned areas."
-            ]},
+            memory={"memory_list": [WAREHOUSE_CYCLE_RULE]},
         )
         self.starting_state = TaskState()
         self.starting_state.attributes = deepcopy(WAREHOUSE_ATTRIBUTES)

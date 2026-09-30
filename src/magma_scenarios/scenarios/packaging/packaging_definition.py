@@ -53,7 +53,11 @@ class PackagingDefinition(TaskDefinition):
                 memory={
                     "memory_list": [
                         "To prepare a tray, take each required food object "
-                        "and put it on the tray."
+                        "and put it on the tray.",
+                        "Once all requested objects are on the tray, use the "
+                        "tray validation tool to complete the task.",
+                        "Refuse a tray request if it violates the current "
+                        "food constraints, including incompatibility rules.",
                     ]
                 },
             ),

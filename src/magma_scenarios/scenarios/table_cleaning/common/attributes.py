@@ -35,7 +35,9 @@ att = {
 }
 
 generic_rules = [
-    "To clean the table, remove all food and dishware from it.",
+    "Cleaning the table means removing all food and dishware. "
+    "Setting it means leaving only the requested types and counts of clean objects: "
+    "reuse matching clean objects already there, and remove extras or dirty objects.",
     "Use scan_scene to find objects, their locations, and which ones are dirty.",
     "The table_robot puts dirty food in trashcan and clean food in food_storage.",
     "For dirty dishware, the dish_robot puts it in sink and uses clean; clean moves it to drying_zone.",
