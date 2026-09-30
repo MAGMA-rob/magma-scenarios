@@ -54,32 +54,32 @@ tools:
   put:
     name:
       - put
-      - place_to_box
-      - drop_in_colored_box
-      - send_to_box
+      - place_held_cube
+      - drop_at_location
+      - send_to_target
 
     description:
-      - Put the held object in a box corresponding to the given color.
-      - Drop the currently held item into the box with the specified color.
-      - Store the object in the container labeled with the given color.
-      - Send the held object to its designated color box.
-      - Allocate the item into the matching color compartment.
+      - Put the held cube on the table or in a color tray.
+      - Place the held cube on the table or in the specified tray.
+      - Drop the held cube on the table or into a color tray.
+      - Send the held cube to the table or a named tray.
+      - Move the held cube onto the table or into a tray.
 
     parameters:
       target:
         name:
           - target
-          - tray_name
-          - target_tray
           - destination
-          - destination_tray
+          - target_location
+          - placement_target
+          - destination_area
 
         description:
-          - The name of the target tray.
-          - The tray that should receive the held cube.
-          - The destination tray where the cube must be placed.
-          - Name of the container selected for the held object.
-          - The colored tray corresponding to the cube's destination.
+          - Use table or a tray name such as white_tray.
+          - "Destination: table or the name of a color tray."
+          - Set to table to return the cube to the table, or name a tray.
+          - The destination, either table or a tray such as white_tray.
+          - Choose table or the named tray that should receive the cube.
 
   get_object_state:
     name:
