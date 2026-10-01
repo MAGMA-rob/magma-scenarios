@@ -150,8 +150,8 @@ def build_delivery_stages(
     """
     Build progressive TypedPlacementStage instances.
 
-    The final stage resets the physical environment to recreate the
-    reception layout for the next request.
+    Keep the environment unchanged between stages. The next delivery
+    positions its objects with an entry transition.
     """
     total_objects = assignment_object_count(assignment)
 
@@ -177,6 +177,7 @@ def build_delivery_stages(
                 if goal_description_builder is not None
                 else None
             ),
+            reset_at_end=False,
         )
         for minimum in range(
             start_n,
