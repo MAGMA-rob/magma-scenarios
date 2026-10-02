@@ -344,8 +344,19 @@ class AdvancedDeliveryTools(BaseToolsAPI):
 
     
     @register_tool(
-        description="Move the selected robot to a destination.",
-        params_spec={"target": {"description": "Target destination.", "type": str}},
+        description=(
+            "Move to a listed destination, carrying the held tray or package "
+            "and its contents. A product held only in the gripper is not carried."
+        ),
+        params_spec={
+            "target": {
+                "description": (
+                    "One of the listed move_targets, such as reception, "
+                    "hygiene_spot, or priority_bay_0."
+                ),
+                "type": str,
+            }
+        },
         errors=[OneShotToolFailureError],
     )
     def move_to(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
@@ -450,7 +461,7 @@ class AdvancedDeliveryTools(BaseToolsAPI):
         return ToolExecution(poses=["OK"], verifier=verifier)
 
     @register_tool(
-        description="Take an available package tray from the output table.",
+        description="At a matching output bay, a preparation robot takes an available package tray.",
         params_spec={},
         errors=[OneShotToolFailureError],
     )
@@ -729,8 +740,19 @@ class AdvancedDeliveryTools(BaseToolsAPI):
         )
 
     @register_tool(
-        description="Put the held product on a table, tray, trashcan, or package.",
-        params_spec={"target": {"description": "Target: table, tray, trashcan, or package.", "type": str}},
+        description=(
+            "Put the held product using target table, tray, package, or "
+            "trashcan. Spot and bay names are not put targets."
+        ),
+        params_spec={
+            "target": {
+                "description": (
+                    "Exactly table, tray, package, or trashcan; never a spot "
+                    "or bay name."
+                ),
+                "type": str,
+            }
+        },
         errors=[OneShotToolFailureError],
     )
     def put(self, obs: Observation, env_id: int, params: Dict) -> ToolExecution:
@@ -868,7 +890,7 @@ class AdvancedDeliveryTools(BaseToolsAPI):
         )
 
     @register_tool(
-        description="Inspect the held product.",
+        description="Inspect the held product to learn whether it is clean or broken.",
         params_spec={},
         is_detection=True,
         errors=[OneShotToolFailureError],
@@ -957,7 +979,7 @@ class AdvancedDeliveryTools(BaseToolsAPI):
         return closest_name, products
 
     @register_tool(
-        description="List nearby products and their locations.",
+        description="List products on the current table and in the robot's held tray or package.",
         params_spec={},
         is_detection=True,
         errors=[OneShotToolFailureError],
@@ -1038,7 +1060,7 @@ class AdvancedDeliveryTools(BaseToolsAPI):
         return None
 
     @register_tool(
-        description="Attach a shipping label to the package in front of the selected robot.",
+        description="At an output bay, label a dropped, nonempty package with its order ID, recipient name, and city.",
         params_spec={
             "order_id": {"description": "Unique delivery reference.","type": str},
             "name": {"description": "Recipient name.","type": str},

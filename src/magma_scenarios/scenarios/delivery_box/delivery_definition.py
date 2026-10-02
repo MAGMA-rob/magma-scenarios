@@ -74,6 +74,12 @@ class MultiOrderDeliveryDefinition(TaskDefinition):
             name="Multi-order delivery with promotions and interruptions",
             situation_init=SituationInit(
                 attributes=attributes,
+                memory={"memory_list":[
+                    "All products from the same order must be placed in the same package.",
+                    "When a package is ready, you must depose it to package_area and mark it with the corresponding order ID.",
+                    "Empty packages are available in the package area, when taking one werify that it is empty.",
+                    "Products are available in the product area."
+                ]}
             ),
             starting_state=starting_state,
             initialization_parameters=InitializationParameters(

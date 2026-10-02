@@ -40,8 +40,8 @@ class UpdateDefaultRecipeRequest(BaseConstraintRequest):
             recipe = engine.sample_valid_composition()
             instruction = random.choice((
                 f"The default tray recipe is {join_with_and(list(recipe))}.",
-                "From now on, prepare the standard tray with "
-                f"{join_with_and(list(recipe))}.",
+                "Consider "
+                f"{join_with_and(list(recipe))} as the new default recipe",
             ))
             return ConstraintParameters(
                 [DefaultRecipeConstraint(recipe)],

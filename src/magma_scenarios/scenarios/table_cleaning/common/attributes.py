@@ -35,15 +35,21 @@ att = {
 }
 
 generic_rules = [
-    "Dirty dishware must be cleaned in the sink and dirty food must be placed in the trashcan.",
-    "dish_robot can only take dishware from the table, sink, or drying_zone.",
-    "Both robots can take from and put clean dishware in drying_zone.",
-    "Only table_robot can access food_storage and dish_storage.",
+    "Cleaning the table means removing all food and dishware. "
+    "Setting it means leaving only the requested types and counts of clean objects: "
+    "reuse matching clean objects already there, and remove extras or dirty objects.",
+    "Use scan_scene to find objects, their locations, and which ones are dirty.",
+    "The table_robot puts dirty food in trashcan and clean food in food_storage.",
+    "For dirty dishware, the dish_robot puts it in sink and uses clean; clean moves it to drying_zone.",
+    "The table_robot takes clean dishware from drying_zone and puts it in dish_storage.",
+    "Only the table_robot can access food_storage and dish_storage.",
 ]
 generic_rules_simplified = [
-    "Dirty food cannot be cleaned or stored and must be placed in the trashcan.",
-    "Clean food must be placed in food_storage.",
-    "Clean dishware must be placed in dish_storage."
+    "Cleaning the table means removing all food and dishware from it; wipe it when requested.",
+    "Take an object and use inspect to determine whether it is clean or dirty before choosing its destination.",
+    "Put dirty food in trashcan and clean food in food_storage.",
+    "Put dirty dishware in washing_machine and clean dishware in dish_storage.",
+    "To wipe the table, first clear it, take the sponge, use wipe, then put the sponge back on the table.",
 ]
 
 def build_task_attributes(locations):

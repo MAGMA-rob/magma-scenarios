@@ -57,8 +57,7 @@ def _sample_error_objects(
             current_count = current.get(location, {}).get(color, 0)
             matching_count += min(current_count, target_count)
 
-            # A useful direct move must end in a tray: the current put tool does
-            # not support dropping an object back onto the table.
+            # Recovery candidates here target only a tray deficit.
             if location != "table" and current_count < target_count:
                 colors_with_deficit.add(color)
 

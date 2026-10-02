@@ -215,9 +215,14 @@ class ColorDetectionTools(BaseToolsAPI):
         )
 
     @register_tool(
-            description="Put the held cube in a tray.",
+            description="Put the held cube on the table or in a tray.",
             params_spec={
-                "target": {"description": "Name of the destination tray.", "type": str}
+                "target": {
+                    "description": (
+                        "Destination: table or a tray name."
+                    ),
+                    "type": str,
+                }
             }
     )
     def put(self, obs : Observation, env_id : int, params: Dict) -> ToolExecution:
@@ -273,7 +278,10 @@ class ColorDetectionTools(BaseToolsAPI):
             if is_object_in_gripper(new_obs["extra"]["agent_tcp"][env_id], obj_pose):
                 return ToolResult(False, reason=f"The object is still in the gripper")
             if not is_object_inside_target(obj_pose, new_obs["extra"][target][env_id], 0.3):
-                return ToolResult(False,reason=f"The object is not in the tray and not in the gripper")
+                return ToolResult(
+                    False,
+                    reason=f"The object is not at {target} and not in the gripper",
+                )
             return ToolResult(True, reason=f"Successfuly sent {obj_in_gripper} to {target}")
 
         return ToolExecution(

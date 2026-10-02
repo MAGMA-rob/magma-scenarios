@@ -192,22 +192,43 @@ class AdvancedDeliveryDefinition(TaskDefinition):
             memory={
                 "memory_list": [
                     (
-                        "Incoming products are unloaded in the "
-                        "reception area."
+                        "When asked to process a return, treat every product on "
+                        "the reception table as part of the return batch. Use "
+                        "detection to identify them, then pick and inspect each one."
                     ),
                     (
-                        "Damaged products must be discarded, "
-                        "while clean unused products must be "
-                        "returned to their corresponding storage."
+                        "Only reception_robot can access reception and use the "
+                        "trashcan. Discard broken returns; take clean returns to "
+                        "their matching storage."
                     ),
                     (
-                        "Priority deliveries must use priority packages "
-                        "and priority output bays."
+                        "To transport a product, put it on a held tray or package "
+                        "before using move_to; a product held only in a gripper "
+                        "does not travel with that tool. reception_robot has a "
+                        "fixed helper tray. At the matching storage spot, pick a "
+                        "clean return from the tray and put it on the table."
                     ),
                     (
-                        "Every completed package must receive the "
-                        "shipping label associated with its "
-                        "delivery."
+                        "Preparation robots collect delivery products from storage. "
+                        "For each order, take a free package of the requested "
+                        "service at a matching output bay, then pick concrete "
+                        "products one at a time and put them in the held package."
+                    ),
+                    (
+                        "Once a package contains exactly the requested products, "
+                        "return to a matching output bay, drop the package, and "
+                        "attach its shipping label with the exact order ID, "
+                        "recipient name, and city."
+                    ),
+                    (
+                        "Use spot and bay names with move_to. For put, use only "
+                        "table, tray, package, or trashcan; spot and bay names are "
+                        "not put targets."
+                    ),
+                    (
+                        "For count questions, use detection at the relevant "
+                        "reception or storage area. Continue using tools until "
+                        "every requested return and delivery is complete."
                     ),
                 ]
             },
