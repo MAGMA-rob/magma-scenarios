@@ -141,7 +141,7 @@ class DamagedObjectsGoal(BaseGoal):
 class SortDamagedObjectsStage(BaseTaskStage):
 
     target_tool_calls = 2
-    max_tool_calls = 4
+    max_tool_calls = 6
 
     def __init__(
         self,
@@ -204,7 +204,7 @@ class RecipeObjectsStage(BaseTaskStage):
     """
 
     target_tool_calls = 3
-    max_tool_calls = None
+    max_tool_calls = 8
 
     def __init__(
         self,
