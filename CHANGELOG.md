@@ -7,6 +7,27 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-02
+
+### Changed
+
+- Clarified task instructions, permanent rules, tool descriptions, and their
+  randomized variants to reduce ambiguity in zero-shot evaluation, with the
+  aim of improving open-source model performance.
+- Expanded advanced-delivery guidance for returns, robot access, transport,
+  package preparation, valid placement targets, and shipping labels.
+- Made delivery-box, packaging, warehouse-sorting, and table-cleaning permanent
+  rules more explicit, and clarified color-sorting detection and errors.
+- Kept the existing MAGMA Core dependency range, accepting v2 beta and stable
+  releases starting at `2.0.0b1`.
+
+### Fixed
+
+- Removed end-of-stage resets from hall-sorting delivery stages to preserve
+  the environment between progressive placement goals.
+- Adjusted two-robot sorting stage budgets to give damaged-object sorting more
+  tolerance and set an explicit tool-call limit for recipe stages.
+
 ## [2.0.2] - 2026-09-18
 
 ### Added
@@ -53,7 +74,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Published the stable v2 scenario registry, environments, definitions,
   presets, skills, and testing commands.
 
-[Unreleased]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/MAGMA-rob/magma-scenarios/releases/tag/v2.0.0
