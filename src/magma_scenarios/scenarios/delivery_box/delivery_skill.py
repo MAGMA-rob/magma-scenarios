@@ -36,6 +36,12 @@ class CycleSkill(BaseSkill):
                 result=False,
                 error_flag=ToolErrorFlag.BAD_CALL,
             )
+        if not self.objects:
+            return MessTick(
+                message="objects must contain at least one product type.",
+                result=False,
+                error_flag=ToolErrorFlag.BAD_CALL,
+            )
         return self._call_current_tool()
 
     def tick(self, status: RobotToolStatus) -> SkillTick:
