@@ -18,7 +18,7 @@ from mani_skill.utils.registration import register_env
 from magma_scenarios.envs.asset_lib import create_cardboard_box_builder
 from magma_scenarios.envs.visual_assets import OBJECT_VISUALS
 
-package_pose = [-1,-0.25,0]
+package_pose = [-1,-0.25,-0.1]
 PRODUCTS_SLOT_POSITION = [-0.615, 0.0, 0.0]
 PACKAGES_SLOT_POSITION = [0, 1, 0.0]
 
