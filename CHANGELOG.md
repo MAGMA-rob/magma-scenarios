@@ -7,6 +7,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-10-09
+
+### Changed
+
+- Clarified coffee-making success feedback to indicate that the coffee has been
+  given to the user and the machine is ready for the next coffee.
+
+### Fixed
+
+- Rejected empty product lists in the delivery-box cycle skill with an explicit
+  bad-call error instead of crashing.
+- Lowered the delivery environment's package box by 0.1 m.
+
 ## [2.1.0] - 2026-10-02
 
 ### Changed
@@ -74,7 +87,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Published the stable v2 scenario registry, environments, definitions,
   presets, skills, and testing commands.
 
-[Unreleased]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/MAGMA-rob/magma-scenarios/compare/v2.0.0...v2.0.1
