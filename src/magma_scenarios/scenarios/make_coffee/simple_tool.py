@@ -46,7 +46,7 @@ class MakingCoffeeTool(BaseToolsAPI):
 
         # define verifier inline
         def verifier(new_obs: Dict) -> ToolResult:
-            return ToolResult(True,"Coffee launched!",logs=Log(""))
+            return ToolResult(True,"Coffee given to the user! The machine is ready for the next coffee.",logs=Log(""))
         
         return ToolExecution(poses=poses, verifier=verifier, reason="")
     
